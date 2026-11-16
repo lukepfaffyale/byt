@@ -1,0 +1,133 @@
+{
+  "gate": {
+    "id": "pattern-twelve",
+    "title": "Twelve squares: where next?",
+    "kind": "pattern",
+    "deck": "patterns",
+    "difficulty": "medium"
+  },
+  "cards": [
+    {
+      "id": "pat-12a",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "step",
+          "order": "rows",
+          "start": 2,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "pat-12b",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 6,
+        "rule": {
+          "kind": "step",
+          "order": "snake",
+          "start": 0,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "pat-12c",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 6,
+        "rule": {
+          "kind": "step",
+          "order": "ring",
+          "start": 2,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "pat-12d",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "step",
+          "order": "rows",
+          "start": 0,
+          "step": 5
+        }
+      }
+    },
+    {
+      "id": "pat-12e",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 6,
+        "rule": {
+          "kind": "pair",
+          "order": "rows",
+          "start": 0,
+          "step": 1,
+          "start2": 11,
+          "step2": 11
+        }
+      }
+    },
+    {
+      "id": "pat-12f",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "....",
+          "....",
+          "...."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "grow",
+          "order": "rows",
+          "start": 0,
+          "step": 1
+        }
+      }
+    }
+  ]
+}

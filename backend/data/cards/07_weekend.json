@@ -1,0 +1,13 @@
+{
+  "gate": {"id": "weekend-1", "title": "Weekend", "kind": "preference", "deck": "weekend"},
+  "cards": [
+    {"id": "wknd-01", "prompt": "A full weekend is better than a free weekend.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "spontaneous"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-02", "prompt": "You would rather have guests than be a guest.", "options": [{"id": "yes", "label": "Yes", "trait": "social"}, {"id": "no", "label": "No", "trait": "solo"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-03", "prompt": "A new place is better than your favorite place.", "options": [{"id": "yes", "label": "Yes", "trait": "novelty"}, {"id": "no", "label": "No", "trait": "loyal"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-04", "prompt": "Your Saturday starts before 8 in the morning.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "comfort"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-05", "prompt": "A big group is better than one good friend.", "options": [{"id": "yes", "label": "Yes", "trait": "social"}, {"id": "no", "label": "No", "trait": "solo"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-06", "prompt": "You would leave for a trip tomorrow with no planning.", "options": [{"id": "yes", "label": "Yes", "trait": "spontaneous"}, {"id": "no", "label": "No", "trait": "plan"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-07", "prompt": "Being outside is better than being inside.", "options": [{"id": "yes", "label": "Yes", "trait": "novelty"}, {"id": "no", "label": "No", "trait": "comfort"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-08", "prompt": "On Sunday night you already know your plan for Monday.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "spontaneous"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]}
+  ]
+}

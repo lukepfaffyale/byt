@@ -1,0 +1,8 @@
+{
+  "gate": {"id": "strategy-medium", "title": "One move to win, harder", "kind": "strategy", "deck": "strategy", "difficulty": "medium"},
+  "cards": [
+    {"id": "ttt-m1", "prompt": "You are X. You can win right now. Do not only block.", "board": {"game": "tictactoe", "rows": ["X.O", "X.O", "..."], "to_move": "X"}},
+    {"id": "ttt-m2", "prompt": "You are X. One move wins the game. Tap that square.", "board": {"game": "tictactoe", "rows": ["O.X", ".X.", "..O"], "to_move": "X"}},
+    {"id": "ttt-m3", "prompt": "You are X. You can win right now. Do not only block.", "board": {"game": "tictactoe", "rows": ["X.X", "OO.", "..."], "to_move": "X"}}
+  ]
+}

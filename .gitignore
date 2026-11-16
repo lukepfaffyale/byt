@@ -1,0 +1,40 @@
+# Secrets: real keys live only in .env files
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Local database (created and seeded on first start; holds real play data on the builder's machine)
+backend/data/local.db
+backend/data/*.db-journal
+
+# Run output. output/audit_trail.json (the append-only agent trail) is committed; the
+# per-node log and the prompt-guard flags are not.
+output/*.jsonl
+output/prompt_injection_flags.json
+backend/output/
+
+# Working notes, not part of the submission
+PLAN.md
+RESUME.md
+report_draft.md
+deck_draft.md
+
+# Editor / OS / agent settings
+.DS_Store
+.cursor/
+.claude/
+.vscode/

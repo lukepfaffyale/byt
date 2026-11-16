@@ -1,0 +1,13 @@
+{
+  "gate": {"id": "style-1", "title": "Style", "kind": "preference", "deck": "style"},
+  "cards": [
+    {"id": "style-01", "prompt": "You are going out tonight. What do you wear?", "options": [{"id": "a", "label": "Something no one else will wear", "trait": "bold"}, {"id": "b", "label": "Something that always looks good", "trait": "classic"}]},
+    {"id": "style-02", "prompt": "What matters most in your shoes?", "options": [{"id": "a", "label": "They feel good", "trait": "comfort"}, {"id": "b", "label": "They look good", "trait": "look"}]},
+    {"id": "style-03", "prompt": "Do you like a logo on your shirt?", "options": [{"id": "a", "label": "Yes, a big one", "trait": "bold"}, {"id": "b", "label": "A small one, or none", "trait": "classic"}]},
+    {"id": "style-04", "prompt": "What colors are most of your clothes?", "options": [{"id": "a", "label": "Black, white and gray", "trait": "classic"}, {"id": "b", "label": "Bright colors", "trait": "bold"}]},
+    {"id": "style-05", "prompt": "Which would you rather own?", "options": [{"id": "a", "label": "One jacket that lasts 10 years", "trait": "quality"}, {"id": "b", "label": "Five jackets, one for each mood", "trait": "variety"}]},
+    {"id": "style-06", "prompt": "A new style becomes popular. What do you do?", "options": [{"id": "a", "label": "I try it early", "trait": "bold"}, {"id": "b", "label": "I wait and watch", "trait": "classic"}]},
+    {"id": "style-07", "prompt": "How do you like your clothes to fit?", "options": [{"id": "a", "label": "Loose and easy", "trait": "comfort"}, {"id": "b", "label": "Neat and close", "trait": "look"}]},
+    {"id": "style-08", "prompt": "How long do you take to get dressed?", "options": [{"id": "a", "label": "About 2 minutes", "trait": "comfort"}, {"id": "b", "label": "As long as I need", "trait": "look"}]}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "gate": {"id": "strategy-hard", "title": "Four in a row", "kind": "strategy", "deck": "strategy", "difficulty": "hard"},
+  "cards": [
+    {"id": "c4-h1", "prompt": "You are R. Drop one piece to make four in a row.", "board": {"game": "connect4", "rows": [".......", ".......", ".......", ".......", ".......", "RRR.YYY"], "to_move": "R"}},
+    {"id": "c4-h2", "prompt": "You are R. Drop one piece to make four in a row.", "board": {"game": "connect4", "rows": [".......", ".......", ".......", "R......", "R......", "RY.Y.Y."], "to_move": "R"}},
+    {"id": "c4-h3", "prompt": "You are R. Drop one piece to make four in a row.", "board": {"game": "connect4", "rows": [".......", ".......", ".......", "..RY...", ".RYR...", "RYYY..."], "to_move": "R"}}
+  ]
+}

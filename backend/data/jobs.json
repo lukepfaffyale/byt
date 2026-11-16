@@ -1,0 +1,88 @@
+{
+  "about": "Jobs a twin can take. Every requester here is invented for this project. A job opens once the player has cleared after_gates gates. Option traits use the ontology tags. Pay is play credits.",
+  "jobs": [
+    {
+      "id": "job-tagline",
+      "requester": "Halden Outdoor",
+      "requester_kind": "Brand",
+      "after_gates": 1,
+      "pay": 20,
+      "question": "Which words on a jacket ad would this person stop to read?",
+      "feeds": "What makes people stop and look",
+      "options": [
+        {
+          "id": "a",
+          "label": "Made once. Worn for years.",
+          "trait": "classic"
+        },
+        {
+          "id": "b",
+          "label": "The jacket everyone will ask about.",
+          "trait": "bold"
+        },
+        {
+          "id": "c",
+          "label": "So soft you forget you are wearing it.",
+          "trait": "comfort"
+        }
+      ]
+    },
+    {
+      "id": "job-park",
+      "requester": "Brightwater Planning Office",
+      "requester_kind": "City",
+      "after_gates": 4,
+      "pay": 30,
+      "question": "A new park can pay for only one thing first. What would this person choose?",
+      "feeds": "What a neighborhood needs",
+      "options": [
+        {
+          "id": "a",
+          "label": "Something that will last 50 years",
+          "trait": "quality"
+        },
+        {
+          "id": "b",
+          "label": "Many small things that change each season",
+          "trait": "variety"
+        },
+        {
+          "id": "c",
+          "label": "The lowest cost choice, and save the rest",
+          "trait": "save"
+        }
+      ]
+    },
+    {
+      "id": "job-course",
+      "requester": "Meridian Learning",
+      "requester_kind": "School",
+      "after_gates": 6,
+      "pay": 40,
+      "question": "How should a new course begin for this person?",
+      "feeds": "How people learn best",
+      "options": [
+        {
+          "id": "a",
+          "label": "With a clear plan for each week",
+          "trait": "plan"
+        },
+        {
+          "id": "b",
+          "label": "Let me start and learn as I go",
+          "trait": "spontaneous"
+        },
+        {
+          "id": "c",
+          "label": "Show me proof that it works",
+          "trait": "facts"
+        },
+        {
+          "id": "d",
+          "label": "Put me in a group",
+          "trait": "social"
+        }
+      ]
+    }
+  ]
+}

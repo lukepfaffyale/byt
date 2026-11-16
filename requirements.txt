@@ -1,0 +1,13 @@
+fastapi==0.146.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.1
+python-dotenv==1.2.4
+httpx==0.28.1
+# database: one code path for local SQLite and hosted Supabase Postgres
+sqlmodel==0.0.50
+psycopg[binary]==3.3.9
+# agents: PydanticAI slim with the OpenAI extra, routed through Portkey
+pydantic-ai-slim[openai]==2.57.0
+openai==3.35.1
+# tests
+pytest==9.1.1

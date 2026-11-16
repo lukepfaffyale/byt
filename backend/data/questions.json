@@ -1,0 +1,147 @@
+{
+  "about": "The questions an agency can put to many twins at once. An agency taps one, taps an audience and a price per twin; it never types a question, so no free text reaches a player or a model. Option traits use the ontology tags.",
+  "questions": [
+    {
+      "id": "q-launch",
+      "kind": "Ad",
+      "question": "A new product comes out. What makes this person try it?",
+      "options": [
+        {
+          "id": "a",
+          "label": "A friend says it is good",
+          "trait": "social"
+        },
+        {
+          "id": "b",
+          "label": "The reviews and the numbers",
+          "trait": "facts"
+        },
+        {
+          "id": "c",
+          "label": "It is new and few people have it",
+          "trait": "novelty"
+        },
+        {
+          "id": "d",
+          "label": "A brand they already trust makes it",
+          "trait": "loyal"
+        }
+      ]
+    },
+    {
+      "id": "q-price",
+      "kind": "Ad",
+      "question": "The same item has two prices. Which does this person choose?",
+      "options": [
+        {
+          "id": "a",
+          "label": "The lower price",
+          "trait": "save"
+        },
+        {
+          "id": "b",
+          "label": "The better made one, even at twice the price",
+          "trait": "quality"
+        },
+        {
+          "id": "c",
+          "label": "The one that feels like a treat today",
+          "trait": "splurge"
+        }
+      ]
+    },
+    {
+      "id": "q-message",
+      "kind": "Ad",
+      "question": "Which message would this person open?",
+      "options": [
+        {
+          "id": "a",
+          "label": "Here is your plan for the week",
+          "trait": "plan"
+        },
+        {
+          "id": "b",
+          "label": "A surprise: something new is inside",
+          "trait": "spontaneous"
+        },
+        {
+          "id": "c",
+          "label": "People like you chose this",
+          "trait": "social"
+        }
+      ]
+    },
+    {
+      "id": "q-loyalty",
+      "kind": "Ad",
+      "question": "What makes this person come back?",
+      "options": [
+        {
+          "id": "a",
+          "label": "It never changes",
+          "trait": "classic"
+        },
+        {
+          "id": "b",
+          "label": "It often surprises them",
+          "trait": "variety"
+        },
+        {
+          "id": "c",
+          "label": "It feels like their own",
+          "trait": "comfort"
+        }
+      ]
+    },
+    {
+      "id": "q-role",
+      "kind": "Recruiting",
+      "question": "What would make this person take a new job?",
+      "options": [
+        {
+          "id": "a",
+          "label": "A clear path and steady pay",
+          "trait": "plan"
+        },
+        {
+          "id": "b",
+          "label": "A problem no one has solved",
+          "trait": "ideas"
+        },
+        {
+          "id": "c",
+          "label": "The team",
+          "trait": "heart"
+        },
+        {
+          "id": "d",
+          "label": "A bigger role",
+          "trait": "bold"
+        }
+      ]
+    },
+    {
+      "id": "q-learn",
+      "kind": "Course",
+      "question": "What would this person pay to learn?",
+      "options": [
+        {
+          "id": "a",
+          "label": "A skill that pays within one year",
+          "trait": "save"
+        },
+        {
+          "id": "b",
+          "label": "Something they are curious about",
+          "trait": "ideas"
+        },
+        {
+          "id": "c",
+          "label": "What their friends are learning",
+          "trait": "social"
+        }
+      ]
+    }
+  ]
+}

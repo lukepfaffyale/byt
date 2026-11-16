@@ -1,0 +1,19 @@
+{
+  "gate": {"id": "thinking-1", "title": "How you think", "kind": "preference", "deck": "thinking"},
+  "cards": [
+    {"id": "thnk-01", "prompt": "A friend tells you about a new business. What do you ask first?", "options": [{"id": "a", "label": "What are the numbers today?", "trait": "facts"}, {"id": "b", "label": "What could it become?", "trait": "ideas"}]},
+    {"id": "thnk-02", "prompt": "A teammate finishes work late. What do you do first?", "options": [{"id": "a", "label": "I fix the plan", "trait": "head"}, {"id": "b", "label": "I ask how they are", "trait": "heart"}]},
+    {"id": "thnk-03", "prompt": "How do you rest after a long week?", "options": [{"id": "a", "label": "With other people", "trait": "social"}, {"id": "b", "label": "By myself", "trait": "solo"}]},
+    {"id": "thnk-04", "prompt": "Where is your list of things to do?", "options": [{"id": "a", "label": "Written down, and I check things off", "trait": "plan"}, {"id": "b", "label": "Mostly in my head", "trait": "spontaneous"}]},
+    {"id": "thnk-05", "prompt": "What do you trust more?", "options": [{"id": "a", "label": "What I have seen work before", "trait": "facts"}, {"id": "b", "label": "My feeling about what comes next", "trait": "ideas"}]},
+    {"id": "thnk-06", "prompt": "How do you make a hard choice?", "options": [{"id": "a", "label": "I compare the good and the bad", "trait": "head"}, {"id": "b", "label": "I ask who it will affect", "trait": "heart"}]},
+    {"id": "thnk-07", "prompt": "How do you think best?", "options": [{"id": "a", "label": "Talking with others", "trait": "social"}, {"id": "b", "label": "Quietly first, then I share", "trait": "solo"}]},
+    {"id": "thnk-08", "prompt": "Your work is due in one month. What do you do?", "options": [{"id": "a", "label": "I start now and do a little each day", "trait": "plan"}, {"id": "b", "label": "I wait until I feel ready", "trait": "spontaneous"}]},
+    {"id": "thnk-09", "prompt": "How should a good explanation begin?", "options": [{"id": "a", "label": "With a real example", "trait": "facts"}, {"id": "b", "label": "With the main idea", "trait": "ideas"}]},
+    {"id": "thnk-10", "prompt": "Which kind words do you like more?", "options": [{"id": "a", "label": "You are smart", "trait": "head"}, {"id": "b", "label": "You are kind", "trait": "heart"}]},
+    {"id": "thnk-11", "prompt": "On a team, what do you do most often?", "options": [{"id": "a", "label": "I check the facts", "trait": "facts"}, {"id": "b", "label": "I lead the plan", "trait": "plan"}, {"id": "c", "label": "I bring the unusual idea", "trait": "ideas"}, {"id": "d", "label": "I keep people together", "trait": "heart"}]},
+    {"id": "thnk-12", "prompt": "You get a new problem. What do you do first?", "options": [{"id": "a", "label": "I study the data", "trait": "facts"}, {"id": "b", "label": "I write the steps", "trait": "plan"}, {"id": "c", "label": "I draw a few options", "trait": "ideas"}, {"id": "d", "label": "I call someone", "trait": "social"}]},
+    {"id": "thnk-13", "prompt": "What do you do at a party?", "options": [{"id": "a", "label": "I talk with many people", "trait": "social"}, {"id": "b", "label": "I have one long talk with one person", "trait": "solo"}]},
+    {"id": "thnk-14", "prompt": "Plans change at the last minute. How do you feel?", "options": [{"id": "a", "label": "It bothers me", "trait": "plan"}, {"id": "b", "label": "I enjoy it", "trait": "spontaneous"}]}
+  ]
+}

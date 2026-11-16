@@ -1,0 +1,8 @@
+{
+  "gate": {"id": "strategy-easy", "title": "One move to win", "kind": "strategy", "deck": "strategy", "difficulty": "easy"},
+  "cards": [
+    {"id": "ttt-e1", "prompt": "You are X. One move wins the game. Tap that square.", "board": {"game": "tictactoe", "rows": ["XX.", ".O.", "O.."], "to_move": "X"}},
+    {"id": "ttt-e2", "prompt": "You are X. One move wins the game. Tap that square.", "board": {"game": "tictactoe", "rows": [".O.", "XX.", "O.."], "to_move": "X"}},
+    {"id": "ttt-e3", "prompt": "You are X. One move wins the game. Tap that square.", "board": {"game": "tictactoe", "rows": ["X..", "OX.", "O.."], "to_move": "X"}}
+  ]
+}

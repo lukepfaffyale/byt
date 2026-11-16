@@ -1,0 +1,87 @@
+{
+  "gate": {
+    "id": "pattern-four",
+    "title": "Four squares: where next?",
+    "kind": "pattern",
+    "deck": "patterns",
+    "difficulty": "easy"
+  },
+  "cards": [
+    {
+      "id": "pat-4a",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "..",
+          ".."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "step",
+          "order": "ring",
+          "start": 0,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "pat-4b",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "..",
+          ".."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "step",
+          "order": "ring",
+          "start": 2,
+          "step": 3
+        }
+      }
+    },
+    {
+      "id": "pat-4c",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "..",
+          ".."
+        ],
+        "to_move": "dot",
+        "shown": 6,
+        "rule": {
+          "kind": "bounce",
+          "order": "ring",
+          "start": 0,
+          "step": 1
+        }
+      }
+    },
+    {
+      "id": "pat-4d",
+      "prompt": "Watch the dots. Tap the square where the next dot will be.",
+      "board": {
+        "game": "pattern",
+        "rows": [
+          "..",
+          ".."
+        ],
+        "to_move": "dot",
+        "shown": 5,
+        "rule": {
+          "kind": "step",
+          "order": "rows",
+          "start": 1,
+          "step": 2
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1206 @@
+{
+  "about": "Card packs for skill steps that a creator can make. We wrote every card. A creator claims a step, taps the cards it wants from the pack, and the step opens for players. A creator never types a card, so no free text reaches a player. The right answer stays on the server.",
+  "packs": [
+    {
+      "id": "made-logic-1",
+      "skill": "logic",
+      "step": "Finish the pattern",
+      "difficulty": "easy",
+      "cards": [
+        {
+          "id": "lg1-1",
+          "prompt": "2, 4, 6, 8. What comes next?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "9"
+            },
+            {
+              "id": "b",
+              "label": "10"
+            },
+            {
+              "id": "c",
+              "label": "12"
+            }
+          ]
+        },
+        {
+          "id": "lg1-2",
+          "prompt": "Red, blue, red, blue, red. What comes next?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Red"
+            },
+            {
+              "id": "b",
+              "label": "Green"
+            },
+            {
+              "id": "c",
+              "label": "Blue"
+            }
+          ]
+        },
+        {
+          "id": "lg1-3",
+          "prompt": "1, 2, 4, 8. What comes next?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "10"
+            },
+            {
+              "id": "b",
+              "label": "12"
+            },
+            {
+              "id": "c",
+              "label": "16"
+            }
+          ]
+        },
+        {
+          "id": "lg1-4",
+          "prompt": "A, C, E, G. What letter comes next?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "H"
+            },
+            {
+              "id": "b",
+              "label": "I"
+            },
+            {
+              "id": "c",
+              "label": "J"
+            }
+          ]
+        },
+        {
+          "id": "lg1-5",
+          "prompt": "10, 8, 6, 4. What comes next?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "2"
+            },
+            {
+              "id": "b",
+              "label": "3"
+            },
+            {
+              "id": "c",
+              "label": "0"
+            }
+          ]
+        },
+        {
+          "id": "lg1-6",
+          "prompt": "Monday, Wednesday, Friday. What day comes next?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Saturday"
+            },
+            {
+              "id": "b",
+              "label": "Sunday"
+            },
+            {
+              "id": "c",
+              "label": "Monday"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-logic-2",
+      "skill": "logic",
+      "step": "What must be true",
+      "difficulty": "medium",
+      "cards": [
+        {
+          "id": "lg2-1",
+          "prompt": "All cats have tails. Mo is a cat. What must be true?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Mo has a tail"
+            },
+            {
+              "id": "b",
+              "label": "Mo is black"
+            },
+            {
+              "id": "c",
+              "label": "Mo likes fish"
+            }
+          ]
+        },
+        {
+          "id": "lg2-2",
+          "prompt": "Ana is taller than Ben. Ben is taller than Cy. What must be true?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Cy is taller than Ana"
+            },
+            {
+              "id": "b",
+              "label": "Ben is the tallest"
+            },
+            {
+              "id": "c",
+              "label": "Ana is taller than Cy"
+            }
+          ]
+        },
+        {
+          "id": "lg2-3",
+          "prompt": "The shop is closed on Sundays. Today the shop is open. What must be true?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Today is Monday"
+            },
+            {
+              "id": "b",
+              "label": "Today is not Sunday"
+            },
+            {
+              "id": "c",
+              "label": "The shop is busy"
+            }
+          ]
+        },
+        {
+          "id": "lg2-4",
+          "prompt": "When it rains, the grass gets wet. It rained today. What must be true?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "The grass got wet"
+            },
+            {
+              "id": "b",
+              "label": "It will rain tomorrow"
+            },
+            {
+              "id": "c",
+              "label": "The grass is long"
+            }
+          ]
+        },
+        {
+          "id": "lg2-5",
+          "prompt": "Every box in the room is red. This box is blue. What must be true?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "This box is empty"
+            },
+            {
+              "id": "b",
+              "label": "Some boxes in the room are blue"
+            },
+            {
+              "id": "c",
+              "label": "This box is not in the room"
+            }
+          ]
+        },
+        {
+          "id": "lg2-6",
+          "prompt": "Sam has more coins than Lee. Lee has 5 coins. What must be true?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Sam has 6 coins"
+            },
+            {
+              "id": "b",
+              "label": "Sam has more than 5 coins"
+            },
+            {
+              "id": "c",
+              "label": "Lee has no coins"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-logic-3",
+      "skill": "logic",
+      "step": "Find the mistake",
+      "difficulty": "hard",
+      "cards": [
+        {
+          "id": "lg3-1",
+          "prompt": "All birds have wings. A bat has wings. So a bat is a bird. Where is the mistake?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Other animals can have wings too"
+            },
+            {
+              "id": "b",
+              "label": "Bats do not have wings"
+            },
+            {
+              "id": "c",
+              "label": "There is no mistake"
+            }
+          ]
+        },
+        {
+          "id": "lg3-2",
+          "prompt": "2, 4, 6, 9, 10. Which number breaks the pattern?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "4"
+            },
+            {
+              "id": "b",
+              "label": "9"
+            },
+            {
+              "id": "c",
+              "label": "10"
+            }
+          ]
+        },
+        {
+          "id": "lg3-3",
+          "prompt": "Rain makes the street wet. The street is wet. So it must have rained. Where is the mistake?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Rain does not make streets wet"
+            },
+            {
+              "id": "b",
+              "label": "There is no mistake"
+            },
+            {
+              "id": "c",
+              "label": "The street can get wet another way"
+            }
+          ]
+        },
+        {
+          "id": "lg3-4",
+          "prompt": "Tom is older than Jo. Jo is older than Kim. So Kim is older than Tom. Where is the mistake?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Kim is the youngest, so Tom is older than Kim"
+            },
+            {
+              "id": "b",
+              "label": "Jo is the oldest"
+            },
+            {
+              "id": "c",
+              "label": "There is no mistake"
+            }
+          ]
+        },
+        {
+          "id": "lg3-5",
+          "prompt": "5, 10, 15, 21, 25. Which number breaks the pattern?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "15"
+            },
+            {
+              "id": "b",
+              "label": "21"
+            },
+            {
+              "id": "c",
+              "label": "25"
+            }
+          ]
+        },
+        {
+          "id": "lg3-6",
+          "prompt": "Each time I wear my red hat, my team wins. So my hat makes them win. Where is the mistake?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Blue hats are the lucky ones"
+            },
+            {
+              "id": "b",
+              "label": "There is no mistake"
+            },
+            {
+              "id": "c",
+              "label": "Two things can happen together by chance"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-planning-1",
+      "skill": "planning",
+      "step": "Order the steps",
+      "difficulty": "easy",
+      "cards": [
+        {
+          "id": "pl1-1",
+          "prompt": "You want to make toast. What comes first?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Put the bread in the toaster"
+            },
+            {
+              "id": "b",
+              "label": "Spread the butter"
+            },
+            {
+              "id": "c",
+              "label": "Eat the toast"
+            }
+          ]
+        },
+        {
+          "id": "pl1-2",
+          "prompt": "You want to mail a letter. What comes last?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Write the letter"
+            },
+            {
+              "id": "b",
+              "label": "Put on the stamp"
+            },
+            {
+              "id": "c",
+              "label": "Put it in the mailbox"
+            }
+          ]
+        },
+        {
+          "id": "pl1-3",
+          "prompt": "You want to plant a seed. What comes first?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Water the seed"
+            },
+            {
+              "id": "b",
+              "label": "Dig a hole"
+            },
+            {
+              "id": "c",
+              "label": "Wait for it to grow"
+            }
+          ]
+        },
+        {
+          "id": "pl1-4",
+          "prompt": "You want to paint a wall. What comes first?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Paint the wall"
+            },
+            {
+              "id": "b",
+              "label": "Cover the floor"
+            },
+            {
+              "id": "c",
+              "label": "Wash the brush"
+            }
+          ]
+        },
+        {
+          "id": "pl1-5",
+          "prompt": "You are packing for a trip. What comes first?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Make a list of what to bring"
+            },
+            {
+              "id": "b",
+              "label": "Close the bag"
+            },
+            {
+              "id": "c",
+              "label": "Carry the bag to the car"
+            }
+          ]
+        },
+        {
+          "id": "pl1-6",
+          "prompt": "You want to bake a cake. What comes last?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Mix the batter"
+            },
+            {
+              "id": "b",
+              "label": "Heat the oven"
+            },
+            {
+              "id": "c",
+              "label": "Let the cake cool"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-planning-2",
+      "skill": "planning",
+      "step": "Find the slow step",
+      "difficulty": "medium",
+      "cards": [
+        {
+          "id": "pl2-1",
+          "prompt": "Dinner: wash the rice, 2 minutes. Cook the rice, 20 minutes. Set the table, 3 minutes. Which step takes the most time?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Wash the rice"
+            },
+            {
+              "id": "b",
+              "label": "Cook the rice"
+            },
+            {
+              "id": "c",
+              "label": "Set the table"
+            }
+          ]
+        },
+        {
+          "id": "pl2-2",
+          "prompt": "Three people pass boxes down a line. Ana passes 10 a minute. Ben passes 4 a minute. Cy passes 9 a minute. Who slows the line down?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Ana"
+            },
+            {
+              "id": "b",
+              "label": "Ben"
+            },
+            {
+              "id": "c",
+              "label": "Cy"
+            }
+          ]
+        },
+        {
+          "id": "pl2-3",
+          "prompt": "A trip: walk to the bus, 5 minutes. Wait for the bus, 15 minutes. Ride the bus, 10 minutes. Which part is the longest?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "The walk"
+            },
+            {
+              "id": "b",
+              "label": "The ride"
+            },
+            {
+              "id": "c",
+              "label": "The wait"
+            }
+          ]
+        },
+        {
+          "id": "pl2-4",
+          "prompt": "Dinner needs a soup that cooks for 40 minutes and a salad that takes 5 minutes. You want to eat soon. What do you start first?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "The soup"
+            },
+            {
+              "id": "b",
+              "label": "The salad"
+            },
+            {
+              "id": "c",
+              "label": "It does not matter"
+            }
+          ]
+        },
+        {
+          "id": "pl2-5",
+          "prompt": "A shop has one worker at the door and three at the tills. A long line forms at the door. Where should one more worker go?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "The door"
+            },
+            {
+              "id": "b",
+              "label": "The tills"
+            },
+            {
+              "id": "c",
+              "label": "The back room"
+            }
+          ]
+        },
+        {
+          "id": "pl2-6",
+          "prompt": "Laundry: wash, 30 minutes. Dry, 60 minutes. Fold, 10 minutes. Which step should you speed up to save the most time?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Wash"
+            },
+            {
+              "id": "b",
+              "label": "Fold"
+            },
+            {
+              "id": "c",
+              "label": "Dry"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-planning-3",
+      "skill": "planning",
+      "step": "Plan for a surprise",
+      "difficulty": "hard",
+      "cards": [
+        {
+          "id": "pl3-1",
+          "prompt": "You plan a picnic. It may rain. What is the best plan?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Pick a spot with a roof close by"
+            },
+            {
+              "id": "b",
+              "label": "Hope it stays dry"
+            },
+            {
+              "id": "c",
+              "label": "Stay home, just in case"
+            }
+          ]
+        },
+        {
+          "id": "pl3-2",
+          "prompt": "Your bus comes once an hour. You must not be late. What is the best plan?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Take the last bus that could still make it"
+            },
+            {
+              "id": "b",
+              "label": "Take the bus before the one you need"
+            },
+            {
+              "id": "c",
+              "label": "Run if you miss the bus"
+            }
+          ]
+        },
+        {
+          "id": "pl3-3",
+          "prompt": "You will bake a cake for a party. You have never made this cake. What is the best plan?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Make it for the first time on the day"
+            },
+            {
+              "id": "b",
+              "label": "Bake two new cakes on the day"
+            },
+            {
+              "id": "c",
+              "label": "Try the cake once before the party"
+            }
+          ]
+        },
+        {
+          "id": "pl3-4",
+          "prompt": "You carry the only key to the house. You might lose it. What is the best plan?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Leave a second key with someone you trust"
+            },
+            {
+              "id": "b",
+              "label": "Hold the key tighter"
+            },
+            {
+              "id": "c",
+              "label": "Leave the door open"
+            }
+          ]
+        },
+        {
+          "id": "pl3-5",
+          "prompt": "Your work is saved on one computer. It might break. What is the best plan?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Work faster"
+            },
+            {
+              "id": "b",
+              "label": "Keep a copy in a second place"
+            },
+            {
+              "id": "c",
+              "label": "Turn the computer off at night"
+            }
+          ]
+        },
+        {
+          "id": "pl3-6",
+          "prompt": "You need 10 chairs for a show. A chair or two may break. What is the best plan?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Bring 8 chairs"
+            },
+            {
+              "id": "b",
+              "label": "Bring 10 chairs"
+            },
+            {
+              "id": "c",
+              "label": "Bring 12 chairs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-open-thinking-1",
+      "skill": "open-thinking",
+      "step": "Which one belongs",
+      "difficulty": "easy",
+      "cards": [
+        {
+          "id": "ot1-1",
+          "prompt": "Apple, pear, plum. Which one belongs with them?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Carrot"
+            },
+            {
+              "id": "b",
+              "label": "Peach"
+            },
+            {
+              "id": "c",
+              "label": "Bread"
+            }
+          ]
+        },
+        {
+          "id": "ot1-2",
+          "prompt": "Circle, square, triangle. Which one belongs with them?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Star"
+            },
+            {
+              "id": "b",
+              "label": "Red"
+            },
+            {
+              "id": "c",
+              "label": "Big"
+            }
+          ]
+        },
+        {
+          "id": "ot1-3",
+          "prompt": "Car, bus, train. Which one belongs with them?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Road"
+            },
+            {
+              "id": "b",
+              "label": "Driver"
+            },
+            {
+              "id": "c",
+              "label": "Boat"
+            }
+          ]
+        },
+        {
+          "id": "ot1-4",
+          "prompt": "Hammer, saw, drill. Which one belongs with them?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Nail"
+            },
+            {
+              "id": "b",
+              "label": "Wrench"
+            },
+            {
+              "id": "c",
+              "label": "Wood"
+            }
+          ]
+        },
+        {
+          "id": "ot1-5",
+          "prompt": "Rain, snow, wind. Which one belongs with them?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Fog"
+            },
+            {
+              "id": "b",
+              "label": "Umbrella"
+            },
+            {
+              "id": "c",
+              "label": "Coat"
+            }
+          ]
+        },
+        {
+          "id": "ot1-6",
+          "prompt": "Monday, Friday, Sunday. Which one belongs with them?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "March"
+            },
+            {
+              "id": "b",
+              "label": "Morning"
+            },
+            {
+              "id": "c",
+              "label": "Tuesday"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-reading-people-2",
+      "skill": "reading-people",
+      "step": "Hear the feeling",
+      "difficulty": "medium",
+      "cards": [
+        {
+          "id": "rp2-1",
+          "prompt": "A friend says: I studied all week and still failed. What do they feel most?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Let down"
+            },
+            {
+              "id": "b",
+              "label": "Proud"
+            },
+            {
+              "id": "c",
+              "label": "Bored"
+            }
+          ]
+        },
+        {
+          "id": "rp2-2",
+          "prompt": "A friend says: I cannot wait for Saturday! What do they feel most?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Worried"
+            },
+            {
+              "id": "b",
+              "label": "Excited"
+            },
+            {
+              "id": "c",
+              "label": "Tired"
+            }
+          ]
+        },
+        {
+          "id": "rp2-3",
+          "prompt": "A friend says: Fine. Do what you want. Then they look away. What do they feel most?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Happy"
+            },
+            {
+              "id": "b",
+              "label": "Calm"
+            },
+            {
+              "id": "c",
+              "label": "Hurt"
+            }
+          ]
+        },
+        {
+          "id": "rp2-4",
+          "prompt": "A friend says: My talk is tomorrow and my hands are shaking. What do they feel most?",
+          "right": "a",
+          "options": [
+            {
+              "id": "a",
+              "label": "Nervous"
+            },
+            {
+              "id": "b",
+              "label": "Angry"
+            },
+            {
+              "id": "c",
+              "label": "Bored"
+            }
+          ]
+        },
+        {
+          "id": "rp2-5",
+          "prompt": "A friend says, with a big smile: I got the job! What do they feel most?",
+          "right": "b",
+          "options": [
+            {
+              "id": "a",
+              "label": "Jealous"
+            },
+            {
+              "id": "b",
+              "label": "Proud and happy"
+            },
+            {
+              "id": "c",
+              "label": "Afraid"
+            }
+          ]
+        },
+        {
+          "id": "rp2-6",
+          "prompt": "A friend says: Everyone was invited but me. What do they feel most?",
+          "right": "c",
+          "options": [
+            {
+              "id": "a",
+              "label": "Excited"
+            },
+            {
+              "id": "b",
+              "label": "Thankful"
+            },
+            {
+              "id": "c",
+              "label": "Left out"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "made-reflex-1",
+      "skill": "reflex",
+      "step": "Tap when you see it",
+      "kind": "reflex",
+      "difficulty": "easy",
+      "cards": [
+        {
+          "id": "rx1-1",
+          "prompt": "Tap the ring as soon as it fills. You have 0.8 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "800"
+          }
+        },
+        {
+          "id": "rx1-2",
+          "prompt": "Tap the ring as soon as it fills. You have 0.7 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "700"
+          }
+        },
+        {
+          "id": "rx1-3",
+          "prompt": "Tap the ring as soon as it fills. You have 0.65 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "650"
+          }
+        },
+        {
+          "id": "rx1-4",
+          "prompt": "Tap the ring as soon as it fills. You have 0.6 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "600"
+          }
+        },
+        {
+          "id": "rx1-5",
+          "prompt": "Tap the ring as soon as it fills. You have 0.55 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "550"
+          }
+        },
+        {
+          "id": "rx1-6",
+          "prompt": "Tap the ring as soon as it fills. You have 0.5 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "go"
+            ],
+            "to_move": "500"
+          }
+        }
+      ]
+    },
+    {
+      "id": "made-reflex-2",
+      "skill": "reflex",
+      "step": "Tap the right one",
+      "kind": "reflex",
+      "difficulty": "medium",
+      "cards": [
+        {
+          "id": "rx2-1",
+          "prompt": "Two rings. Tap the one that fills. You have 0.9 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "900"
+          }
+        },
+        {
+          "id": "rx2-2",
+          "prompt": "Two rings. Tap the one that fills. You have 0.8 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "800"
+          }
+        },
+        {
+          "id": "rx2-3",
+          "prompt": "Two rings. Tap the one that fills. You have 0.75 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "750"
+          }
+        },
+        {
+          "id": "rx2-4",
+          "prompt": "Two rings. Tap the one that fills. You have 0.7 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "700"
+          }
+        },
+        {
+          "id": "rx2-5",
+          "prompt": "Two rings. Tap the one that fills. You have 0.65 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "650"
+          }
+        },
+        {
+          "id": "rx2-6",
+          "prompt": "Two rings. Tap the one that fills. You have 0.6 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "side"
+            ],
+            "to_move": "600"
+          }
+        }
+      ]
+    },
+    {
+      "id": "made-reflex-3",
+      "skill": "reflex",
+      "step": "Wait, then tap",
+      "kind": "reflex",
+      "difficulty": "hard",
+      "cards": [
+        {
+          "id": "rx3-1",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.9 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "900"
+          }
+        },
+        {
+          "id": "rx3-2",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.8 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "800"
+          }
+        },
+        {
+          "id": "rx3-3",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.75 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "750"
+          }
+        },
+        {
+          "id": "rx3-4",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.7 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "700"
+          }
+        },
+        {
+          "id": "rx3-5",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.65 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "650"
+          }
+        },
+        {
+          "id": "rx3-6",
+          "prompt": "An empty ring may flash first. Do not tap it. Tap only the full ring. You have 0.6 seconds.",
+          "board": {
+            "game": "reflex",
+            "rows": [
+              "wait"
+            ],
+            "to_move": "600"
+          }
+        }
+      ]
+    }
+  ]
+}

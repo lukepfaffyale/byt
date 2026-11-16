@@ -1,0 +1,120 @@
+{
+  "version": "0.8",
+  "about": "The one map of BYT. It says what a tap means (bins, axes, styles, faculties), where it leads (skills), who takes part (seats), how value moves (incomes), which AI agents work between the seats and what each may touch (agents), and the numbers every rule runs on (rules). Code reads the content parts from this file, and a test checks the agents and the rule numbers against the code. Anyone publishing a gate, a skill, a job or a question uses these ids, or adds to this file first: the server refuses to start on a tag or id it does not know. The brain regions are loose textbook associations. Nothing here measures a brain.",
+  "bins": [
+    {"id": "preference", "name": "Preference", "about": "Pick one. There is no wrong answer.", "kinds": ["preference", "feedback"]},
+    {"id": "games", "name": "Games", "about": "Find the one move that wins.", "kinds": ["strategy", "pattern", "reflex"]},
+    {"id": "skills", "name": "Skills", "about": "Each one has a right answer. They get harder.", "kinds": ["logic"]},
+    {"id": "twin", "name": "Twin battles", "about": "Your twin guesses your picks first.", "kinds": ["battle"]}
+  ],
+  "axes": [
+    {"name": "Energy", "first": {"letter": "E", "trait": "social"}, "second": {"letter": "I", "trait": "solo"}},
+    {"name": "Facts and ideas", "first": {"letter": "S", "trait": "facts"}, "second": {"letter": "N", "trait": "ideas"}},
+    {"name": "Head and heart", "first": {"letter": "T", "trait": "head"}, "second": {"letter": "F", "trait": "heart"}},
+    {"name": "Plans", "first": {"letter": "J", "trait": "plan"}, "second": {"letter": "P", "trait": "spontaneous"}}
+  ],
+  "styles": [
+    {"id": "analyse", "name": "Analyze", "traits": ["facts", "head"], "about": "You look for proof first. You ask what is true and what the numbers say.", "strength": "You find the mistake in a plan before it costs anything.", "watch": "Waiting too long to be sure, and forgetting how a choice feels to other people.", "skills": ["logic", "strategy"]},
+    {"id": "organise", "name": "Organize", "traits": ["plan", "loyal"], "about": "You turn a goal into steps. Then you finish the steps.", "strength": "You finish what you start, and you finish on time.", "watch": "Keeping the old plan after the facts have changed.", "skills": ["planning", "strategy"]},
+    {"id": "explore", "name": "Explore", "traits": ["ideas", "novelty", "spontaneous"], "about": "You look for the choice that no one listed. You see how different things connect.", "strength": "You see what something could become before there is proof.", "watch": "Starting more things than you finish.", "skills": ["open-thinking"]},
+    {"id": "connect", "name": "Connect", "traits": ["heart", "social"], "about": "You notice how people feel, and you choose with people in mind.", "strength": "People follow you because they feel heard.", "watch": "Making a message so gentle that it no longer says what it must say.", "skills": ["reading-people", "voice"]}
+  ],
+  "faculties": [
+    {"id": "executive", "color": "#8fd0ff", "name": "Planning and self-control", "region": "Front of the brain (prefrontal cortex)", "traits": ["plan", "save", "quality"], "kinds": ["strategy"], "about": "You keep a goal in mind. You wait for the better choice. You think one step ahead.", "fact": "This part of the brain is one of the last to finish growing. It keeps growing after age 20.", "skills": ["planning", "strategy"]},
+    {"id": "reasoning", "color": "#b9a2ff", "name": "Working things out", "region": "Front and side thinking areas", "traits": ["facts", "head", "blunt", "dry"], "kinds": ["logic", "pattern"], "about": "You start from what you know, and you work toward what must be true.", "fact": "Your mind can hold only about 4 things at one time. Writing a problem down helps you think.", "skills": ["logic"]},
+    {"id": "reward", "color": "#ff9fb8", "name": "Wanting new things", "region": "Reward system (striatum)", "traits": ["spontaneous", "novelty", "splurge", "bold", "variety", "competitive"], "kinds": [], "about": "You feel a pull toward what is new, what is bold, or what is a treat.", "fact": "A brain chemical called dopamine is strongest when a reward is better than you expected. Surprise is the signal.", "skills": ["open-thinking"]},
+    {"id": "social", "color": "#8fe6c0", "name": "Understanding people", "region": "Social areas of the brain", "traits": ["social", "heart", "warm", "look"], "kinds": [], "about": "You work out what another person thinks, feels and wants.", "fact": "By about age 4, most children understand that another person can believe something that is not true.", "skills": ["reading-people", "voice"]},
+    {"id": "imagination", "color": "#6fe0e0", "name": "Imagination", "region": "Resting network (default mode network)", "traits": ["ideas", "experiences", "solo"], "kinds": [], "about": "You picture things that are not in front of you, like the future or a different choice.", "fact": "This network is most active when you are not doing a task, for example when you daydream or remember.", "skills": ["open-thinking"]},
+    {"id": "habit", "color": "#ffb070", "name": "Habits", "region": "Deep brain areas (basal ganglia)", "traits": ["loyal", "classic", "comfort", "things"], "kinds": [], "about": "You stay with what has worked, and you like what you know well.", "fact": "When something becomes a habit, the brain does it with very little effort. That is why habits are easy to keep and hard to stop.", "skills": ["planning"]},
+    {"id": "motor", "color": "#e6dcff", "name": "Reaction speed", "region": "Movement areas (motor cortex and cerebellum)", "traits": [], "kinds": ["reflex"], "about": "How fast you move after you see a signal.", "fact": "A healthy adult needs about a quarter of a second to react to something they see.", "skills": ["reflex"]}
+  ],
+  "skills": [
+    {"id": "strategy", "name": "Strategy", "cert": "Strategy", "about": "Find the winning move. Then find it faster.", "steps": [{"name": "One move to win", "gate": "strategy-easy"}, {"name": "One move to win, harder", "gate": "strategy-medium"}, {"name": "Four in a row", "gate": "strategy-hard"}, {"name": "Two moves ahead"}, {"name": "Chess: win in one move"}]},
+    {"id": "logic", "name": "Logic", "cert": "Logic", "about": "Finish the pattern. Find what must be true.", "steps": [{"name": "Finish the pattern"}, {"name": "What must be true"}, {"name": "Find the mistake"}]},
+    {"id": "planning", "name": "Planning", "cert": "Planning", "about": "Put the steps in the best order.", "steps": [{"name": "Order the steps"}, {"name": "Find the slow step"}, {"name": "Plan for a surprise"}]},
+    {"id": "open-thinking", "name": "New ideas", "cert": "Open thinking", "about": "Find more choices, and better ones.", "steps": [{"name": "Which one belongs"}, {"name": "Many uses for one thing"}, {"name": "Connect two different ideas"}]},
+    {"id": "reading-people", "name": "Understanding people", "cert": "Reading people", "about": "Guess what another person will pick, and why.", "steps": [{"name": "Guess a friend's pick"}, {"name": "Hear the feeling"}, {"name": "Choose the gift"}]},
+    {"id": "voice", "name": "Your voice", "cert": "Voice", "about": "Say it the way you would say it.", "steps": [{"name": "Choose your words"}, {"name": "Fit the moment"}, {"name": "Your twin speaks like you"}]},
+    {"id": "reflex", "name": "Quick taps", "cert": "Reflex", "about": "See the signal. Tap fast.", "steps": [{"name": "Tap when you see it"}, {"name": "Tap the right one"}, {"name": "Wait, then tap"}]}
+  ],
+  "seats": [
+    {"id": "player", "name": "Player", "gives": "Taps, and a yes or no on the twin's work", "gets": "A twin, certificates, work income, data income", "sees": "Everything stored about them, on screen", "never_sees": "Another player's answers, beliefs or nickname", "built": true},
+    {"id": "agency", "name": "Agency", "gives": "Play credits for each twin that answers", "gets": "Counts for each answer across the twins that match", "sees": "Totals over 5 or more twins. One twin's nickname and answers only when that twin's owner turned one to one on and the agency paid the royalty", "never_sees": "A twin whose owner did not turn one to one on; which twin said what in a group", "built": true, "sphere": "One tight cluster of points for each group of twins it could reach (grouped by strongest thinking style), one for twins still forming, one for other agencies, one for creators. A group turns gold once the agency has asked it."},
+    {"id": "creator", "name": "Creator", "gives": "Play credits for each twin its crew asks; a fee to claim a skill step and a crew fee to build it", "gets": "Counts for a survey or a test across a group; a skill step it claims and builds by tapping cards from a pack; a royalty from the growth fund each time another player passes that step", "sees": "Totals over 5 or more twins. One twin's nickname and answers only when that twin's owner turned one to one on and the creator paid the royalty", "never_sees": "A twin whose owner did not turn one to one on; one player's progress", "built": true, "sphere": "One tight cluster for each group of players, grouped by the thinking style they most need to grow, plus other creators and agencies."}
+  ],
+  "incomes": [
+    {"id": "work", "name": "Work income", "who_answers": "The Worker agent (AI), or the practice twin when AI is not available", "human_check": "Always. Nothing is paid or counted until the player says the answer is right or corrects it", "paid_by": "The agency that posted the job, from credits it put on hold. The three starter jobs have made-up requesters", "decided_by": "Code in backend/work.py"},
+    {"id": "data", "name": "Data income", "who_answers": "Plain code from the player's pick counts. No AI, no tokens", "human_check": "None per question. The player turns the whole stream on or off; it is off until they turn it on", "paid_by": "The agency that asks", "decided_by": "Code in backend/market.py"},
+    {"id": "growth", "name": "Growth bonus", "who_answers": "No one. It is paid when a player passes a skill step", "human_check": "None needed. Code checks the step was passed", "paid_by": "The growth fund, which is filled by the extra that agencies pay for asking the same group again", "decided_by": "Code in backend/market.py and backend/main.py"},
+    {"id": "meet", "name": "One to one royalty", "who_answers": "Plain code from the player's pick counts. No AI, no tokens", "human_check": "None per meeting. The player turns one to one on or off; it is off until they turn it on", "paid_by": "The agency or creator that meets the twin", "decided_by": "Code in backend/market.py and backend/main.py"}
+  ],
+  "agents": [
+    {"id": "profiler", "serves": "player", "job": "Reads a player's picks and writes short beliefs about them", "tool": "get_picks", "reads": "The player's own picks that are not held back for a battle, and reviewed job answers", "never_reads": "Nickname, token, player id, held-back picks, what the player told the twin, any other player", "output": "Up to 8 beliefs, each with the number of picks behind it", "checked_by": "Prompt guard, length cap; then stored by code and shown to the player"},
+    {"id": "twin", "serves": "player", "job": "Guesses the player's picks on cards the player has not seen", "tool": "get_brief", "reads": "The beliefs and the cards to guess, without trait tags", "never_reads": "Nickname, token, player id, the raw picks, the right answers, any other player", "output": "One guess for each card, or no guess", "checked_by": "Each guess must be a real option of a real card; scored by code against the real picks"},
+    {"id": "worker", "serves": "player", "job": "Answers one job question as the player would, with a one-line reason", "tool": "get_job", "reads": "The beliefs and one question with its options, without trait tags", "never_reads": "Nickname, token, player id, the requester's name, any other player", "output": "One option, or no answer, and a reason of one sentence", "checked_by": "The option must exist; the reason passes the prompt guard; then the player approves or corrects it"},
+    {"id": "guide", "serves": "player", "job": "Answers one line the player said to their twin, and offers one move", "tool": "get_situation", "reads": "The beliefs, the player's progress and open work as counts, the list of moves, and the one line the player said", "never_reads": "Nickname, token, player id, any other player, anything the player said before", "output": "One or two sentences and at most one move", "checked_by": "The line passes the prompt guard before the run; the answer passes it after; the move must be on the list code gave; the line is not stored"}
+  ],
+  "rules": [
+    {"id": "model", "value": ["gpt-6-luna"], "where": "agent.ALLOWED_MODELS", "why": "The only model the course key may use"},
+    {"id": "requests_per_run", "value": 4, "where": "agent.LIMITS.request_limit", "why": "A normal run is 2"},
+    {"id": "tool_calls_per_run", "value": 3, "where": "agent.LIMITS.tool_calls_limit", "why": "A normal run is 1"},
+    {"id": "battle_min_cards", "value": 8, "where": "verifier.MIN_BATTLE_CARDS", "why": "Fewer cards is not enough proof"},
+    {"id": "certificate_min_share_right", "value": 0.6, "where": "verifier.MIN_TWIN_ACCURACY", "why": "Beating the crowd is not enough if the twin is still often wrong"},
+    {"id": "skill_pass_share", "value": 0.667, "where": "verifier.SKILL_PASS_SHARE", "why": "Two of three right"},
+    {"id": "cert_max_luck", "value": 0.02, "where": "verifier.MAX_LUCK", "why": "A skill certificate needs a score that guessing would reach at most 2 times in 100. A certificate is earned by play only: no payment, seat or sponsor can issue one"},
+    {"id": "agency_min_twins", "value": 5, "where": "market.MIN_TWINS", "why": "Below this a total could point to one person"},
+    {"id": "agency_min_picks", "value": 8, "where": "market.MIN_PICKS", "why": "A twin that knows too little is not asked"},
+    {"id": "agency_start_credits", "value": 500, "where": "market.START_BUDGET", "why": "Play money to try the seat"},
+    {"id": "usd_per_credit", "value": 0.01, "where": "market.USD_PER_CREDIT", "why": "One play credit stands for one cent when a wallet pays a token fee"},
+    {"id": "deposit_choices", "value": [100, 500, 1000], "where": "market.DEPOSIT_CHOICES", "why": "Fixed amounts, so no typed amount"},
+    {"id": "wallet_cap", "value": 100000, "where": "market.WALLET_CAP", "why": "A wallet cannot be filled without end"},
+    {"id": "agency_pay_choices", "value": [1, 2, 5], "where": "market.PAY_CHOICES", "why": "Fixed prices, so no typed amount"},
+    {"id": "free_share", "value": 0.5, "where": "market.FREE_SHARE", "why": "A free twin has no owner to pay, so it costs a share of the price. An agency can start cheap and broad"},
+    {"id": "tier_times", "value": {"blend": 1, "members": 2, "core": 3}, "where": "market.TIER_TIMES", "why": "Going deeper into a group reaches only members, then only members with a certificate, and each member is paid this many times the price. The deepest tier is one twin, at meet_price"},
+    {"id": "certified_pay_times", "value": 2, "where": "work.CERT_MULTIPLIER", "why": "A certificate must be worth something"},
+    {"id": "corrected_pay", "value": 5, "where": "work.TEACHING_PAY", "why": "A wrong answer still teaches the twin"},
+    {"id": "letter_min_picks", "value": 3, "where": "mirror.MIN_PICKS", "why": "Below this a letter stays open"},
+    {"id": "area_full_cards", "value": 30, "where": "mirror.FULL_EVIDENCE", "why": "Cards touching an area that fill its slice of the sphere"},
+    {"id": "repeat_step", "value": 0.5, "where": "market.REPEAT_STEP", "why": "Each earlier ask of the same group by the same agency adds this much to the price, so spending spreads out"},
+    {"id": "repeat_cap", "value": 3.0, "where": "market.REPEAT_CAP", "why": "The price never rises above this many times the first price"},
+    {"id": "fund_start", "value": 200, "where": "market.FUND_START", "why": "Play credits the growth fund starts with, so the first skill steps can be rewarded"},
+    {"id": "step_bonus", "value": 10, "where": "market.STEP_BONUS", "why": "Paid from the growth fund when a player passes a skill step"},
+    {"id": "together_full", "value": 4, "where": "market.TOGETHER_FULL", "why": "Connections with others at which a twin shows its full color"},
+    {"id": "active_window", "value": 14, "where": "market.ACTIVE_WINDOW", "why": "The days looked at when the game says how often a player played"},
+    {"id": "active_full_days", "value": 7, "where": "market.ACTIVE_FULL_DAYS", "why": "Played within this many days: the twin receives its full share of data income"},
+    {"id": "active_half_days", "value": 30, "where": "market.ACTIVE_HALF_DAYS", "why": "Played within this many days: half. Longer ago: a quarter"},
+    {"id": "creator_pay", "value": 1, "where": "market.CREATOR_PAY", "why": "What a creator pays each twin its crew asks in a group"},
+    {"id": "crew_fee", "value": 2, "where": "market.CREW_FEE", "why": "What a seat pays the game each time its crew goes out. The crew is plain code, so this is a flat fee, not a token fee"},
+    {"id": "claim_fee", "value": 25, "where": "market.CLAIM_FEE", "why": "What a creator pays the game to claim a waiting skill step"},
+    {"id": "meet_price", "value": 50, "where": "market.MEET_PRICE", "why": "The royalty for meeting one twin one to one. Large on purpose: seeing who a twin is costs far more than asking a group"},
+    {"id": "job_pay_choices", "value": [10, 20, 40], "where": "market.JOB_PAY_CHOICES", "why": "Fixed pay for one checked answer to a job an agency posts, so no typed amount. Far more than a group question, because the Worker agent answers and the owner checks it"},
+    {"id": "job_seats", "value": [5, 10, 25], "where": "market.JOB_SEATS", "why": "How many twins may take a posted job. Never fewer than 5"},
+    {"id": "reach_share", "value": 0.1, "where": "market.REACH_SHARE", "why": "On top of the pay for a checked job answer, an agency pays this share to the creators whose skill steps the twin's owner passed. Creators win when their players are the ones agencies reach"},
+    {"id": "sponsor_budgets", "value": [50, 100, 200], "where": "market.SPONSOR_BUDGETS", "why": "Fixed amounts an agency may put behind a skill, so no typed amount"},
+    {"id": "sponsor_pay", "value": [5, 5], "where": "market.SPONSOR_PLAYER, market.SPONSOR_MAKER", "why": "What a sponsorship pays the player and the creator each time a built step of that skill is passed"},
+    {"id": "auto_choices", "value": [0, 1, 3], "where": "market.AUTO_CHOICES", "why": "Jobs a twin may start by itself in one day. Its owner still checks every answer before anything is paid"},
+    {"id": "step_cards", "value": 4, "where": "market.STEP_CARDS", "why": "Cards a creator taps from a pack to build a skill step. Three of four right passes it"},
+    {"id": "step_royalty", "value": 3, "where": "market.STEP_ROYALTY", "why": "What the growth fund pays a creator each time another player passes a step it built. Smaller than the player's bonus, and never paid for passing its own step"}
+  ],
+  "groups": [
+    {"id": "analyse", "color": "#b9a2ff"},
+    {"id": "organise", "color": "#8fd0ff"},
+    {"id": "explore", "color": "#ff9fb8"},
+    {"id": "connect", "color": "#8fe6c0"},
+    {"id": "forming", "name": "Still forming", "color": "#e6dcff"},
+    {"id": "agencies", "name": "Other agencies", "color": "#ffb070"},
+    {"id": "creators", "name": "Creators", "color": "#6fe0e0"}
+  ],
+  "principles": [
+    {"id": "worth_is_not_money", "rule": "The size and weight of a point come from progress and from how many people it stands for, never from credits held or spent.", "where": "main.seat_groups: a point's size is the twin's progress"},
+    {"id": "same_pay_for_everyone", "rule": "An agency is charged the same price for every twin in a group. A twin's share of that price depends only on how lately its owner played, never on money. A group cannot be bought by one large payer.", "where": "market.PAY_CHOICES, market.activity_share, db.run_campaign"},
+    {"id": "balance_is_shown", "rule": "Each agency sees a balance score: how evenly it has reached across the groups. Reaching only one group scores low.", "where": "market.balance"},
+    {"id": "pay_follows_progress", "rule": "What raises a twin's pay is proof of progress (a certificate), which is earned by play and checked by code.", "where": "work.CERT_MULTIPLIER"},
+    {"id": "groups_not_people", "rule": "A seat can look at a group of 5 or more, never at one person. A smaller group is hidden.", "where": "market.MIN_TWINS"},
+    {"id": "asking_again_costs_more", "rule": "When an agency asks the same group again, the price rises each time. The twins are still paid the same; the extra goes to the growth fund.", "where": "market.price_times, main.run_campaign"},
+    {"id": "money_flows_to_progress", "rule": "The growth fund pays a bonus to a player who passes a skill step, and a smaller royalty to the creator who built that step. The player is paid first. The fund can only pay what it holds.", "where": "market.STEP_BONUS, market.STEP_ROYALTY, main.respond, db.pay_step_bonus"},
+    {"id": "alone_monochrome_together_technicolor", "rule": "A twin that has only played alone is black and white. Color comes from connecting with others: work checked, questions answered, the choice to earn. Groups of people are always in color.", "where": "market.together, frontend TwinForm"},
+    {"id": "living_owners", "rule": "The game keeps one row for each day a player used it. Agencies and creators see how many twins in a group played lately, as a count. A twin whose owner has not played lately receives less data income, and the part held back goes to the growth fund.", "where": "db.mark_active, market.activity_share, main.seat_sphere"}
+  ],
+  "unmapped": ["mixed"]
+}

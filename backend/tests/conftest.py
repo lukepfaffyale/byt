@@ -1,0 +1,43 @@
+"""Tests run against a temporary database and temporary audit files, with no key and no network."""
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_TMP = Path(tempfile.mkdtemp())
+os.environ["DATABASE_URL"] = "sqlite:///" + (_TMP / "test.db").as_posix()
+os.environ["PORTKEY_API_KEY"] = ""  # set before main loads .env, so the real key is never picked up
+
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+import audit  # noqa: E402
+import prompt_guard  # noqa: E402
+
+audit.AUDIT_PATH = _TMP / "audit.jsonl"
+audit.TRAIL_PATH = _TMP / "audit_trail.json"
+prompt_guard.FLAGS_PATH = _TMP / "prompt_injection_flags.json"
+
+import agent  # noqa: E402
+import main  # noqa: E402
+
+
+@pytest.fixture()
+def client():
+    main._hits.clear()
+    agent.MODEL_OVERRIDE = None
+    with TestClient(main.app) as c:
+        yield c
+    agent.MODEL_OVERRIDE = None
+
+
+def signup(client, nickname="Tester"):
+    r = client.post("/players", json={"nickname": nickname, "consent": True, "adult": True})
+    assert r.status_code == 201
+    return {"Authorization": f"Bearer {r.json()['token']}"}
+
+
+@pytest.fixture()
+def auth(client):
+    return signup(client)

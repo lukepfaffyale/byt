@@ -1,0 +1,6 @@
+{
+  "gate": {"id": "feedback-b", "title": "How was it?", "kind": "feedback", "deck": "tone"},
+  "cards": [
+    {"id": "fb-b1", "prompt": "You played four in a row. How was it?", "options": [{"id": "a", "label": "I saw the answer at once.", "trait": "blunt"}, {"id": "b", "label": "I loved that one!", "trait": "warm"}, {"id": "c", "label": "My eyes are tired.", "trait": "dry"}, {"id": "d", "label": "Again, but harder.", "trait": "competitive"}]}
+  ]
+}

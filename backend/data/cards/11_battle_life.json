@@ -1,0 +1,15 @@
+{
+  "gate": {"id": "battle-life", "title": "Twin battle: weekend and food", "kind": "battle", "deck": "Weekend and food"},
+  "cards": [
+    {"id": "bl-01", "prompt": "What do you do on Friday night?", "options": [{"id": "a", "label": "I go out with a group", "trait": "social"}, {"id": "b", "label": "I stay home", "trait": "solo"}]},
+    {"id": "bl-02", "prompt": "You have a free Saturday. What is it like?", "options": [{"id": "a", "label": "I already have a plan", "trait": "plan"}, {"id": "b", "label": "I see what happens", "trait": "spontaneous"}]},
+    {"id": "bl-03", "prompt": "You love a restaurant. Where do you eat next time?", "options": [{"id": "a", "label": "The same restaurant", "trait": "loyal"}, {"id": "b", "label": "The new place next to it", "trait": "novelty"}]},
+    {"id": "bl-04", "prompt": "Which snacks do you take on a long car ride?", "options": [{"id": "a", "label": "The same ones every time", "trait": "loyal"}, {"id": "b", "label": "Something I have never tried", "trait": "novelty"}]},
+    {"id": "bl-05", "prompt": "How do you like a late breakfast?", "options": [{"id": "a", "label": "At a big table with friends", "trait": "social"}, {"id": "b", "label": "Alone with a book", "trait": "solo"}]},
+    {"id": "bl-06", "prompt": "How do you use a recipe?", "options": [{"id": "a", "label": "I follow it exactly", "trait": "plan"}, {"id": "b", "label": "I change it as I go", "trait": "spontaneous"}]},
+    {"id": "bl-07", "prompt": "You cannot read the menu. What do you do?", "options": [{"id": "a", "label": "I point at something and try it", "trait": "bold"}, {"id": "b", "label": "I ask for something I know", "trait": "classic"}]},
+    {"id": "bl-08", "prompt": "What is Sunday for?", "options": [{"id": "a", "label": "Resting", "trait": "comfort"}, {"id": "b", "label": "Getting ready for the week", "trait": "plan"}]},
+    {"id": "bl-09", "prompt": "A great restaurant offers a long meal of many small dishes at a high price. What do you think?", "options": [{"id": "a", "label": "It is worth the price", "trait": "splurge"}, {"id": "b", "label": "It costs too much", "trait": "save"}]},
+    {"id": "bl-10", "prompt": "How do you eat on vacation?", "options": [{"id": "a", "label": "At one famous restaurant", "trait": "quality"}, {"id": "b", "label": "At 10 small street stands", "trait": "variety"}]}
+  ]
+}
