@@ -78,7 +78,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
         setQuestion(null)
         const c = a.campaigns[0]
         if (c) setReplay(groupScript({ boss: a.name, what: c.question, group: c.audience, twins: c.twins, samples: c.sample_twins,
-          spent: c.spent, fee: 0, extra: c.extra, min: a.min_twins }))
+          spent: c.spent, fee: 0, extra: c.extra, min: a.min_twins, split: c.split }))
         else onView('results')
       })
       .catch(fail)

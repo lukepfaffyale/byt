@@ -1362,6 +1362,9 @@ class Commons(Strict):
     beliefs: int  # beliefs Syms hold now
     known: int  # taps, checks, told and lessons together
     known_mine: int  # the reader's part of that
+    taps_mine: int = 0  # 0 means the reader has not started yet
+    has_agency: bool = False  # the reader opened an agency seat
+    has_creator: bool = False  # the reader opened a creator seat
     happenings: list[Happening] = []
 
 

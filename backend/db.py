@@ -1195,7 +1195,9 @@ def commons(player_id: str, most: int = 8) -> dict:
             "creators": sum(1 for kind, _ in orgs.values() if kind == "creator"),
             "taps": tally["taps"], "checks": tally["checks"], "told": tally["told"], "lessons": tally["lessons"],
             "proofs": count(Cert, real(Cert.player_id)), "beliefs": count(Tendency, real(Tendency.player_id)),
-            "known": known, "known_mine": mine, "happenings": seen[:most],
+            "known": known, "known_mine": mine, "happenings": seen[:most], "taps_mine": tally["taps_mine"],
+            "has_agency": any(kind == "agency" and owner == player_id for kind, owner in orgs.values()),
+            "has_creator": any(kind == "creator" and owner == player_id for kind, owner in orgs.values()),
         }
 
 

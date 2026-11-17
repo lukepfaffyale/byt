@@ -919,3 +919,231 @@ header nav:not(.seats) .link[aria-current='page']::after { content: ''; position
 @media (prefers-reduced-motion: reduce) { .ripple-flow { animation: none; } }
 .commons .ledger-what { white-space: normal; line-height: 1.3; font-size: 0.9rem; }
 .commons .seg { margin: 8px 0 4px; }
+
+/* ---------- Everyone stands alone: the map on one side, the reading on the other ---------- */
+@media (min-width: 900px) {
+  main.solo.wide { max-width: 72rem; width: 100%; }
+  .commons-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 3rem; align-content: center; align-items: start; }
+  .commons-grid > * { grid-column: 2; }
+  .commons-grid > .commons-view, .commons-grid > .commons-map { grid-column: 1; grid-row: 1 / span 6; align-self: center; }
+  .commons-grid .commons-map { max-width: none; max-height: 62vh; }
+  .commons-top { margin-bottom: 10px; }
+  :root .commons .commons-top h1 { font-size: 2rem; }
+}
+
+/* ---------- the lead: what my Sym asks for next, and what each role brings ---------- */
+.commons-lead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; margin: 0 0 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--glass); }
+.commons-lead .line-top { grid-column: 1 / -1; }
+.commons-lead p { margin: 0; font-size: 1rem; font-weight: 300; line-height: 1.35; }
+.commons-lead .primary { max-width: 16rem; }
+.roles { list-style: none; margin: 0; padding: 0; }
+.role { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: 0 12px; align-items: center; width: 100%; min-height: 44px; padding: 8px 2px; background: none; border: none; border-bottom: 1px solid var(--hair); border-radius: 0; color: var(--text); text-align: left; }
+.role:hover { background: var(--glass-strong); }
+.role-n { grid-row: 1 / span 2; font-size: 1.5rem; font-weight: 200; text-align: center; font-variant-numeric: tabular-nums; }
+.role-name { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
+.role-what { grid-column: 2; font-size: 0.86rem; font-weight: 300; line-height: 1.3; }
+.role-go { grid-column: 3; grid-row: 1 / span 2; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+.roles-why { margin: 8px 0 0; font-size: 0.78rem; line-height: 1.35; text-align: left; }
+@media (max-width: 640px) { .commons-lead { grid-template-columns: 1fr; } .commons-lead .primary { max-width: none; } }
+
+/* ---------- everyone, alive in space ---------- */
+.eco { position: relative; width: 100%; aspect-ratio: 10 / 9; max-height: 58vh; margin: 0 auto; }
+.eco-canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; border-radius: var(--r); }
+.eco-canvas:active { cursor: grabbing; }
+.eco-known { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; display: grid; justify-items: center; pointer-events: none; color: var(--text); font-size: 0.5rem; letter-spacing: 0.24em; text-transform: uppercase; text-shadow: 0 0 6px #000, 0 0 14px #000; }
+.eco-known span { font-size: 1.9rem; font-weight: 200; letter-spacing: 0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+@media (min-width: 900px) { .commons-grid > .commons-view { align-self: center; } }
+
+/* ---------- the area card floats over the corner of the stage, so the form keeps its size when it opens ---------- */
+@media (min-width: 900px) {
+  .stage .group-card { position: absolute; left: 0; top: 0; z-index: 3; width: min(19rem, 46%); padding: 10px 12px; font-size: 0.8rem; line-height: 1.3; background: rgba(4, 6, 12, 0.86); backdrop-filter: blur(6px); animation: arrive 0.25s ease-out both; }
+}
+
+/* ---------- the crew at work, as a scene in space ---------- */
+.crew { gap: 8px; }
+.crew h1 { font-size: 1.5rem; margin: 0; }
+.crew-scene { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 46vh; }
+.crew-say { width: 100%; min-height: 4.6em; margin: 0; display: grid; gap: 4px; align-content: start; text-align: center; font-size: 1.15rem; font-weight: 200; line-height: 1.35; animation: arrive 0.35s ease-out both; }
+.crew-say .line-top { color: var(--gold); }
+.crew-ticks { display: flex; gap: 6px; justify-content: center; width: 100%; }
+.crew-ticks .tick { flex: 0 1 2.4rem; min-width: 0; height: 24px; padding: 0; background: none; border: none; border-radius: 0; position: relative; }
+.crew-ticks .tick::after { content: ''; position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: var(--hair); transition: background 0.3s; }
+.crew-ticks .tick.done::after { background: var(--platinum); }
+.crew-ticks .tick.now::after { background: var(--gold); box-shadow: 0 0 8px rgba(255, 222, 150, 0.8); }
+.crew-stats { width: 100%; margin: 4px 0 0; padding: 8px 0; }
+.crew-stats > div { opacity: 0.35; transition: opacity 0.4s; }
+.crew-stats > div.on { opacity: 1; }
+.crew-stats > div.on dd { color: var(--gold); }
+.crew-actions { align-items: center; gap: 16px; }
+
+/* the crew takes the whole screen while it works: one scene, nothing beside it */
+.crew { position: fixed; inset: 0; z-index: 40; overflow-y: auto; background: var(--bg); padding: 3vh max(16px, calc(50vw - 34rem)) 2vh; align-content: center; }
+:root .crew h1 { font-size: 1.2rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400; margin: 0; }
+.crew-scene { max-height: 52vh; }
+.crew .fine { margin: 0; }
+
+/* ---------- the crew scene made of grains: the picture is the whole screen, the words lie over it ---------- */
+.crew { display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 0; padding: 3vh max(16px, calc(50vw - 30rem)) 2vh; overflow: hidden; }
+.crew-scene { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; aspect-ratio: auto; }
+:root .crew h1 { position: relative; font-size: 0.72rem; letter-spacing: 0.42em; font-weight: 400; color: var(--label); background: none; -webkit-text-fill-color: currentColor; }
+.crew-hud { position: relative; width: 100%; display: grid; gap: 6px; justify-items: center; padding-top: 5vh; background: linear-gradient(to bottom, rgba(2, 2, 3, 0), rgba(2, 2, 3, 0.82) 34%); }
+.crew-say { min-height: 3.6em; font-size: 1.25rem; text-shadow: 0 0 12px #000; }
+.crew-stats { border-color: rgba(255, 214, 160, 0.16); background: none; }
+.crew.calm { overflow-y: auto; }
+.crew-hud { background: none; padding-top: 0; z-index: 2; }
+.crew::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 52%; z-index: 1; pointer-events: none; background: linear-gradient(to bottom, rgba(2, 2, 3, 0), rgba(2, 2, 3, 0.78) 45%, rgba(2, 2, 3, 0.9)); }
+:root .crew h1 { z-index: 2; }
+.crew-stats { margin: 0; padding: 6px 0; }
+.crew-say { min-height: 3.2em; }
+.crew-actions { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; margin: 4px 0 0; }
+.crew-actions .primary { width: auto; min-width: 14rem; }
+.crew-hud { max-height: 40vh; }
+.crew::after { height: 44%; }
+
+/* ---------- the world as nerve cells in a large dark ---------- */
+.world-field { display: block; width: 100%; aspect-ratio: 4 / 3; max-height: 52vh; margin: 0 auto; }
+main.solo.wide .world { max-width: 58rem; margin: 0 auto; }
+main.solo.wide .world-field { aspect-ratio: 16 / 9; max-height: 56vh; }
+
+/* ==========================================================================================================
+   The future look, tried first on the Everyone screen (class "future").
+   The frame stays blunt: bold type, hard edges, black and white. Inside it, every panel is an instrument:
+   thin corner marks, amber and teal light, readouts, and words that write themselves in.
+   ========================================================================================================== */
+.backdrop { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+.future { --amber: #ffbf7a; --teal: #86d3e6; --glass-f: rgba(134, 211, 230, 0.035); }
+.future .caret { display: inline-block; width: 0.5em; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: var(--amber); animation: blink 0.7s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes assemble { from { opacity: 0; filter: blur(5px); transform: translateY(6px); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes powerup { 0% { opacity: 0; } 8% { opacity: 0.9; } 14% { opacity: 0.2; } 22% { opacity: 1; } 30% { opacity: 0.55; } 40%, 100% { opacity: 1; } }
+@keyframes sweep { from { background-position: -120% 0; } to { background-position: 220% 0; } }
+@keyframes live { 0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--amber); } 50% { opacity: 0.35; box-shadow: none; } }
+
+/* the welcome: blunt and large, with one fine line under it */
+:root .future .commons-top h1 { font-size: 2.1rem; }
+.future .commons-said { color: var(--teal); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; }
+
+/* a panel is a display on glass: no box, four corner marks, a faint light inside, fine scan lines */
+.future .commons-lead {
+  position: relative; border: none; border-radius: 0; padding: 16px 18px;
+  background:
+    linear-gradient(var(--amber), var(--amber)) left top / 18px 1px no-repeat, linear-gradient(var(--amber), var(--amber)) left top / 1px 18px no-repeat,
+    linear-gradient(var(--amber), var(--amber)) right top / 18px 1px no-repeat, linear-gradient(var(--amber), var(--amber)) right top / 1px 18px no-repeat,
+    linear-gradient(var(--amber), var(--amber)) left bottom / 18px 1px no-repeat, linear-gradient(var(--amber), var(--amber)) left bottom / 1px 18px no-repeat,
+    linear-gradient(var(--amber), var(--amber)) right bottom / 18px 1px no-repeat, linear-gradient(var(--amber), var(--amber)) right bottom / 1px 18px no-repeat,
+    linear-gradient(180deg, rgba(255, 191, 122, 0.06), rgba(134, 211, 230, 0.02));
+  box-shadow: inset 0 0 44px rgba(255, 191, 122, 0.05);
+  animation: powerup 0.9s linear both;
+}
+.future .commons-lead::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(180deg, transparent 0 2px, rgba(255, 255, 255, 0.022) 2px 3px); }
+.future .commons-lead .line-top { color: var(--amber); display: flex; align-items: center; gap: 8px; }
+.future .commons-lead .line-top::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: live 1.8s ease-in-out infinite; }
+.future .commons-lead p { min-height: 2.7em; font-weight: 200; font-size: 1.05rem; }
+
+/* the one bold thing in a panel answers a hand with light, not with a new color */
+.future .primary { position: relative; overflow: hidden; transition: box-shadow 0.3s; }
+.future .primary:hover:not(:disabled), .future .primary:focus-visible { box-shadow: 0 0 0 1px var(--amber), 0 0 34px rgba(255, 191, 122, 0.45); }
+.future .primary::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 35%, rgba(255, 191, 122, 0.55) 50%, transparent 65%) -120% 0 / 60% 100% no-repeat; }
+.future .primary:hover::after { animation: sweep 0.9s ease-out; }
+
+/* the row of readouts */
+.future .seg { border-color: rgba(134, 211, 230, 0.22); }
+.future .seg-tab { transition: color 0.25s, text-shadow 0.25s; }
+.future .seg-n { font-weight: 200; font-variant-numeric: tabular-nums; }
+.future .seg-tab[aria-pressed='true'] { color: var(--text); text-shadow: 0 0 18px rgba(255, 191, 122, 0.55); box-shadow: inset 0 -1px 0 var(--amber), 0 10px 24px -14px var(--amber); background: linear-gradient(180deg, transparent, rgba(255, 191, 122, 0.06)); }
+.future .seg-tab[aria-pressed='true'] .seg-name { color: var(--amber); }
+
+/* lists arrive one line after another, out of a blur */
+.future .ledger-rows li, .future .roles li, .future .pair > div { animation: assemble 0.5s ease-out both; }
+.future .ledger-rows li:nth-child(2), .future .roles li:nth-child(2), .future .pair > div:nth-child(2) { animation-delay: 0.08s; }
+.future .ledger-rows li:nth-child(3), .future .roles li:nth-child(3), .future .pair > div:nth-child(3) { animation-delay: 0.16s; }
+.future .ledger-rows li:nth-child(4), .future .pair > div:nth-child(4) { animation-delay: 0.24s; }
+.future .pair > div:nth-child(5) { animation-delay: 0.32s; }
+.future .ledger-row, .future .role { border-bottom-color: rgba(134, 211, 230, 0.16); font-weight: 200; }
+.future .ledger-at { color: var(--teal); }
+.future .ledger-at.gold, .future .ledger-n { color: var(--amber); }
+.future .ledger-n { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; }
+.future .role-go { color: var(--amber); }
+.future .role-n, .future .pair dd { font-weight: 200; font-variant-numeric: tabular-nums; }
+.future .pair { border-color: rgba(134, 211, 230, 0.2); }
+.future .pair dt { color: var(--teal); }
+.future .pager-go { border-color: rgba(134, 211, 230, 0.3); }
+.future .commons-key { color: var(--teal); opacity: 0.8; letter-spacing: 0.08em; }
+.future .commons-key .key-agency { border: none; border-radius: 50%; transform: none; background: #ffbe78; }
+.future .commons-key .key-creator { border: none; border-radius: 50%; background: #86d3e6; }
+.future .eco-known { letter-spacing: 0.3em; }
+.future .eco-known span { font-size: 2.3rem; }
+.future .roles-why { color: var(--teal); opacity: 0.8; }
+.future.calm *, .future.calm *::after, .future.calm *::before { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .future *, .future *::after, .future *::before { animation: none !important; } }
+
+/* ==========================================================================================================
+   The same look on every page (the body carries the class "future").
+   The frame stays blunt: bold type, hard edges, black and white. Inside it, every panel is a display.
+   ========================================================================================================== */
+.commons-grid .world-field { aspect-ratio: 4 / 3; max-height: 62vh; }
+.commons-grid .world-pair { margin-top: 4px; }
+.future main > section { animation: assemble 0.45s ease-out both; }
+.future .line-top { color: var(--amber); }
+.future .group-card .line-top { color: var(--text); }
+:root body.future :is(.signal, .notice, .plan-go, .bin, .cert, .said, .result, .talk-reply, .group-card, .more-note, .twin-tip) {
+  --mark: rgba(134, 211, 230, 0.75);
+  border: none; border-radius: 0;
+  background:
+    linear-gradient(var(--mark), var(--mark)) left top / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left top / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 1px 14px no-repeat,
+    linear-gradient(180deg, rgba(134, 211, 230, 0.05), rgba(134, 211, 230, 0.012));
+  box-shadow: inset 0 0 40px rgba(134, 211, 230, 0.035);
+}
+:root body.future :is(.group-card, .more-note, .twin-tip) {
+  --mark: var(--amber);
+  background:
+    linear-gradient(var(--mark), var(--mark)) left top / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left top / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 1px 14px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 14px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 1px 14px no-repeat,
+    linear-gradient(rgba(4, 6, 12, 0.9), rgba(4, 6, 12, 0.9));
+  backdrop-filter: blur(6px);
+}
+:root body.future :is(.plan-go, .bin):hover:not(:disabled) { --mark: var(--amber); box-shadow: inset 0 0 44px rgba(255, 191, 122, 0.08), 0 0 26px -8px rgba(255, 191, 122, 0.5); }
+:root body.future :is(.cert, .said, .notice) { --mark: var(--amber); }
+.future .signal-n, .future .plan-n, .future .bin-count, .future .stat { font-weight: 200; font-variant-numeric: tabular-nums; }
+.future .plan-n { color: var(--amber); }
+.future .bin-name { color: var(--teal); }
+:root body.future .chip { border-color: rgba(134, 211, 230, 0.34); border-radius: 0; transition: box-shadow 0.25s, border-color 0.25s, color 0.25s; }
+:root body.future .chip:hover:not(:disabled) { border-color: var(--amber); box-shadow: 0 0 18px -4px rgba(255, 191, 122, 0.6); }
+:root body.future .chip[aria-pressed='true'] { border-color: var(--amber); box-shadow: 0 0 22px -4px rgba(255, 191, 122, 0.7); }
+:root body.future .secondary { border-color: rgba(134, 211, 230, 0.4); transition: box-shadow 0.25s, border-color 0.25s, color 0.25s; }
+:root body.future .secondary:hover:not(:disabled), :root body.future .secondary[aria-pressed='true'] { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 24px -6px rgba(255, 191, 122, 0.6); }
+:root body.future .option { border-color: rgba(134, 211, 230, 0.3); transition: box-shadow 0.25s, border-color 0.25s; }
+:root body.future .option:hover:not(:disabled) { border-color: var(--amber); box-shadow: inset 0 0 30px rgba(255, 191, 122, 0.07), 0 0 26px -8px rgba(255, 191, 122, 0.55); }
+.future .gate { border-bottom-color: rgba(134, 211, 230, 0.16); }
+.future .gate-n { color: var(--teal); font-weight: 200; }
+.future .gates li { animation: assemble 0.45s ease-out both; }
+.future .gates li:nth-child(2) { animation-delay: 0.06s; }
+.future .gates li:nth-child(3) { animation-delay: 0.12s; }
+.future .gates li:nth-child(4) { animation-delay: 0.18s; }
+.future .plan li { animation: assemble 0.45s ease-out both; }
+.future .plan li:nth-child(2) { animation-delay: 0.08s; }
+.future .plan li:nth-child(3) { animation-delay: 0.16s; }
+.future .talk input { border-bottom-color: rgba(134, 211, 230, 0.35); }
+.future .talk input:focus-visible { box-shadow: inset 0 -1px 0 var(--amber), 0 14px 26px -18px var(--amber); }
+.future .talk-say { font-weight: 200; }
+.future input:not([type='checkbox']):focus-visible { box-shadow: inset 0 -1px 0 var(--amber), 0 14px 26px -18px var(--amber); }
+.future .legend-item[aria-pressed='true'] { border-color: var(--amber); box-shadow: 0 0 20px -6px rgba(255, 191, 122, 0.7); }
+.future .stage-read { color: var(--teal); }
+.future .status { color: var(--teal); }
+.future header nav .link[aria-current] { text-shadow: 0 0 16px rgba(255, 191, 122, 0.6); }
+.future .pager-at { color: var(--teal); }
+body.future.calm *, body.future.calm *::after, body.future.calm *::before { animation: none !important; }
+:root body.future .stage-foot { background: none; }

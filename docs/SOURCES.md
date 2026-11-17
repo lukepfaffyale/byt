@@ -149,3 +149,11 @@ These parts do not come from any source above:
 
 Add it here before the idea is used, with the date it was read and what was taken. An idea used without an entry
 here is a mistake to be fixed, not a style choice.
+
+## Look and mood of the crew scene (added 2026-11-16)
+
+The student named five films as the mood to aim at for the scene that shows a crew at work: Blade Runner 2049,
+Foundation (the television series), Interstellar, Dune and The Terminator. They are named here as inspiration
+only. No image, frame, design, name, character, music or text from any of them is used. Every drawing in the
+project is made by its own code. Each film belongs to its owners, and nothing here is official, licensed or for
+sale.

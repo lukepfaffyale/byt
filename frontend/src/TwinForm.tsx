@@ -49,6 +49,8 @@ type Props = {
   onHub?: (index: number) => void
   /** where the picture is in time: 1 is now, 0 is the start. The frame turns through its fourth direction as time moves */
   time?: number
+  /** the key of one area to hold in the light: the rest of the form dims, so its connections can be read */
+  focus?: string
 }
 
 type Node = {
@@ -64,7 +66,7 @@ const COUNT = 620
 const BALL = 0.62 // the size of the sphere inside the frame
 const NEIGHBORS = 3
 const EYE4 = 2.2 // how far the eye sits along the fourth direction
-const SPARKS = 30
+const SPARKS = 64
 const REACH = 16 // how close, in pixels, the pointer must be to a point
 const GOLD: RGB = [255, 214, 130]
 const ICE: RGB = [190, 230, 255]
@@ -177,9 +179,9 @@ function makeLinks(nodes: Node[], brain: boolean): Link[] {
  * turn gold where a skill step is finished. Pale lines join one area to another.
  * Point at a dot to see its area; tap it to open that area.
  */
-export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1, hubs, onHub }: Props) {
+export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1, hubs, onHub, focus }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub })
+  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus })
   const redraw = useRef<(() => void) | null>(null)
   const [tip, setTip] = useState<Tip | null>(null)
 
@@ -198,10 +200,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     target.current.time = time
     target.current.hubs = hubs
     target.current.onHub = onHub
+    target.current.focus = focus
     // a drag on the twin belongs to the twin, so the page does not scroll under the finger
     if (canvasRef.current) canvasRef.current.style.touchAction = 'none'
     redraw.current?.()
-  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub])
+  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus])
 
   useEffect(() => {
     if (pulseKey > 0) target.current.pulse = 1
@@ -215,7 +218,18 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     const nodes = makeNodes()
     const sphereLinks = makeLinks(nodes, false)
     const brainLinks = makeLinks(nodes, true)
-    const sparks = Array.from({ length: SPARKS }, (_, i) => ({ link: i * 37, phase: Math.random() }))
+    const sparks = Array.from({ length: SPARKS }, (_, i) => ({ link: i * 37, from: -1, born: -9, dur: 1 }))
+    const fire = new Float32Array(COUNT) // a point flashes when a signal reaches it, then fades
+    const touching = (ls: Link[]) => {
+      const out: number[][] = Array.from({ length: COUNT }, () => [])
+      ls.forEach((l, k) => {
+        out[l.a].push(k)
+        out[l.b].push(k)
+      })
+      return out
+    }
+    const sphereTouch = touching(sphereLinks)
+    const brainTouch = touching(brainLinks)
     const home = new Int16Array(COUNT) // fill: the area each point belongs to
     let shape = target.current.mode === 'clusters' ? 0 : 1 // 0 the sphere, 1 the brain; it eases from one to the other
     const px = new Float32Array(COUNT)
@@ -495,9 +509,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const loose = free * p.drift * (0.6 + 0.25 * Math.sin(t * 0.5 + p.seed))
         const k2 = BALL * (1 + loose * 1.1) * (1 + 0.02 * Math.sin(t * 1.3 + p.seed))
         const sway = still ? 0 : 0.035 * Math.sin(t * 0.7 + p.seed * 3)
-        const qx = p.x + (p.bx - p.x) * shape
-        const qy = p.y + (p.by - p.y) * shape
-        const qz = p.z + (p.bz - p.z) * shape
+        // in a seat's sphere each member of a group drifts around its own place, so a group is a crowd that moves
+        const swarm = clusters && weight[i] >= 0 && !still ? 0.055 : 0
+        const qx = p.x + (p.bx - p.x) * shape + swarm * Math.sin(t * 0.9 + p.seed * 7)
+        const qy = p.y + (p.by - p.y) * shape + swarm * Math.cos(t * 0.7 + p.seed * 3)
+        const qz = p.z + (p.bz - p.z) * shape + swarm * Math.sin(t * 0.8 + p.seed * 5)
         place(
           (qx + sway * qz) * k2,
           qy * k2 + (map ? 0 : (1 - c) * 0.08 * Math.sin(t * 0.4 + p.seed * 2)),
@@ -557,6 +573,18 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
             gx = sumX[k] / members[k]
             gy = sumY[k] / members[k]
           }
+          if (members[k] > 0) {
+            // every member is tied to the middle of its group
+            ctx.beginPath()
+            for (let i = 0; i < COUNT; i++) {
+              if (weight[i] < 0 || slice[i] !== k) continue
+              ctx.moveTo(gx, gy)
+              ctx.lineTo(px[i], py[i])
+            }
+            ctx.strokeStyle = `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, 0.3)`
+            ctx.lineWidth = 0.7
+            ctx.stroke()
+          }
           if (Math.min(w, h) >= 260) {
             ctx.fillStyle = `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, ${members[k] === 0 ? 0.5 : 0.85})`
             ctx.fillText(map[k].name.replace(/^(Strongest in|Needs to grow): /, '').toUpperCase(), gx, gy + (members[k] === 0 ? 24 : 34) * size)
@@ -573,8 +601,10 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           ctx.stroke()
           if (!still) {
             // one signal goes out; where the seat has reached the group, another comes back
-            for (const back of reached ? [false, true] : [false]) {
-              const f0 = (t * (reached ? 0.32 : 0.14) + k * 0.37 + (back ? 0.5 : 0)) % 1
+            // signals go out and come back, each at its own pace, so the traffic never repeats
+            for (const lane of reached ? [0, 1, 2, 3, 4] : [0]) {
+              const back = lane % 2 === 1
+              const f0 = (t * (reached ? 0.32 : 0.14) * (1 + lane * 0.23) + k * 0.37 + lane * 0.19) % 1
               const f = back ? 1 - f0 : f0
               const g = 1 - f
               ctx.beginPath()
@@ -586,6 +616,10 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         }
       }
 
+      // one area can be held in the light: the one under the pointer, or the one the player picked
+      const focusKey = target.current.focus
+      const active = hover >= 0 && slice[hover] >= 0 ? slice[hover] : map && focusKey ? map.findIndex((a) => a.key === focusKey) : -1
+
       // the links: inside one area they carry its color; between two areas they are pale, the cross connections
       ctx.lineWidth = Math.max(0.6, 0.55 * size)
       for (const l of links) {
@@ -595,38 +629,72 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const near = (depth[l.a] + depth[l.b]) / 2
         const hot = Math.max(lit[l.a], lit[l.b])
         const col = map && same ? tone[l.a] : CROSS
+        const shade = active < 0 ? 1 : slice[l.a] === active || slice[l.b] === active ? 1.5 : 0.2
         ctx.beginPath()
         ctx.moveTo(px[l.a], py[l.a])
         ctx.lineTo(px[l.b], py[l.b])
         // links inside one area carry the picture; the pale links between areas stay faint so the areas read
-        ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(0.9, (0.1 + 0.5 * near * near) * (0.55 + 0.45 * c) * hot * (map && !same ? 0.45 : 1))})`
+        ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(0.9, (0.1 + 0.5 * near * near) * (0.55 + 0.45 * c) * hot * (map && !same ? 0.45 : 1) * shade)})`
         ctx.stroke()
       }
 
-      // signals travel along the links once the twin has enough of them
+      // signals wander the links: each one runs to the next point, lights it, and takes a new way on from there.
+      // No two keep to the same road, so the form never repeats itself
       if (!still && c > 0.2) {
-        for (const s of sparks) {
-          const l = links[s.link % links.length]
-          if (lit[l.a] < 1 || lit[l.b] < 1) continue
-          const f = (t * 0.45 + s.phase) % 1
+        const touch = clusters ? sphereTouch : brainTouch
+        const busy = Math.round(sparks.length * (0.35 + 0.65 * c))
+        ctx.lineWidth = Math.max(0.8, 0.8 * size)
+        for (let n = 0; n < busy; n++) {
+          const s = sparks[n]
+          let at = s.link % links.length
+          let l = links[at]
+          let f = (t - s.born) / s.dur
+          if (f >= 1 || s.from < 0 || lit[l.a] < 1 || lit[l.b] < 1) {
+            const end = s.from < 0 || f < 1 ? -1 : l.a === s.from ? l.b : l.a
+            if (end >= 0) fire[end] = 1
+            const ways = end >= 0 ? touch[end].filter((k) => k !== at && lit[links[k].a] >= 1 && lit[links[k].b] >= 1) : []
+            if (ways.length > 0 && Math.random() < 0.9) {
+              at = ways[(Math.random() * ways.length) | 0]
+              s.from = end
+            } else {
+              at = (Math.random() * links.length) | 0
+              s.from = links[at].a
+            }
+            s.link = at
+            s.born = t
+            s.dur = 0.45 + Math.random() * 1.1
+            l = links[at]
+            f = 0
+            if (lit[l.a] < 1 || lit[l.b] < 1) continue
+          }
+          const a = s.from === l.b ? l.b : l.a
+          const b = a === l.a ? l.b : l.a
+          if (active >= 0 && slice[a] !== active && slice[b] !== active) continue
+          const g = Math.max(0, f - 0.35)
           ctx.beginPath()
-          ctx.arc(px[l.a] + (px[l.b] - px[l.a]) * f, py[l.a] + (py[l.b] - py[l.a]) * f, 1.3 * size, 0, Math.PI * 2)
+          ctx.moveTo(px[a] + (px[b] - px[a]) * g, py[a] + (py[b] - py[a]) * g)
+          ctx.lineTo(px[a] + (px[b] - px[a]) * f, py[a] + (py[b] - py[a]) * f)
+          ctx.strokeStyle = 'rgba(255, 244, 214, 0.5)'
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.arc(px[a] + (px[b] - px[a]) * f, py[a] + (py[b] - py[a]) * f, 1.4 * size, 0, Math.PI * 2)
           ctx.fillStyle = 'rgba(255, 244, 214, 0.95)'
           ctx.fill()
         }
       }
+      for (let i = 0; i < COUNT; i++) fire[i] *= 0.92
 
       for (let i = 0; i < COUNT; i++) {
         if (lit[i] === 0) continue
         const col = gold[i] ? GOLD : tone[i]
-        const sameArea = hover >= 0 && slice[i] === slice[hover] && slice[i] >= 0
-        const alpha = (0.28 + 0.72 * depth[i]) * (0.7 + 0.3 * c) * lit[i] * (hover >= 0 && !sameArea ? 0.45 : 1)
+        const sameArea = active >= 0 && slice[i] === active
+        const alpha = (0.28 + 0.72 * depth[i]) * (0.7 + 0.3 * c) * lit[i] * (active >= 0 && !sameArea ? 0.3 : 1)
         // in a seat's sphere every twin breathes in its own time: a crowd, not a chart
         const alive = clusters && weight[i] >= 0 && !still ? 1 + 0.2 * Math.sin(t * 1.3 + nodes[i].seed * 4) : 1
         const grow = clusters && weight[i] >= 0 ? (0.8 + 1.5 * weight[i]) * alive : gold[i] ? 1.7 : lit[i] > 1.2 ? 1.35 : lit[i] < 1 ? 0.7 : 1
         ctx.beginPath()
-        ctx.arc(px[i], py[i], (0.7 + 1.5 * depth[i]) * size * grow * (sameArea ? 1.25 : 1), 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(1, alpha)})`
+        ctx.arc(px[i], py[i], (0.7 + 1.5 * depth[i]) * size * grow * (sameArea ? 1.25 : 1) * (1 + 0.8 * fire[i]), 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(1, alpha + 0.6 * fire[i])})`
         ctx.fill()
       }
 

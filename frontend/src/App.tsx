@@ -6,7 +6,7 @@ import { api, ApiError, type Bin, type Gate, type Me, type Sphere, type SphereFr
 import { GatePlay } from './GatePlay'
 import { Signal } from './Signal'
 import { TwinTalk } from './TwinTalk'
-import { WorldView } from './World'
+import { Backdrop } from './Future'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
 import { MoneyView } from './MoneyView'
@@ -23,7 +23,6 @@ const PLAYER_MENU: [name: 'commons' | 'journey' | 'work' | 'mine' | 'money' | 'a
   ['work', 'My Work'],
   ['mine', 'My Sym'],
   ['money', 'My Money'],
-  ['world', 'World'],
 ]
 const SEAT_MENU: Record<'agency' | 'creator', [view: SeatView, label: string][]> = {
   agency: [['desk', 'My Desk'], ['results', 'My Results'], ['money', 'My Money']],
@@ -121,6 +120,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'commons' })
   const [error, setError] = useState('')
   const [live, setLive] = useState('')
+  const [intent, setIntent] = useState<'agency' | 'creator' | undefined>(undefined)
   const [pulse, setPulse] = useState(0)
   const [areas, setAreas] = useState<Vertical[]>([])
   const [hubs, setHubs] = useState<Hub[]>([])
@@ -133,6 +133,10 @@ export default function App() {
   const [look, setLook] = useState<Look>(readLook)
   const [dock, setDock] = useState<Dock>(readDock)
   const [motion, setMotion] = useState(readMotion)
+  // one switch stills every moving thing on every page
+  useEffect(() => {
+    document.body.classList.toggle('calm', !motion)
+  }, [motion])
 
   const [hint, setHint] = useState(() => {
     try {
@@ -292,7 +296,7 @@ export default function App() {
         onLook={toggleLook}
       >
         <Start onStarted={(seat) => {
-          if (seat !== 'player') setScreen({ name: seat, view: 'desk' } as Screen)
+          if (seat !== 'player') setIntent(seat)  // everyone meets the game first; the Sym then points at the seat they came for
           setSignedIn(true)
         }} />
       </Shell>
@@ -344,14 +348,14 @@ export default function App() {
       <button className="link" onClick={toggleStory}>
         {playing ? 'Stop' : 'Play my story'}
       </button>
-      <input type="range" min={0} max={frames.length - 1} value={at ?? frames.length - 1} aria-label="Move through time"
+      {(playing || at !== null) && <input type="range" min={0} max={frames.length - 1} value={at ?? frames.length - 1} aria-label="Move through time"
         aria-valuetext={at === null ? 'Now' : frames[at].label}
         onChange={(e) => {
           const v = Number(e.target.value)
           setPlaying(false)
           setPast(v >= frames.length - 1 ? null : { who, index: v })
-        }} />
-      <span className="story-label">{at === null ? 'Now' : at === 0 ? 'The start' : `After: ${frames[at].label}`}</span>
+        }} />}
+      {(playing || at !== null) && <span className="story-label">{at === null ? 'Now' : at === 0 ? 'The start' : `After: ${frames[at].label}`}</span>}
     </div>
   )
   const twin = (
@@ -367,6 +371,7 @@ export default function App() {
       time={at === null || frames.length < 2 ? 1 : at / (frames.length - 1)}
       onSize={dock === 'mini' ? undefined : sizeTwin}
       areas={shown}
+      focus={dock === 'mini' ? undefined : group ?? undefined}
       motion={motion}
       speed={speed}
       sky={me?.twins ?? 0}
@@ -408,6 +413,7 @@ export default function App() {
       live={live}
       twin={twin}
       compact={screen.name !== 'journey' && dock !== 'wall'}
+      alone={screen.name === 'commons' && dock !== 'wall'}
       dock={dock}
       onDock={moveTwin}
       hint={hint}
@@ -447,8 +453,6 @@ export default function App() {
                   onClick={() => setGroup(group === a.key ? null : a.key)}>
                   <span className="swatch" style={{ background: seat ? a.color : `color-mix(in srgb, ${a.color} ${Math.round((me?.together ?? 0) * 100)}%, #ffffff)` }} aria-hidden="true" />
                   <span className="legend-name">{a.name}</span>
-                  <span className="legend-n">{mine?.mode === 'clusters' ? (a.hidden || a.count === null ? 'hidden' : a.count) : Math.round(a.level * 100)}</span>
-                  {a.steps_done > 0 && <span className="legend-gold">{a.steps_done} {a.steps_done === 1 ? 'skill step' : 'skill steps'}</span>}
                 </button>
               </li>
             ))}
@@ -460,6 +464,7 @@ export default function App() {
       nav={
         seat ? (
           <nav aria-label={seat.name === 'agency' ? 'Agency menu' : 'Creator menu'}>
+            <button className="link" onClick={() => setScreen({ name: 'commons' })}>Everyone</button>
             {SEAT_MENU[seat.name].map(([view, label]) => (
               <button key={view} className="link" aria-current={seat.view === view ? 'page' : undefined}
                 onClick={() => setScreen({ name: seat.name, view } as Screen)}>
@@ -624,11 +629,9 @@ export default function App() {
         />
       )}
 
-      {screen.name === 'world' && <WorldView />}
-
       {screen.name === 'commons' && (
         <CommonsView next={next} onPlay={(gateId) => setScreen({ name: 'gate', gateId })} onJourney={() => setScreen({ name: 'journey' })}
-          onSeat={(seat) => setScreen({ name: seat, view: 'desk' } as Screen)} />
+          onSeat={(seat) => setScreen({ name: seat, view: 'desk' } as Screen)} plan={plan} onGo={go} intent={intent} />
       )}
 
       {screen.name === 'about' && (
@@ -656,11 +659,12 @@ export default function App() {
   )
 }
 
-function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void }) {
+function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; alone?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void }) {
   const dock = props.dock ?? 'stage'
   const wall = dock === 'wall'
   return (
     <>
+      <Backdrop calm={props.motion === false} />
       <header inert={wall}>
         <span className="brand-row">
           <span className="brand">BYT</span>
@@ -675,7 +679,7 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         {props.seats}
         {props.status && <p className="status">{props.status}</p>}
       </header>
-      {dock !== 'mini' && (
+      {dock !== 'mini' && !props.alone && (
       <div className={`stage ${props.compact ? 'compact' : ''} ${wall ? 'stage-wall' : ''}`} role={wall ? 'dialog' : undefined} aria-label={wall ? 'My Sym, full screen' : undefined}>
         {props.onDock && (
           <div className="dock" role="group" aria-label="The size of my Sym">
@@ -694,29 +698,15 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
           {props.legend}
           {props.groupCard}
           {props.story}
-          {props.onMotion && (
-            <div className="dials">
-              <button className="link motion" aria-pressed={props.motion} onClick={props.onMotion}>
-                Motion: {props.motion ? 'on' : 'off'}
-              </button>
-              {props.motion && props.onSpeed && (
-                <label className="speed">
-                  <span>Turn speed</span>
-                  <input type="range" min={0} max={2} step={0.1} value={props.speed ?? 1}
-                    aria-valuetext={props.speed === 0 ? 'Still' : `${Math.round((props.speed ?? 1) * 100)} percent`}
-                    onChange={(e) => props.onSpeed?.(Number(e.target.value))} />
-                </label>
-              )}
-            </div>
-          )}
         </div>
       </div>
       )}
-      <main className={dock === 'mini' ? 'solo' : undefined} inert={wall}>{props.children}</main>
+      <main className={props.alone ? 'solo wide' : dock === 'mini' ? 'solo' : undefined} inert={wall}>{props.children}</main>
       <p className="sr-only" aria-live="polite">{props.live}</p>
       <footer inert={wall}>
         <p className="muted">BYT by Symbolon. This is a class project. It uses play money only. It is for adults only.</p>
         <span className="foot-links">
+          {props.onMotion && <button className="link" aria-pressed={props.motion} onClick={props.onMotion}>Motion: {props.motion ? 'on' : 'off'}</button>}
           {props.onLook && <button className="link" onClick={props.onLook}>Look: {props.look}</button>}
           {props.onDisplay && <button className="link" onClick={() => props.onDisplay?.('glance')}>Glance</button>}
           {props.onAbout && <button className="link" onClick={props.onAbout}>About</button>}

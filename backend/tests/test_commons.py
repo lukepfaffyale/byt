@@ -6,6 +6,7 @@ from tests.test_market import play_gates
 def test_the_commons_counts_people_and_names_nobody(client, auth):
     assert client.get("/commons").status_code in (401, 403)  # only a signed-in player
     before = client.get("/commons", headers=auth).json()
+    assert before["taps_mine"] == 0 and not before["has_agency"] and not before["has_creator"]  # a first visit
     other = signup(client, "Quiet Otter")
     play_gates(client, other, 1)
     seen = client.get("/commons", headers=auth)

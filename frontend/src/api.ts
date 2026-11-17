@@ -175,7 +175,7 @@ export type World = {
 }
 export type Commons = {
   nickname: string; people: number; people_today: number; stand_ins: number; agencies: number; creators: number
-  taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number
+  taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; has_agency: boolean; has_creator: boolean
   happenings: { who: string; text: string; when: string; mine: boolean }[]
 }
 export type Ripple = { agency: boolean; creator: boolean; links: { src: string; dst: string; n: number; credits: number; text: string }[] }

@@ -1,15 +1,23 @@
 /** Who speaks to whom. 0 is the boss, 1 to 3 are its crew, 4 is who they reach (a group of twins, one twin, a requester). */
 export type CrewStep = { from: number; to: number; say: string }
-export type CrewScript = { title: string; cast: [string, string, string, string, string]; one?: boolean; steps: CrewStep[]; note: string }
+/** A number from the run, and the line (counted from 0) at which it lands. */
+export type CrewStat = { label: string; value: number; at: number }
+export type CrewScript = {
+  title: string; cast: [string, string, string, string, string]; one?: boolean; steps: CrewStep[]; note: string
+  /** when they reach a group: how many Syms are in it, and how many of those are made-up samples */
+  crowd?: number; samples?: number; stats?: CrewStat[]
+  /** the answer that came back: each choice and its share of the group, 0 to 1. Totals only */
+  split?: { label: string; share: number }[]
+}
 
 const n = (x: number, one: string, many: string) => `${x} ${x === 1 ? one : many}`
 
 /** A boss sends its crew to a group of twins. Every number is from the run that just happened. */
-export function groupScript(f: { boss: string; what: string; group: string; twins: number; samples: number; spent: number; fee: number; extra: number; min: number; test?: boolean }): CrewScript {
+export function groupScript(f: { boss: string; what: string; group: string; twins: number; samples: number; spent: number; fee: number; extra: number; min: number; test?: boolean; split?: { label: string; share: number }[] }): CrewScript {
   const steps: CrewStep[] = [
     { from: 0, to: 1, say: `Find the Syms in this group: ${f.group}.` },
     { from: 1, to: 4, say: 'Who here said yes to questions?' },
-    { from: 4, to: 1, say: `${n(f.twins, 'twin', 'twins')} match. ${f.samples} of them are made-up sample Syms.` },
+    { from: 4, to: 1, say: `${n(f.twins, 'Sym', 'Syms')} match. ${f.samples} of them are made-up sample Syms.` },
     { from: 0, to: 2, say: f.test ? `Run this: ${f.what}. See where each Sym stands.` : `Ask them this: ${f.what}` },
     { from: 2, to: 4, say: f.test ? 'I am reading your picks in this skill. You do not need to answer.' : 'One question for each of you. Answer as your human would.' },
     { from: 4, to: 2, say: f.test ? `${n(f.twins, 'Sym was', 'Syms were')} read.` : `${n(f.twins, 'answer', 'answers')} came back.` },
@@ -17,7 +25,9 @@ export function groupScript(f: { boss: string; what: string; group: string; twin
     { from: 3, to: 0, say: `${f.twins} is ${f.min} or more, so the totals may be shown. No Sym is named.` },
     { from: 3, to: 4, say: `Paid: ${n(f.spent - f.fee - f.extra, 'credit', 'credits')} to the Syms.${f.extra > 0 ? ` ${f.extra} more to the growth fund for asking again.` : ''}${f.fee > 0 ? ` ${f.fee} to the game for the crew.` : ''}` },
   ]
-  return { title: 'Your crew is at work', cast: [f.boss, 'Scout', 'Asker', 'Counter', 'Syms'], steps, note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
+  return { title: 'Your crew is at work', cast: [f.boss, 'Scout', 'Asker', 'Counter', 'Syms'], steps, crowd: f.twins, samples: f.samples, split: f.split,
+    stats: [{ label: 'Syms found', value: f.twins, at: 2 }, { label: f.test ? 'Syms read' : 'Answers', value: f.twins, at: 5 }, { label: 'Credits to Syms', value: f.spent - f.fee - f.extra, at: 8 }],
+    note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
 }
 
 /** A boss pays a royalty to meet one twin. */
@@ -32,7 +42,7 @@ export function meetScript(f: { boss: string; group: string; nickname: string; p
     { from: 4, to: 2, say: `I am the Sym of ${f.nickname}. Here are my answers.` },
     { from: 2, to: 0, say: 'The answers are on your results screen.' },
   ]
-  return { title: 'Your crew is meeting one Sym', cast: [f.boss, 'Scout', 'Asker', 'Payer', 'One Sym'], one: true, steps, note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
+  return { title: 'Your crew is meeting one Sym', cast: [f.boss, 'Scout', 'Asker', 'Payer', 'One Sym'], one: true, steps, stats: [{ label: 'Credits to the owner', value: f.price, at: 4 }], note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
 }
 
 /** A creator claims a waiting skill step. */
@@ -45,13 +55,13 @@ export function claimScript(f: { boss: string; skill: string; step: string; fee:
     { from: 0, to: 2, say: 'Mark the step as ours.' },
     { from: 2, to: 0, say: 'Done. Next, tap Build my step and pick its cards.' },
   ]
-  return { title: 'Your crew is claiming a step', cast: [f.boss, 'Scout', 'Maker', 'Payer', 'The game'], one: true, steps, note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
+  return { title: 'Your crew is claiming a step', cast: [f.boss, 'Scout', 'Maker', 'Payer', 'The game'], one: true, steps, stats: [{ label: 'Fee paid', value: f.fee, at: 3 }], note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
 }
 
 /** An agency posts a job for twins to take. */
 export function postScript(f: { boss: string; what: string; pay: number; seats: number; held: number }): CrewScript {
   const steps: CrewStep[] = [
-    { from: 0, to: 3, say: `Hold the pay first: ${f.held} credits for ${n(f.seats, 'twin', 'twins')}.` },
+    { from: 0, to: 3, say: `Hold the pay first: ${f.held} credits for ${n(f.seats, 'Sym', 'Syms')}.` },
     { from: 3, to: 4, say: `${f.held} credits are held. Nothing is paid yet.` },
     { from: 0, to: 1, say: 'Put the job on the board, where Syms can find it.' },
     { from: 1, to: 4, say: `New job: ${f.what} It pays ${f.pay} credits for a checked answer.` },
@@ -59,7 +69,7 @@ export function postScript(f: { boss: string; what: string; pay: number; seats: 
     { from: 2, to: 0, say: 'Each checked answer lands in your results. You see totals, never who.' },
     { from: 3, to: 0, say: 'Credits that are not used come back to you.' },
   ]
-  return { title: 'Your crew is posting a job', cast: [f.boss, 'Scout', 'Counter', 'Payer', 'The job board'], one: true, steps, note: 'This is a replay of what your crew just did. The crew is a computer program, not AI. The Syms that take the job do use AI.' }
+  return { title: 'Your crew is posting a job', cast: [f.boss, 'Scout', 'Counter', 'Payer', 'The job board'], one: true, steps, stats: [{ label: 'Credits held', value: f.held, at: 1 }, { label: 'Places', value: f.seats, at: 3 }], note: 'This is a replay of what your crew just did. The crew is a computer program, not AI. The Syms that take the job do use AI.' }
 }
 
 /** A creator builds a claimed step from the cards it tapped. */
@@ -73,7 +83,7 @@ export function buildScript(f: { boss: string; step: string; cards: number; fee:
     { from: 3, to: 4, say: `Paid ${n(f.fee, 'credit', 'credits')} to the game.` },
     { from: 4, to: 0, say: `It is open. You earn ${n(f.royalty, 'credit', 'credits')} each time another player passes it.` },
   ]
-  return { title: 'Your crew is building a step', cast: [f.boss, 'Scout', 'Maker', 'Payer', 'The game'], one: true, steps, note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
+  return { title: 'Your crew is building a step', cast: [f.boss, 'Scout', 'Maker', 'Payer', 'The game'], one: true, steps, stats: [{ label: 'Cards', value: f.cards, at: 1 }, { label: 'Credits for each pass', value: f.royalty, at: 6 }], note: 'This is a replay of what your crew just did. The crew is a computer program, not AI.' }
 }
 
 /** A player sends their twin to do a job. Shown while the twin really works. */
@@ -87,5 +97,5 @@ export function jobScript(f: { requester: string; pay: number }): CrewScript {
     { from: 1, to: 3, say: 'Hold the pay until our human checks my answer.' },
     { from: 3, to: 0, say: `${f.pay} credits are waiting for your yes or no.` },
   ]
-  return { title: 'Your Sym is working', cast: ['You', 'Your Sym', 'Memory', 'Checker', f.requester], one: true, steps, note: 'Your Sym answers once. Nothing is paid until you check the answer.' }
+  return { title: 'Your Sym is working', cast: ['You', 'Your Sym', 'Memory', 'Checker', f.requester], one: true, steps, stats: [{ label: 'Credits waiting', value: f.pay, at: 6 }], note: 'Your Sym answers once. Nothing is paid until you check the answer.' }
 }

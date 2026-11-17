@@ -517,3 +517,103 @@ Nothing is official, licensed or for sale. The same statement is on the About sc
   posted, and a studio is not paid when its own owner passes its step. A group question from your own agency can
   reach your own Sym, as before; the pay moves from your agency wallet to your player wallet.
 - A seat that is not open is drawn as a dashed point, with one tap to open it. Counting in code. No model is used.
+
+## Everyone leads to the next place (the student's request, 2026-11-16)
+
+- The Everyone screen stands alone: the Sym's brain is not drawn beside it.
+- A box named My Sym says one next thing to do, with one tap. It is chosen by counting in code, with no model:
+  a person who came as an agency or creator is pointed at that seat; a person with no taps is asked to start the
+  first gate; otherwise it is the first line of the plan the game already works out.
+- A person who signs up as an agency or creator now lands on Everyone first, like every player.
+- A Roles tab says what players, agencies and creators each bring, with a count of each and one tap to go there.
+
+## Everyone, drawn in space (the student's request, 2026-11-16)
+
+- The picture on the Everyone screen is now a scene in three dimensions on a canvas, drawn by our own code with
+  no library. It can be turned by dragging or with the arrow keys.
+- What each thing is: the core holds one point of light for each thing known (up to 900 points; past that a
+  point stands for more than one), and the reader's own points are the brightest. A person and their Sym are a
+  colored point with a small white point beside it, and no two move alike. Two people who pass close are joined
+  by a line until they part. A stand-in is an empty ring that keeps to one of three tracks. Agencies are
+  diamonds and creators are cubes. Light runs from people into the core; pay runs back out from the seats.
+- How people move, who passes whom and which point sends light are made up by the drawing, from a fixed seed.
+  They show no real event. Only the counts are real: people, people who played today, stand-ins, seats, things
+  known and the reader's share. No row about any one person reaches the browser.
+- With motion off, or when the device asks for less motion, one still picture is drawn. The canvas has a text
+  label that says the same counts in words.
+
+## The crew at work, as a scene (the student's request, 2026-11-16)
+
+- When a seat sends its crew, or a player sends their Sym to a job, the replay now takes the whole screen as a
+  scene in space: the boss, three crew with a shape each, and who they reach. Each line of the replay is a pulse
+  of light from the one who speaks to the one who hears. When the crew reaches a group, the light fans out to
+  every Sym in it, and each Sym sends its own light back when the group answers.
+- The numbers under the scene (Syms found, answers, credits paid and the like) are the real numbers of the run
+  that just happened, and count up at the line where they land. The group is drawn with the real count of Syms
+  (up to 60), and the made-up sample Syms among them are empty rings.
+- The note under the scene still says what it is: a replay, and that the crew is a computer program, not AI.
+  Only a Sym doing a job uses a model. The scene adds no claim.
+- With motion off, one still picture is drawn and every line is listed. The lines are always a list for a
+  screen reader.
+- The agency and creator menus now have Everyone as their first item: it is the hub for every seat.
+
+## The crew scene, redrawn as light made of grains (the student's direction, 2026-11-16)
+
+- The student named the look to aim at: Blade Runner 2049, Foundation, Interstellar, Dune and Terminator. These
+  are references for mood only. Nothing is copied from them: no image, frame, logo, name, character or sound.
+  The scene is drawn by our own code on a canvas, from points of light.
+- What is drawn: the boss is a dark core inside a bright turning ring; each of the crew is a small storm of
+  grains; a group of Syms is a field of small storms, pale for made-up sample Syms. A line of the replay is a
+  river of grains that leaves the speaker and wraps the listener. At the end of a group question the crew's
+  grains settle into one column for each choice, as tall as that choice's share, with the real percent.
+- The counts, the shares and the numbers under the scene are from the run that just happened. The paths the
+  grains take are made up by the drawing.
+- The films are credited as inspiration in docs/SOURCES.md.
+
+## One way of drawing: paths that are forged (the student's direction, 2026-11-16)
+
+- The student set the picture for the whole game: nerve cells forging a path to make a connection. That is what
+  the agents do, and what people do when they explore. The dark core with a ring was dropped at the student's
+  word; the film references are for the size of space only.
+- `frontend/src/neural.ts` holds the shared drawing: a path leaves one body, searches, sends out side shoots that
+  find nothing, and connects; then signals run along it. Two screens use it so far.
+- The crew scene: nothing is joined at the start. Each line of the replay forges a path from the one who speaks
+  to the one who hears. Where the crew reaches a group, the path branches to every Sym. At the end everything
+  dims and the answer stands alone as plain bars with the real shares.
+- The World map: each kind of wallet is a cell body; a path is forged wherever credits really moved between two
+  kinds, and more signals run where more credits moved. The path to AI grows part of the way and stops, because
+  that link is drawn and not built.
+- What is real and what is drawn: which bodies are joined, the counts, the shares and the credits are real. The
+  route a path takes, its side shoots and its timing are made up by the drawing.
+- Changed the same day at the student's word: the answer at the end of the crew scene is no longer bars. One
+  body stands for each choice, and one fine path runs into it for each Sym that chose it (rounded from the real
+  share), with the real percent beside it. The paths leave from the middle of the group, never from one Sym, so
+  the picture does not show who chose what.
+
+## The look of the pages: tried first on Everyone (the student's direction, 2026-11-16)
+
+- The student's rule for the look: the frame stays blunt (bold type, hard edges, black and white), and inside it
+  the pages should feel like the future, in the mood of Blade Runner 2049 and Foundation. These are references
+  for mood only; nothing is copied from them (see docs/SOURCES.md).
+- Tried on the Everyone screen only, under one CSS class (`future`): deep space behind the whole page, panels as
+  displays with corner marks, amber and teal light, numbers that run up, words that write themselves in, and
+  lists that arrive one line after another.
+- Words that write themselves in are always present in full for a screen reader. With motion off, or when the
+  device asks for less motion, nothing moves and every word and number is shown at once.
+- The Everyone scene lost its wire frame; agencies and creators are drawn as cell bodies like everything else.
+- The student's stated aim, written down so it is not lost: everyone plays, takes part and leaves with something
+  of value, and Syms and agents made sturdy here could later serve larger roles. One role the student named is a
+  Sym that can speak for a person in later years. That is an idea only. Nothing in this project builds it, and
+  it would need its own written rules first (who may ask, what the person agreed to, and how it ends).
+
+## One look on every page, and World inside Everyone (the student's direction, 2026-11-16)
+
+- The look tried on Everyone now applies to every page and every seat: the page body carries one CSS class
+  (`future`), and deep space is drawn once behind everything. Panels, chips, buttons, lists and inputs take the
+  same corner marks, amber and teal light and arriving motion. Words and controls are unchanged.
+- One switch (Motion, in the footer) stills every moving thing on every page; a device that asks for less motion
+  gets the same.
+- The World menu item is gone. The map of where credits move is now the Economy tab of the Everyone screen, so
+  there is one hub. The sign-up page still shows the small version of the map.
+- Not yet redrawn in the new way: the brain, the seat spheres, the stand-ins in the Everyone scene and the
+  My effect picture.
