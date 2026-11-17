@@ -1,4 +1,4 @@
-"""Price tiers: a free twin costs half, going deeper reaches only members and pays each of them more."""
+"""Price tiers: a free Sym costs half, going deeper reaches only members and pays each of them more."""
 import db
 import market
 

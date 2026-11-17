@@ -866,3 +866,56 @@ header nav:not(.seats) .link[aria-current='page']::after { content: ''; position
 .told-row { display: grid; grid-template-columns: 7rem minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; min-height: 44px; padding: 6px 2px; border-bottom: 1px solid var(--hair); font-weight: 300; }
 .told-row .link { margin: 0; }
 
+
+/* ---------- the commons: everyone who is here, around what they know together ---------- */
+.commons { margin: 0 0 12px; }
+.commons-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+:root .commons .commons-top h1 { font-size: 1.5rem; margin: 0 0 4px; text-align: left; }
+.commons-top > div { min-width: 0; }
+.commons-said { margin: 0; font-size: 0.82rem; line-height: 1.35; }
+.commons-top .primary { flex: none; max-width: 46%; }
+.commons-map { display: block; width: 100%; max-width: 30rem; max-height: 33vh; margin: 2px auto 0; overflow: visible; }
+.commons-strand { stroke-width: 0.4; opacity: 0.38; }
+.commons-pool { animation: breathe 6s ease-in-out infinite; transform-origin: 180px 112px; }
+.commons-dot { animation: drift 7s ease-in-out infinite; }
+.commons-hold { fill: none; stroke: var(--platinum); stroke-width: 0.7; stroke-dasharray: 1.6 1.2; opacity: 0.8; }
+.commons-halo { fill: none; stroke-width: 0.7; opacity: 0; animation: halo 3.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.commons-you { fill: none; stroke: var(--gold); stroke-width: 0.8; }
+.commons-seat { fill: none; stroke: var(--ice); stroke-width: 0.8; }
+.commons text { fill: var(--text); font-size: 7px; letter-spacing: 0.16em; text-transform: uppercase; paint-order: stroke; stroke: var(--bg); stroke-width: 2.5px; }
+.commons text.commons-known { font-size: 15px; font-weight: 200; letter-spacing: 0.02em; fill: var(--ink); stroke: none; }
+.commons text.commons-sub { font-size: 5px; fill: var(--ink); stroke: none; letter-spacing: 0.14em; }
+.commons-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin: 0 0 8px; color: var(--muted); font-size: 0.66rem; }
+.commons-key i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; vertical-align: baseline; border-radius: 50%; }
+.commons-key .key-person { background: var(--gold); }
+.commons-key .key-hold { border: 1px dashed var(--platinum); }
+.commons-key .key-agency { border: 1px solid var(--ice); border-radius: 0; transform: rotate(45deg); }
+.commons-key .key-creator { border: 1px solid var(--ice); border-radius: 0; }
+.commons-pair { margin-top: 0; }
+.commons .world-say { min-height: 5.4em; }
+@keyframes drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0.8px, -1.4px); } }
+@keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.08); opacity: 1; } }
+@keyframes halo { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(1.9); opacity: 0; } }
+.commons.calm .commons-dot, .commons.calm .commons-pool, .commons.calm .commons-halo { animation: none; }
+.commons.calm .commons-halo { opacity: 0.5; }
+@media (prefers-reduced-motion: reduce) { .commons-dot, .commons-pool, .commons-halo { animation: none; } }
+@media (max-width: 640px) { .commons-top { flex-direction: column; align-items: stretch; } .commons-top .primary { max-width: none; } }
+
+/* ---------- my effect: what one person set moving between their own seats and everyone ---------- */
+.ripple-flow { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 2 9; opacity: 0.85; animation: ripple 1.6s linear infinite; }
+.ripple-flow.still { animation: none; stroke-dasharray: none; opacity: 0.5; }
+.ripple-link.dim { opacity: 0.14; }
+.commons text.ripple-n { fill: var(--gold); font-size: 8px; letter-spacing: 0.04em; }
+.ripple-seat circle { fill: var(--bg); stroke: var(--platinum); stroke-width: 1; }
+.ripple-seat.player circle { fill: var(--gold); stroke: none; }
+.ripple-seat.everyone circle { fill: var(--platinum); stroke: none; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); }
+.ripple-seat.agency circle, .ripple-seat.creator circle { stroke: var(--ice); }
+.ripple-seat.closed circle { stroke-dasharray: 2 2; opacity: 0.6; }
+.ripple-seat.closed text { fill: var(--muted); }
+.ripple-seat.on circle { stroke: var(--gold); stroke-width: 2; }
+.ripple-seat.player.on circle, .ripple-seat.everyone.on circle { stroke: var(--text); stroke-width: 1.5; }
+.commons .world-keys { justify-content: center; }
+@keyframes ripple { to { stroke-dashoffset: -11; } }
+@media (prefers-reduced-motion: reduce) { .ripple-flow { animation: none; } }
+.commons .ledger-what { white-space: normal; line-height: 1.3; font-size: 0.9rem; }
+.commons .seg { margin: 8px 0 4px; }

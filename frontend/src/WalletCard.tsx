@@ -11,9 +11,9 @@ const SEAT_NAME = { player: 'my wallet', agency: 'my agency wallet', creator: 'm
 const STREAM: Record<string, string> = {
   work: 'Work', data: 'Data', royalty: 'One to one', growth: 'Growth', sponsor: 'Growth', maker: 'Royalties', reach: 'Royalties',
   fee: 'AI cost', crew: 'Fees', claim: 'Fees', deposit: 'Added', grant: 'Added', hold: 'Held', release: 'Held',
-  samples: 'Twins', fund_in: 'Fund',
+  samples: 'Syms', fund_in: 'Fund',
 }
-const streamOf = (m: WalletLine) => (m.kind === 'data' && m.credits < 0 ? 'Twins' : STREAM[m.kind] ?? 'Other')
+const streamOf = (m: WalletLine) => (m.kind === 'data' && m.credits < 0 ? 'Syms' : STREAM[m.kind] ?? 'Other')
 
 function amount(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(2)

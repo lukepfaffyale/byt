@@ -1,8 +1,8 @@
-"""Rock, paper, scissors against your own twin, and twin against twin. Plain code, no model, no tokens.
+"""Rock, paper, scissors against your own Sym, and Sym against Sym. Plain code, no model, no tokens.
 
-The twin learns one thing here: how its human throws. Before each round it reads every earlier throw, works out
+The Sym learns one thing here: how its human throws. Before each round it reads every earlier throw, works out
 the throw it expects next, and plays the throw that beats it. It never sees the new throw first: its throw is
-computed from the stored history alone. In the league, each twin throws the way its owner throws.
+computed from the stored history alone. In the league, each Sym throws the way its owner throws.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ MIN_SEEN = 2  # times a pattern must have been seen before the twin trusts it
 
 
 def expect(history: list[str]) -> tuple[str | None, str]:
-    """The throw the twin expects next, and why, in words the human can check against their own play.
+    """The throw the Sym expects next, and why, in words the human can check against their own play.
     It looks for what followed the last two throws, then the last one, then the throw used most."""
     for depth in (2, 1):
         if len(history) <= depth:
@@ -39,7 +39,7 @@ def expect(history: list[str]) -> tuple[str | None, str]:
 
 
 def twin_throw(history: list[str]) -> tuple[str, str]:
-    """What the twin plays against its human, and why. With nothing to go on it starts with paper."""
+    """What the Sym plays against its human, and why. With nothing to go on it starts with paper."""
     expected, why = expect(history)
     return (COUNTER[expected] if expected else "p"), why
 
@@ -51,7 +51,7 @@ def outcome(mine: str, twin: str) -> str:
 
 
 def tells(history: list[str]) -> list[tuple[str, str, int, int]]:
-    """The habits the twin leans on most: (after this throw, you throw this, how often, out of how many)."""
+    """The habits the Sym leans on most: (after this throw, you throw this, how often, out of how many)."""
     out = []
     for prev in THROWS:
         after = Counter(history[i + 1] for i in range(len(history) - 1) if history[i] == prev)
@@ -63,14 +63,14 @@ def tells(history: list[str]) -> list[tuple[str, str, int, int]]:
 
 
 def mimic(history: list[str], own_last: str | None, rng: random.Random) -> str:
-    """Throw the way this twin's human throws: what they tend to throw after their own last throw."""
+    """Throw the way this Sym's human throws: what they tend to throw after their own last throw."""
     after = [history[i + 1] for i in range(len(history) - 1) if history[i] == own_last] if own_last else []
     pool = after if len(after) >= MIN_SEEN else history
     return rng.choice(pool) if pool else rng.choice(THROWS)
 
 
 def match(a: list[str], b: list[str], seed: str) -> tuple[int, int, int]:
-    """One match between two twins: (wins for a, wins for b, draws). The same two histories give the same match."""
+    """One match between two Syms: (wins for a, wins for b, draws). The same two histories give the same match."""
     rng = random.Random(int(hashlib.sha256(seed.encode()).hexdigest()[:12], 16))
     last_a = last_b = None
     wins_a = wins_b = draws = 0
@@ -84,7 +84,7 @@ def match(a: list[str], b: list[str], seed: str) -> tuple[int, int, int]:
 
 
 def sample_history(index: int) -> list[str]:
-    """A made-up twin's habits, fixed by its number: each one leans on one throw and may repeat itself."""
+    """A made-up Sym's habits, fixed by its number: each one leans on one throw and may repeat itself."""
     rng = random.Random(1000 + index)
     weights = [[5, 3, 2], [2, 5, 3], [3, 2, 5]][index % 3]
     out: list[str] = []

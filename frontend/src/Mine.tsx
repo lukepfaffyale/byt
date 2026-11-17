@@ -8,20 +8,20 @@ import { SkillsView } from './SkillsView'
 
 type TabId = 'type' | 'mind' | 'brain' | 'skills' | 'judgment' | 'beliefs' | 'proof' | 'data'
 const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Think so', 1: 'A guess' }
-const CERT_NAME: Record<string, string> = { twin: 'Twin', insight: 'Insight', skill: 'Skill' }
+const CERT_NAME: Record<string, string> = { twin: 'Sym', insight: 'Insight', skill: 'Skill' }
 
 /**
  * What my twin knows, one panel at a time. The twin says what the panel holds in one line; the rows below are
  * a few at a time, and a tap on a row opens it. Nothing here needs a scroll.
  */
-export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPlay: (gateId: string) => void; area?: string }) {
+export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void; onPlay: (gateId: string) => void; area?: string; start?: TabId }) {
   const [data, setData] = useState<Activity | null>(null)
   const [usage, setUsage] = useState<UsageSummary | null>(null)
   const [judged, setJudged] = useState<Judgment | null>(null)
   const [told, setTold] = useState<Fact[]>([])
   const [from, setFrom] = useState<'taps' | 'told'>('taps')
   const [error, setError] = useState('')
-  const [tab, setTab] = useState<TabId>(area ? 'brain' : 'type')
+  const [tab, setTab] = useState<TabId>(start ?? (area ? 'brain' : 'type'))
   const [focusTree, setFocusTree] = useState<string | null>(null)
   const [proof, setProof] = useState<'certs' | 'work' | 'battles'>('certs')
   const [store, setStore] = useState<'about' | 'taps' | 'keep'>('about')
@@ -96,19 +96,19 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
     label: c.kind === 'insight' ? c.level : `${c.topic}${c.level ? `, ${c.level}` : ''}`,
     n: c.kind === 'insight' ? `${Math.round(c.accuracy * c.n)}/${c.n}` : `${Math.round(c.accuracy * 100)}%`,
     detail: c.kind === 'insight'
-      ? <>{c.topic} {Math.round(c.accuracy * c.n)} of {c.n} other twins answer as you do. Given on {new Date(c.issued_at).toLocaleDateString()}.</>
+      ? <>{c.topic} {Math.round(c.accuracy * c.n)} of {c.n} other Syms answer as you do. Given on {new Date(c.issued_at).toLocaleDateString()}.</>
       : <>{Math.round(c.accuracy * 100)} percent right on {c.n}{c.baseline !== null ? `. The crowd's guess got ${Math.round(c.baseline * 100)} percent` : ''}. Given on {new Date(c.issued_at).toLocaleDateString()}.</>,
   }))
   const workRows: Row[] = (data?.work ?? []).map((w, i) => ({
     id: `w${i}`, top: w.verdict === 'approved' ? 'Right' : 'Fixed', label: w.question, n: `+${w.credits}`,
-    detail: <>For {w.requester}. Your twin said: {w.twin_answer}. You said: {w.your_answer}.</>,
+    detail: <>For {w.requester}. Your Sym said: {w.twin_answer}. You said: {w.your_answer}.</>,
   }))
   const battleRows: Row[] = (data?.battles ?? []).map((b, i) => ({
     id: `k${i}`, top: b.twin_matches === null ? 'Open' : b.twin_matches > (b.baseline_matches ?? 0) ? 'Won' : 'Lost', label: b.topic,
     n: b.twin_matches === null ? '' : `${b.twin_matches}/${b.n}`,
     detail: b.twin_matches === null
       ? <>Not finished yet.</>
-      : <>Your twin guessed {b.twin_matches} of {b.n}. The crowd's guess got {b.baseline_matches} of {b.n}. {b.twin_kind === 'model' ? 'The AI twin played.' : 'The practice twin played. It does not use AI.'}</>,
+      : <>Your Sym guessed {b.twin_matches} of {b.n}. The crowd's guess got {b.baseline_matches} of {b.n}. {b.twin_kind === 'model' ? 'The AI Sym played.' : 'The practice Sym played. It does not use AI.'}</>,
   }))
   const tapRows: Row[] = (data?.responses ?? []).map((r) => ({
     id: r.card_id, top: `${(r.response_ms / 1000).toFixed(1)} s`, label: r.prompt, n: r.is_correct === null ? '' : r.is_correct ? 'Right' : 'Wrong',
@@ -118,8 +118,8 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
 
   return (
     <section aria-labelledby="mine-h" className="mine">
-      <h1 id="mine-h" className="sr-only">What my twin knows</h1>
-      <Tabs label="What my twin knows" value={tab} onChange={setTab}
+      <h1 id="mine-h" className="sr-only">What my Sym knows</h1>
+      <Tabs label="What my Sym knows" value={tab} onChange={setTab}
         tabs={[
           { id: 'type', label: 'Type' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }, { id: 'skills', label: 'Skills' },
           { id: 'judgment', label: 'Judgment', n: judged ? judged.taps.length : undefined },
@@ -138,7 +138,7 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
         {tab === 'judgment' && judged && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin</span>
+              <span className="line-top">My Sym</span>
               <p>{judged.says}</p>
             </div>
             <ul className="bars split-bars">
@@ -172,7 +172,7 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
         {tab === 'beliefs' && data && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin</span>
+              <span className="line-top">My Sym</span>
               <p>
                 {beliefs.length === 0
                   ? 'I do not believe anything about you yet. Finish your first gate of picks and I will start.'
@@ -200,7 +200,7 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
         {tab === 'proof' && data && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin</span>
+              <span className="line-top">My Sym</span>
               <p>
                 I hold {data.certs.length} {data.certs.length === 1 ? 'certificate' : 'certificates'}. You checked {data.work.length} of
                 my {data.work.length === 1 ? 'job' : 'jobs'}. I beat the crowd's guess in {won} of {data.battles.length} {data.battles.length === 1 ? 'battle' : 'battles'}.
@@ -209,16 +209,16 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
             <Tabs label="Kinds of proof" value={proof} onChange={setProof}
               tabs={[{ id: 'certs', label: 'Certificates', n: certRows.length }, { id: 'work', label: 'Checked work', n: workRows.length }, { id: 'battles', label: 'Battles', n: battleRows.length }]} />
             {proof === 'certs' && <Rows rows={certRows} pageKey="certs" wide
-              empty="None yet. Your twin earns one when it guesses better than the crowd on picks it has never seen. You earn one when you finish a skill gate." />}
-            {proof === 'work' && <Rows rows={workRows} pageKey="work" empty="No checked work yet. Send your twin to a job, then check its answer." />}
-            {proof === 'battles' && <Rows rows={battleRows} pageKey="battles" empty="No battles yet. A battle gate lets your twin guess your picks." />}
+              empty="None yet. Your Sym earns one when it guesses better than the crowd on picks it has never seen. You earn one when you finish a skill gate." />}
+            {proof === 'work' && <Rows rows={workRows} pageKey="work" empty="No checked work yet. Send your Sym to a job, then check its answer." />}
+            {proof === 'battles' && <Rows rows={battleRows} pageKey="battles" empty="No battles yet. A battle gate lets your Sym guess your picks." />}
           </>
         )}
 
         {tab === 'data' && data && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin</span>
+              <span className="line-top">My Sym</span>
               <p>
                 This is all the game stores about you: {data.responses.length} taps, a nickname and the day you joined.
                 I have cost {usage ? `$${usage.my_cost_usd.toFixed(4)}` : 'a little'} to run.
@@ -242,14 +242,14 @@ export function Mine({ onDeleted, onPlay, area }: { onDeleted: () => void; onPla
                   <button className="danger" onClick={() => setConfirming(true)}>Delete my account</button>
                 ) : (
                   <span className="confirm" role="group" aria-label="Confirm that you want to delete">
-                    <span>You cannot undo this. Your login and nickname are removed and your wallets close. Your twin stays as a free twin with no name. It cannot be linked back to you.</span>
+                    <span>You cannot undo this. Your login and nickname are removed and your wallets close. Your Sym stays as a free Sym with no name. It cannot be linked back to you.</span>
                     <button className="danger" disabled={busy} onClick={() => void remove()}>Yes, delete my account</button>
                     <button className="secondary" disabled={busy} onClick={() => setConfirming(false)}>No, keep it</button>
                   </span>
                 )}
               </div>
             )}
-            <More>You cannot change your answers. Play more gates to change your twin. This screen shows everything the game has stored about you.</More>
+            <More>You cannot change your answers. Play more gates to change your Sym. This screen shows everything the game has stored about you.</More>
           </>
         )}
       </div>

@@ -21,6 +21,22 @@ KNOWN_TRAITS = (
     | set(ONTOLOGY["unmapped"])
 )
 
+# The topics a belief may be about. A fixed list, so a belief keeps its name when it is rewritten, and so an agency
+# can reach twins that hold a view on a topic. (A fixed list of topics over memories follows VoiceMem: docs/SOURCES.md.)
+TOPICS: list[dict] = ONTOLOGY["topics"]
+TOPIC_NAME = {t["id"]: t["name"] for t in TOPICS}
+TOPIC_AREA = {t["id"]: t["area"] for t in TOPICS}  # where in the brain picture a belief about the topic is drawn
+_TOPIC_OF = {word.lower(): t["id"] for t in TOPICS for word in [t["id"], t["name"], *t["also"]]}
+
+
+def topic_id(raw: str) -> str:
+    """The topic a free word belongs to, or "general". Whole name first, then any known word inside it."""
+    text = (raw or "").strip().lower()
+    if text in _TOPIC_OF:
+        return _TOPIC_OF[text]
+    return next((tid for word, tid in _TOPIC_OF.items() if word in text.split() or f" {word} " in f" {text} "), "general")
+
+
 POINTS_PREFERENCE = 10
 POINTS_FEEDBACK = 5
 POINTS_BATTLE = 15

@@ -1,4 +1,4 @@
-"""The twin battle, the verifier and the certs. No key, no network: the model is absent or a test double."""
+"""The Sym battle, the verifier and the certs. No key, no network: the model is absent or a test double."""
 import json
 
 from pydantic_ai.models.test import TestModel

@@ -1,7 +1,7 @@
-"""Work: jobs a twin does for a requester, and what they pay. Rules in plain code, no model.
+"""Work: jobs a Sym does for a requester, and what they pay. Rules in plain code, no model.
 
-A job is one question from an invented requester. The twin answers as its human, the human confirms or
-corrects, and code pays play credits. The answer then joins the collective: how every twin answered.
+A job is one question from an invented requester. The Sym answers as its human, the human confirms or
+corrects, and code pays play credits. The answer then joins the collective: how every Sym answered.
 """
 from __future__ import annotations
 
@@ -46,12 +46,12 @@ JOB_BY_ID = {j.id: j for j in JOBS}
 
 
 def pay_for(job: Job, verdict: str, certified: bool) -> int:
-    """Approved work pays the job's rate, doubled for a certified twin. Corrected work pays the teaching rate."""
+    """Approved work pays the job's rate, doubled for a certified Sym. Corrected work pays the teaching rate."""
     if verdict != "approved":
         return TEACHING_PAY
     return job.pay * (CERT_MULTIPLIER if certified else 1)
 
 
 def split(job: Job, choices: list[str]) -> list[tuple[str, str, int]]:
-    """(option id, label, how many twins chose it), in the job's own option order."""
+    """(option id, label, how many Syms chose it), in the job's own option order."""
     return [(o.id, o.label, sum(1 for c in choices if c == o.id)) for o in job.card.options]

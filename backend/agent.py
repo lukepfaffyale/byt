@@ -1,8 +1,8 @@
 """The BYT agents inside the class safe harness (PydanticAI).
 
 Two agents, each with its own prompt file and one read-only tool:
-- Profiler: reads a player's picks (get_picks) and writes the tendencies, which are the twin's knowledge.
-- Twin: reads the tendencies and the cards to predict (get_brief) and returns one prediction per card.
+- Profiler: reads a player's picks (get_picks) and writes the tendencies, which are the Sym's knowledge.
+- Sym: reads the tendencies and the cards to predict (get_brief) and returns one prediction per card.
 
 The five pieces:
 - Tools: tools.py, typed and read-only. Facts come from tools.
@@ -16,7 +16,7 @@ The five pieces:
   to output/audit_trail.json (committed, counts only, no player text). Token usage goes to the usage table.
 
 No exception reaches a route: every run returns an outcome with a stop reason, and the caller falls
-back to the zero-token practice twin when there is no usable result.
+back to the zero-token practice Sym when there is no usable result.
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ from pydantic_graph import End
 import db
 import market
 from audit import AuditLogger
-from content import CARDS
+from content import CARDS, TOPIC_NAME, topic_id
 from models import GuideDraft, ProfileOut, TwinOut, Usage, WorkDraft
 from prompt_guard import append_flags, strip_injections
 from tools import TwinDeps, register_guide_tools, register_profiler_tools, register_twin_tools, register_worker_tools
@@ -271,21 +271,24 @@ async def run_harnessed(agent_name: str, task: str, deps: TwinDeps) -> RunOutcom
 
 async def profile_player(player_id: str, misses: list[dict[str, Any]] | None = None) -> str:
     """Run the Profiler and store the tendencies it wrote, cleaned. Returns the stop reason.
-    After a battle it is given the guesses the twin got wrong, so the beliefs that failed are the ones rewritten."""
-    task = ("The twin guessed some picks wrong. Read the missed predictions and profile this player again."
+    After a battle it is given the guesses the Sym got wrong, so the beliefs that failed are the ones rewritten."""
+    task = ("The Sym guessed some picks wrong. Read the missed predictions and profile this player again."
             if misses else "Profile this player from their picks.")
     outcome = await run_harnessed("profiler", task, TwinDeps(player_id=player_id, misses=misses))
     if not isinstance(outcome.output, ProfileOut):
         return outcome.stopped_reason
     kept: list[tuple[str, str, int]] = []
-    for t in outcome.output.tendencies[:8]:
+    seen: set[str] = set()
+    # one belief for each topic, the best supported first, so a belief has one name that lasts
+    for t in sorted(outcome.output.tendencies[:10], key=lambda d: -d.evidence_count):
         # The Twin will read these lines, so text one model wrote is guarded like any other untrusted text.
         statement, flags = strip_injections(strip_em_dashes(t.statement).strip(), source="profiler_output", channel="model_output")
         if flags:
             append_flags(flags)
             continue
-        topic = strip_em_dashes(t.topic).strip()[:40]
-        if statement and topic:
+        topic = TOPIC_NAME[topic_id(strip_em_dashes(t.topic))]
+        if statement and topic not in seen:
+            seen.add(topic)
             kept.append((topic, statement[:200], t.evidence_count, t.scope))
     if kept:
         db.replace_tendencies(player_id, kept)
@@ -293,11 +296,11 @@ async def profile_player(player_id: str, misses: list[dict[str, Any]] | None = N
 
 
 async def predict_battle(player_id: str, card_ids: list[str]) -> tuple[str, dict[str, tuple[str | None, float, str | None]], dict[str, str]]:
-    """Predictions for a battle: (twin kind, {card id: (choice or None, confidence, the belief leaned on)},
+    """Predictions for a battle: (Sym kind, {card id: (choice or None, confidence, the belief leaned on)},
     {card id: baseline choice}).
 
-    The Twin agent answers when it can. When it cannot (no key, budget spent, a limit, an error, or an
-    answer that fits none of the cards) the zero-token practice twin answers instead, and says so.
+    The Sym agent answers when it can. When it cannot (no key, budget spent, a limit, an error, or an
+    answer that fits none of the cards) the zero-token practice Sym answers instead, and says so.
     """
     cards = [CARDS[cid] for cid in card_ids if cid in CARDS]
     baseline = {c.id: popular_choice(c, db.picks_by_others(c.id, player_id)) for c in cards}
@@ -336,9 +339,9 @@ OFFLINE_REASON = "My picks point this way most often."
 
 
 async def do_job(player_id: str, job: Job) -> tuple[str, str | None, str]:
-    """The twin answers one job as its human: (twin kind, option id or None, one-line reason).
+    """The Sym answers one job as its human: (Sym kind, option id or None, one-line reason).
 
-    The Worker agent answers when it can. Otherwise the zero-token practice twin answers from the trait
+    The Worker agent answers when it can. Otherwise the zero-token practice Sym answers from the trait
     counts, and says so. Either way the human reviews the answer before anything is paid.
     """
     if not db.tendencies_for(player_id):
@@ -371,7 +374,7 @@ CALENDAR = re.compile(r"(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sund
 
 def clean_note(note: Any) -> tuple[str, str, str] | None:
     """A fact the Guide wants to keep, checked by code: (scope, topic, statement), or None when it is refused.
-    It must be one plain sentence about "this person" in the twin's words, with no name (no capital letter after
+    It must be one plain sentence about "this person" in the Sym's words, with no name (no capital letter after
     the first), no number, no address, and nothing about health, money, belief or other sensitive ground."""
     if note is None:
         return None
@@ -380,7 +383,7 @@ def clean_note(note: Any) -> tuple[str, str, str] | None:
     if flags:
         append_flags(flags)
         return None
-    topic = topic or "general"
+    topic = TOPIC_NAME[topic_id(topic)].lower()
     if not statement.startswith("This person ") or len(statement) > 160:
         return None
     plain = CALENDAR.sub("", statement[1:])  # the names of days and months are not names of people or places
@@ -390,7 +393,7 @@ def clean_note(note: Any) -> tuple[str, str, str] | None:
 
 
 async def talk(player_id: str, said: str, situation: dict[str, Any], moves: set[str]) -> tuple[str, str, str | None, tuple[str, str, str] | None]:
-    """The twin answers one line from its human: (twin kind, what it says, a move id or None).
+    """The Sym answers one line from its human: (Sym kind, what it says, a move id or None).
 
     The human's words travel in the tool result, last, and never in the task message, so they stay out of the
     committed trail. The answer is model text shown to a person: cleaned, guarded and cut to length. A move the

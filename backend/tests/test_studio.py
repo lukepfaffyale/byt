@@ -1,4 +1,4 @@
-"""The creator studio and one to one meetings: taps from fixed lists, counts only for a group, and one twin is seen
+"""The creator studio and one to one meetings: taps from fixed lists, counts only for a group, and one Sym is seen
 only when its owner said yes and the seat paid the royalty."""
 import db
 import market

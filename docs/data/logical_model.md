@@ -8,7 +8,7 @@
 | cards | id (text) | | not a database table: versioned content files `backend/data/cards/*.json`, one file per gate, loaded into memory at start by `backend/content.py`. Winning moves of strategy cards are computed by code at load |
 | responses | id (uuid) | player_id -> players, card_id -> cards | unique (player_id, card_id) |
 | tendencies | id (uuid) | player_id -> players | replaced per topic when the Profiler runs |
-| battles | id (uuid) | player_id -> players | unique (player_id, gate_id): the twin predicts once per battle |
+| battles | id (uuid) | player_id -> players | unique (player_id, gate_id): the Sym predicts once per battle |
 | predictions | id (uuid) | battle_id -> battles, player_id -> players, card_id -> cards | written before the player sees the cards |
 | certs | id (uuid) | player_id -> players | unique (player_id, kind, topic, level) |
 | self_reports | player_id (uuid) | player_id -> players | one row per player; replaced whole on each save |
@@ -22,7 +22,7 @@
 | briefs | id (uuid) | org_id -> orgs | counts only; a creator's survey, test or skill claim |
 | meets | id (uuid) | org_id -> orgs, player_id -> players | removed when either side deletes their data |
 | facts | id (uuid) | player_id -> players | written only after the player taps yes; removed when the player leaves |
-| throws | id (uuid) | player_id -> players | one row for each round against the twin |
+| throws | id (uuid) | player_id -> players | one row for each round against the Sym |
 | lessons | id (uuid) | player_id -> players, battle_id -> battles | written once for a battle, by code |
 | sponsorships | id (uuid) | org_id -> orgs | credits an agency put behind a skill; counts only |
 | autowork | player_id (uuid) | player_id -> players | one row per player; 0 until chosen |
@@ -67,9 +67,9 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | GET /me | | Me (nickname, points, level, certs) | players, certs |
 | GET /journey | | Journey (gates, which are unlocked) | players, responses |
 | GET /gates/{gate_id}/cards | | CardOut list (never the correct option) | cards, responses |
-| POST /responses | ResponseIn (card_id, choice, response_ms) | ResponseOut (correct or not for skill cards, points; on a battle card, the twin's pick revealed; a skill cert if earned) | responses, players, predictions, certs |
-| POST /battles | BattleStart (gate_id) | BattleStarted (n, twin kind; predictions stay hidden) | battles, predictions, tendencies, usage |
-| POST /battles/{gate_id}/learn | | LearnOut (how many guesses were wrong, and each belief the twin changed, before and after) | battles, predictions, responses, tendencies, lessons, usage |
+| POST /responses | ResponseIn (card_id, choice, response_ms) | ResponseOut (correct or not for skill cards, points; on a battle card, the Sym's pick revealed; a skill cert if earned) | responses, players, predictions, certs |
+| POST /battles | BattleStart (gate_id) | BattleStarted (n, Sym kind; predictions stay hidden) | battles, predictions, tendencies, usage |
+| POST /battles/{gate_id}/learn | | LearnOut (how many guesses were wrong, and each belief the Sym changed, before and after) | battles, predictions, responses, tendencies, lessons, usage |
 | GET /battles/{gate_id} | | BattleResult (score, baseline, cert if earned) | battles, predictions, certs |
 | GET /me/activity | | Activity (responses, tendencies, battles, certs) | all player tables |
 | GET /me/mirror | | Mirror (suggested letters, thinking styles, faculties, what was told, verdicts) | responses, self_reports |
@@ -77,29 +77,31 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | DELETE /me/told | | Mirror | self_reports |
 | GET /skills | | Skills (every tree with the player's place on it) | responses, certs |
 | GET /jobs | | Jobs (each job, its state, credits so far) | work, responses, certs |
-| POST /jobs/{job_id}/run | | JobOut (the twin's answer and reason, waiting for review) | work, tendencies, usage |
+| POST /jobs/{job_id}/run | | JobOut (the Sym's answer and reason, waiting for review) | work, tendencies, usage |
 | POST /jobs/{job_id}/review | ReviewIn (approved, or corrected with a choice) | JobResult (credits, the collective split) | work, certs |
 | POST /me/consent | ConsentIn (data_income) | Jobs | consents |
 | POST /me/one-to-one | OneToOneIn (on) | Jobs | one_to_one |
 | GET /creator | | CreatorSeat (the wallet, the fixed questions, groups and skills, past crew jobs) | orgs, briefs, wallets |
 | POST /creator/briefs | BriefIn (kind, topic, audience; all from fixed lists) | CreatorSeat (counts per option or band) | orgs, briefs, earnings, responses, certs, consents, wallets, transfers |
-| POST /me/leave | | Left (the login and nickname are removed, the wallets are closed; the twin stays as a free twin) | players, wallets, consents, one_to_one, self_reports, meets, postings |
+| POST /me/leave | | Left (the login and nickname are removed, the wallets are closed; the Sym stays as a free Sym) | players, wallets, consents, one_to_one, self_reports, meets, postings |
 | POST /agency/sponsor | SponsorIn (skill, budget; from fixed lists) | Agency (each sponsorship with what it spent and how many passes it paid for) | orgs, sponsorships, wallets, transfers |
 | POST /gates/{gate_id}/retry | | RetryOut (the gate and how many answers were cleared) | responses |
 | GET /me/judgment | | Judgment (right at each level of sureness, the taps in order, one plain line) | responses |
-| GET /twin/facts | | FactsOut (the facts the caller let their twin keep) | facts |
-| POST /twin/facts | no body | FactsOut. Keeps the one fact the twin last offered; a request cannot carry text | facts |
+| GET /twin/facts | | FactsOut (the facts the caller let their Sym keep) | facts |
+| POST /twin/facts | no body | FactsOut. Keeps the one fact the Sym last offered; a request cannot carry text | facts |
 | DELETE /twin/facts/{fact_id} | | FactsOut | facts |
-| GET /rps | | RpsOut (the score against the twin, the last rounds, the habits the twin found, and the league of twins, each other twin as a number) | throws |
-| POST /rps | RpsIn (throw: r, p or s) | RpsOut, with the round just played and why the twin threw what it did | throws |
+| GET /rps | | RpsOut (the score against the Sym, the last rounds, the habits the Sym found, and the league of Syms, each other Sym as a number) | throws |
+| POST /rps | RpsIn (throw: r, p or s) | RpsOut, with the round just played and why the Sym threw what it did | throws |
 | POST /me/auto | AutoIn (per_day, from a fixed list) | Jobs | autowork |
 | GET /me/plan | | Plan (up to four best uses of the next few minutes, each with a reason and what it can pay) | responses, work, postings, made_steps, consents |
-| GET /world | no login | World (totals for the whole game: twins, seats, certificates, checked answers, corrections, and credits moved between kinds of wallet). Names no player, seat or answer | all tables, as counts |
+| GET /commons | player | Commons (the first screen after signing in: how many real people, how many played today, how many stand-ins, the seats, what is known together and the reader's part of it, and the newest happenings as nameless lines with a loose time: now, today, week, earlier). Names no player, seat or answer | players, active_days, responses, work, facts, lessons, certs, tendencies, orgs, campaigns, briefs, made_steps, postings, as counts and newest rows |
+| GET /me/ripple | player | Ripple (what this person set moving across their own seats: taps and checks as a player, asks from their own agency and from others, steps passed, people their agency paid, passes of steps their studio built). Their own rows; other people only as counts | responses, work, earnings, orgs, campaigns, postings, sponsorships, made_steps, briefs, transfers |
+| GET /world | no login | World (totals for the whole game: Syms, seats, certificates, checked answers, corrections, and credits moved between kinds of wallet). Names no player, seat or answer | all tables, as counts |
 | POST /twin/ask | AskIn (text, at most 200 characters) | AskOut (one or two sentences, one move from a fixed list, one card to answer) | tendencies, responses, work, usage. The text is not stored |
 | POST /agency/jobs | PostIn (question_id, pay, seats; all from fixed lists) | Agency (the posted jobs with counts) | orgs, postings, wallets, transfers |
 | POST /agency/jobs/{job_id}/close | | Agency (the unused held credits are back in the wallet) | postings, work, wallets, transfers |
 | POST /creator/steps | StepIn (pack, cards; the pack must be claimed by this seat, the cards tapped from it) | CreatorSeat (the built step, and for each built step how many players passed it and what it earned) | orgs, briefs, made_steps, wallets, transfers |
-| GET /seats/{seat}/meets | | Meets (each twin this seat paid to meet, shown only while its owner keeps one to one on) | meets, one_to_one, responses, players |
+| GET /seats/{seat}/meets | | Meets (each Sym this seat paid to meet, shown only while its owner keeps one to one on) | meets, one_to_one, responses, players |
 | POST /seats/{seat}/meet | MeetIn (audience, from a fixed list) | Meets | meets, one_to_one, earnings, wallets, transfers |
 | POST /creator | OrgCreate (name) | CreatorSeat | orgs |
 | GET /agency | | Agency (budget, the fixed questions, audiences, past results) | orgs, campaigns |

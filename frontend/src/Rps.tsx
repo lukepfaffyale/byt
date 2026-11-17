@@ -5,7 +5,7 @@ import { More } from './More'
 import { Rows } from './Rows'
 
 const NAME: Record<string, string> = { r: 'Rock', p: 'Paper', s: 'Scissors' }
-const SAID = { you: 'You win this round.', twin: 'My twin wins this round.', draw: 'A draw.' }
+const SAID = { you: 'You win this round.', twin: 'My Sym wins this round.', draw: 'A draw.' }
 
 /** Three simple marks, drawn here: a stone, a sheet and two blades. */
 function Mark({ t }: { t: string }) {
@@ -45,7 +45,7 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
       .then((s) => {
         setState(s)
         setError('')
-        if (s.round) announce(`You threw ${NAME[s.round.mine]}. Your twin threw ${NAME[s.round.twin]}. ${SAID[s.round.outcome]} ${s.round.why}`)
+        if (s.round) announce(`You threw ${NAME[s.round.mine]}. Your Sym threw ${NAME[s.round.twin]}. ${SAID[s.round.outcome]} ${s.round.why}`)
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'There was a problem. Please try again.'))
       .finally(() => setBusy(false))
@@ -57,9 +57,9 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
 
   return (
     <section aria-labelledby="rps-h" className="mine rps">
-      <h1 id="rps-h" className="sr-only">Rock, paper, scissors against my twin</h1>
+      <h1 id="rps-h" className="sr-only">Rock, paper, scissors against my Sym</h1>
       <div className="twin-line">
-        <span className="line-top">My twin</span>
+        <span className="line-top">My Sym</span>
         <p>
           {state.rounds === 0
             ? 'I have chosen my throw. I do not know how you play yet, so beat me while you can.'
@@ -80,21 +80,21 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
           <>
             <span className="rps-side"><Mark t={round.mine} /><span className="line-top">You · {NAME[round.mine]}</span></span>
             <strong>{SAID[round.outcome]}</strong>
-            <span className="rps-side"><Mark t={round.twin} /><span className="line-top">My twin · {NAME[round.twin]}</span></span>
+            <span className="rps-side"><Mark t={round.twin} /><span className="line-top">My Sym · {NAME[round.twin]}</span></span>
           </>
-        ) : <span className="muted">My twin's throw is sealed. Tap yours.</span>}
+        ) : <span className="muted">My Sym's throw is sealed. Tap yours.</span>}
       </p>
       {error && <p className="error" role="alert">{error}</p>}
       <Tabs label="Rock, paper, scissors" value={tab} onChange={setTab}
         tabs={[
           { id: 'score', label: 'Score', n: `${state.you}-${state.twin}` },
           { id: 'tells', label: 'How I read you', n: state.tells.length },
-          { id: 'league', label: 'Twin league', n: state.need > 0 ? `in ${state.need}` : `${state.rank}/${state.of}` },
+          { id: 'league', label: 'Sym league', n: state.need > 0 ? `in ${state.need}` : `${state.rank}/${state.of}` },
         ]} />
       {tab === 'score' && (
         <>
           <dl className="pair">
-            <div><dt>It read you</dt><dd>{state.twin}</dd><dd className="muted">my twin won</dd></div>
+            <div><dt>It read you</dt><dd>{state.twin}</dd><dd className="muted">my Sym won</dd></div>
             <div><dt>You fooled it</dt><dd>{state.you}</dd><dd className="muted">you won</dd></div>
             <div><dt>Draws</dt><dd>{state.draws}</dd><dd className="muted">it expected something else</dd></div>
           </dl>
@@ -112,18 +112,18 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
           }))} />
       )}
       {tab === 'league' && (state.need > 0 ? (
-        <p className="fine">Play {state.need} more {state.need === 1 ? 'round' : 'rounds'}. Then my twin plays every other twin. Each twin throws the way its owner throws.</p>
+        <p className="fine">Play {state.need} more {state.need === 1 ? 'round' : 'rounds'}. Then my Sym plays every other Sym. Each Sym throws the way its owner throws.</p>
       ) : (
-        <Rows pageKey="league" size={4} wide empty="No other twins yet."
+        <Rows pageKey="league" size={4} wide empty="No other Syms yet."
           rows={state.rivals.map((r, i) => ({
             id: `r${i}`, top: r.won > r.lost ? 'Won' : r.won < r.lost ? 'Lost' : 'Even', gold: r.won > r.lost,
-            label: `${r.name}${r.free ? ' · free twin' : ''}`, n: `${r.won}-${r.lost}`,
-            detail: <>21 rounds. My twin won {r.won}, lost {r.lost} and drew {r.drawn}. Both twins threw the way their owners throw.</>,
+            label: `${r.name}${r.free ? ' · free Sym' : ''}`, n: `${r.won}-${r.lost}`,
+            detail: <>21 rounds. My Sym won {r.won}, lost {r.lost} and drew {r.drawn}. Both Syms threw the way their owners throw.</>,
           }))} />
       ))}
       <More label="About this game">
-        Your twin picks its throw before you tap, from your earlier throws only. A simple computer program does
-        this, not AI, so it costs nothing. The game stores your throws. Other twins in the league have a number,
+        Your Sym picks its throw before you tap, from your earlier throws only. A simple computer program does
+        this, not AI, so it costs nothing. The game stores your throws. Other Syms in the league have a number,
         never a name, and they see only wins and losses.
       </More>
     </section>

@@ -31,27 +31,27 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
   return (
     <section aria-labelledby="start-h" className="start">
       <p className="twin-says">I am not you yet. Teach me.</p>
-      <h1 id="start-h">Meet your digital twin. It works while you rest.</h1>
-      <p className="twin-says">Alone, monochrome. Together, technicolor.</p>
+      <h1 id="start-h">Meet your Sym. It works while you rest.</h1>
+      <p className="twin-says">Color comes from other people.</p>
       <WorldView compact />
-      <p className="lead">A gate is a short set of cards. You tap your picks, and your twin learns from them. Then your twin tries to guess your picks.</p>
+      <p className="lead">A gate is a short set of cards. You tap your picks, and your Sym learns from them. Then your Sym tries to guess your picks.</p>
 
       <form onSubmit={submit}>
         <div className="notice" id="notice">
           <h2>What this game stores</h2>
           <p>
             This game stores a nickname, the days you play, and your taps: what you pick and how fast you tap. The game
-            uses them to build a twin of you. Your twin's notes about you go to an AI model, without your nickname. You can see
+            uses them to build a Sym of you. Your Sym's notes about you go to an AI model, without your nickname. You can see
             everything the game stores. You can delete your account at any time: your login and nickname are removed, and
-            your twin stays as a free twin with no name. It cannot be linked back to you.
+            your Sym stays as a free Sym with no name. It cannot be linked back to you.
           </p>
-          <p>Use a nickname, not your real name. If you clear the data of this browser, you lose your twin.</p>
+          <p>Use a nickname, not your real name. If you clear the data of this browser, you lose your Sym.</p>
         </div>
 
         <label htmlFor="seat">Start as</label>
         <select id="seat" value={seat} onChange={(e) => setSeat(e.target.value as Seat)} aria-describedby="seat-help">
-          <option value="player">Player: build my digital twin</option>
-          <option value="agency">Agency: ask the twins</option>
+          <option value="player">Player: build my Sym</option>
+          <option value="agency">Agency: ask the Syms</option>
           <option value="creator">Creator: make skills</option>
         </select>
         <p id="seat-help" className="muted">You can open the other seats later with the same login.</p>

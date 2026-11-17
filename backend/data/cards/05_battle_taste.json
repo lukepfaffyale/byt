@@ -1,5 +1,5 @@
 {
-  "gate": {"id": "battle-taste", "title": "Twin battle: style and spending", "kind": "battle", "deck": "Style and spending"},
+  "gate": {"id": "battle-taste", "title": "Sym battle: style and spending", "kind": "battle", "deck": "Style and spending"},
   "cards": [
     {"id": "bt-01", "prompt": "You see a jacket in a color you have never worn. Do you buy it?", "options": [{"id": "a", "label": "Yes, I want to try it", "trait": "bold"}, {"id": "b", "label": "No, I stay with what I know", "trait": "classic"}]},
     {"id": "bt-02", "prompt": "Which sneakers do you choose?", "options": [{"id": "a", "label": "The pair everyone has", "trait": "classic"}, {"id": "b", "label": "The pair no one has", "trait": "bold"}]},

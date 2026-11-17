@@ -2,11 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { AgencyDesk } from './AgencyDesk'
 import { CreatorDesk, type SeatView } from './CreatorDesk'
-import { api, ApiError, type Bin, type Gate, type Me, type Sphere, type SphereFrame, type Vertical, type PlanOption } from './api'
+import { api, ApiError, type Bin, type Gate, type Me, type Sphere, type SphereFrame, type Hub, type Vertical, type PlanOption } from './api'
 import { GatePlay } from './GatePlay'
 import { Signal } from './Signal'
 import { TwinTalk } from './TwinTalk'
 import { WorldView } from './World'
+import { CommonsView } from './Commons'
 import { Mine } from './Mine'
 import { MoneyView } from './MoneyView'
 import { Rps } from './Rps'
@@ -14,12 +15,13 @@ import { Start } from './Start'
 import { TwinForm } from './TwinForm'
 import { Work } from './Work'
 
-type Screen = { name: 'journey' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'about' }
+type Screen = { name: 'journey' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number; tab?: 'beliefs' } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'commons' } | { name: 'about' }
 
-const PLAYER_MENU: [name: 'journey' | 'work' | 'mine' | 'money' | 'arena' | 'world', label: string][] = [
+const PLAYER_MENU: [name: 'commons' | 'journey' | 'work' | 'mine' | 'money' | 'arena' | 'world', label: string][] = [
+  ['commons', 'Everyone'],
   ['journey', 'My Journey'],
   ['work', 'My Work'],
-  ['mine', 'My Twin'],
+  ['mine', 'My Sym'],
   ['money', 'My Money'],
   ['world', 'World'],
 ]
@@ -35,7 +37,7 @@ const DOCK_KEY = 'byt_dock'
 const HINT_KEY = 'byt_hint'
 const PLACES: Dock[] = ['mini', 'stage', 'wall']
 const AXES = ['Player', 'Creator', 'Agency', 'Time']
-const TWIN_LABEL = 'Your twin is a turning brain made of connected points of light. Each area of your mind grows outward from one seed as you play, and fine strands reach from it to other twins. It sits inside a frame with four directions: player, agency, creator and time. Tap the name of a direction to stand in that seat, or tap Time to play your story. Drag it, or press the arrow keys, to turn it. Hold Shift to turn the frame through its fourth direction.'
+const TWIN_LABEL = 'Your Sym is a turning brain made of connected points of light. Each area of your mind grows outward from one seed as you play, each belief your Sym holds is a ringed point named by its topic, and fine strands reach from it to other Syms. It sits inside a frame with four directions: player, agency, creator and time. Tap the name of a direction to stand in that seat, or tap Time to play your story. Drag it, or press the arrow keys, to turn it. Hold Shift to turn the frame through its fourth direction.'
 /** A screen in a room (a projector) asks for the wall in the address; there the story plays by itself. */
 const ROOM = new URLSearchParams(window.location.search).get('view') === 'wall'
 
@@ -105,7 +107,7 @@ const KIND_LABEL: Record<string, string> = {
   strategy: 'Strategy',
   pattern: 'Pattern',
   feedback: 'Reaction',
-  battle: 'Twin battle',
+  battle: 'Sym battle',
   logic: 'Logic',
   reflex: 'Speed',
 }
@@ -116,11 +118,12 @@ export default function App() {
   const [gates, setGates] = useState<Gate[]>([])
   const [bins, setBins] = useState<Bin[]>([])
   const [openBin, setOpenBin] = useState<string | null>(null)
-  const [screen, setScreen] = useState<Screen>({ name: 'journey' })
+  const [screen, setScreen] = useState<Screen>({ name: 'commons' })
   const [error, setError] = useState('')
   const [live, setLive] = useState('')
   const [pulse, setPulse] = useState(0)
   const [areas, setAreas] = useState<Vertical[]>([])
+  const [hubs, setHubs] = useState<Hub[]>([])
   const [history, setHistory] = useState<SphereFrame[]>([])
   const [seatSphere, setSeatSphere] = useState<{ seat: string; view: string; sphere: Sphere } | null>(null)
   // a moment in the past that the sphere is showing, for one seat; null means now
@@ -259,6 +262,7 @@ export default function App() {
         setGates(j.gates)
         setBins(j.bins)
         setAreas(sp.verticals)
+        setHubs(sp.hubs ?? [])
         setHistory(sp.history)
         setError('')
       })
@@ -280,8 +284,8 @@ export default function App() {
     return (
       <Shell
         live={live}
-        read="My digital twin · not formed yet"
-        twin={<TwinForm coherence={0.04} variant="hero" motion={motion} label="Your twin is not formed yet. It is many small points of light." />}
+        read="My Sym · not formed yet"
+        twin={<TwinForm coherence={0.04} variant="hero" motion={motion} label="Your Sym is not formed yet. It is many small points of light." />}
         motion={motion}
         onMotion={toggleMotion}
         look={look}
@@ -357,6 +361,8 @@ export default function App() {
       variant={dock === 'mini' ? 'dot' : dock === 'wall' || screen.name === 'journey' ? 'hero' : 'mini'}
       axes={dock === 'mini' ? undefined : AXES}
       onAxis={dock === 'mini' ? undefined : takeAxis}
+      hubs={seat || dock === 'mini' ? undefined : hubs}
+      onHub={() => open({ name: 'mine', tab: 'beliefs', at: Date.now() })}
       axesOn={[!seat, seat?.name === 'creator', seat?.name === 'agency', playing || at !== null]}
       time={at === null || frames.length < 2 ? 1 : at / (frames.length - 1)}
       onSize={dock === 'mini' ? undefined : sizeTwin}
@@ -383,12 +389,12 @@ export default function App() {
         </div>
         <div className="ambient-read">
           <p className="stat">{percent}</p>
-          <p className="stat-label">percent formed · my digital twin</p>
+          <p className="stat-label">percent formed · my Sym</p>
           <dl className="pair">
             <div><dt>Credits</dt><dd>{me?.credits ?? 0}</dd></div>
             <div><dt>Certificates</dt><dd>{me?.certs ?? 0}</dd></div>
             <div><dt>Jobs ready</dt><dd>{me?.jobs_open ?? 0}</dd></div>
-            <div><dt>Twins</dt><dd>{me?.twins ?? 0}</dd></div>
+            <div><dt>Syms</dt><dd>{me?.twins ?? 0}</dd></div>
           </dl>
         </div>
         <button className="link ambient-exit" onClick={() => setDisplay('full')}>Full view</button>
@@ -434,7 +440,7 @@ export default function App() {
       }
       legend={
         (
-          <ul className="legend" aria-label={seat ? 'The areas of this seat' : 'The areas of your twin'}>
+          <ul className="legend" aria-label={seat ? 'The areas of this seat' : 'The areas of your Sym'}>
             {shown.map((a) => (
               <li key={a.key}>
                 <button className="legend-item" aria-pressed={group === a.key}
@@ -449,7 +455,7 @@ export default function App() {
           </ul>
         )
       }
-      read={seat ? `You are in the ${seat.name === 'agency' ? 'Agency' : 'Creator'} seat` : `My digital twin · ${Math.round(formed * 100)} percent formed · ${Math.round((me?.together ?? 0) * 100)} percent in color · ${me?.twins ?? 0} twins in the sky`}
+      read={seat ? `You are in the ${seat.name === 'agency' ? 'Agency' : 'Creator'} seat` : `My Sym · ${Math.round(formed * 100)} percent formed · ${Math.round((me?.together ?? 0) * 100)} percent in color · ${me?.twins ?? 0} Syms in the sky`}
       onAbout={() => setScreen({ name: 'about' })}
       nav={
         seat ? (
@@ -486,7 +492,7 @@ export default function App() {
         <Signal tick={`${me.credits}|${me.jobs_open}|${screen.name}|${seat?.view ?? ''}`} jobs={screen.name === 'work' ? 0 : me.jobs_open}
           onWork={() => setScreen({ name: 'work' })} />
       )}
-      {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'arena' && (
+      {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'commons' && screen.name !== 'arena' && (
         <TwinTalk where={screen.name} announce={setLive}
           onLearned={() => { setPulse((n) => n + 1); refresh() }}
           onMove={go} />
@@ -495,8 +501,8 @@ export default function App() {
 
       {screen.name === 'journey' && (
         <section aria-labelledby="journey-h">
-          <h1 id="journey-h">{formed >= 1 ? 'My digital twin is fully formed.' : 'My digital twin is forming.'}</h1>
-          <p className="muted">Gates are short, and you only tap. Each gate you finish helps your twin form.</p>
+          <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>
+          <p className="muted">Gates are short, and you only tap. Each gate you finish helps your Sym form.</p>
           {next ? (
             <button className="primary big" onClick={() => setScreen({ name: 'gate', gateId: next.id })}>
               {next.done > 0 ? 'Continue' : 'Start'}: {next.title}
@@ -536,12 +542,12 @@ export default function App() {
             <button className="bin" onClick={() => setScreen({ name: 'arena' })}>
               <span className="bin-name">Arena</span>
               <span className="bin-count" aria-hidden="true">&#9675;</span>
-              <span className="muted">rock, paper, scissors against my twin</span>
+              <span className="muted">rock, paper, scissors against my Sym</span>
             </button>
           </div>
           <div id="bin-panel">
             {openBin && gates.every((g) => g.bin !== openBin || g.done === g.total) && (
-              <p className="muted">You finished every gate here. You can see your answers on the "My twin" screen. More gates will come later.</p>
+              <p className="muted">You finished every gate here. You can see your answers on the "My Sym" screen. More gates will come later.</p>
             )}
             {openBin && gates.some((g) => g.bin === openBin && g.done < g.total) && (
               <ol className="gates">
@@ -604,8 +610,9 @@ export default function App() {
 
       {screen.name === 'mine' && (
         <Mine
-          key={screen.area ? `${screen.area}:${screen.at ?? 0}` : 'mine'}
+          key={`${screen.area ?? ''}:${screen.tab ?? ''}:${screen.at ?? 0}`}
           area={screen.area}
+          start={screen.tab}
           onPlay={(gateId) => setScreen({ name: 'gate', gateId })}
           onDeleted={() => {
             api.forget()
@@ -619,14 +626,25 @@ export default function App() {
 
       {screen.name === 'world' && <WorldView />}
 
+      {screen.name === 'commons' && (
+        <CommonsView next={next} onPlay={(gateId) => setScreen({ name: 'gate', gateId })} onJourney={() => setScreen({ name: 'journey' })}
+          onSeat={(seat) => setScreen({ name: seat, view: 'desk' } as Screen)} />
+      )}
+
       {screen.name === 'about' && (
         <section aria-labelledby="about-h">
           <h1 id="about-h">About BYT</h1>
-          <p>Beat your twin. Benefit from your twin. Be everywhere.</p>
-          <p>Alone, monochrome. Together, technicolor.</p>
+          <p>Beat your Sym. Benefit from your Sym. Be everywhere.</p>
+          <p>Color comes from other people. A Sym on its own is black and white.</p>
           <p>
-            BYT is a class project. You play short gates. Your taps build a twin, and the twin belongs to you. Soon,
-            your twin will try to guess your picks. A twin that guesses well enough earns a certificate.
+            BYT is the game. Symbolon is the name for who makes it. Long ago in Greece, two people who made a promise
+            broke a small token in two, and each kept a half. Later, one half proved who you were by fitting the
+            other. That token was called a symbolon. Your Sym is your other half: it is not a copy of you, and nothing
+            it believes counts until it fits.
+          </p>
+          <p>
+            BYT is a class project. You play short gates. Your taps build a Sym, and the Sym belongs to you. Soon,
+            your Sym will try to guess your picks. A Sym that guesses well enough earns a certificate.
           </p>
           <p>
             We made every drawing and every brand in this game for this project. Nothing here is official, licensed
@@ -647,9 +665,9 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         <span className="brand-row">
           <span className="brand">BYT</span>
           {dock === 'mini' && (
-            <button className="twin-home" onClick={() => props.onDock?.('stage')} title="Bring my twin down">
+            <button className="twin-home" onClick={() => props.onDock?.('stage')} title="Bring my Sym down">
               {props.twin}
-              <span className="sr-only">Bring my twin down</span>
+              <span className="sr-only">Bring my Sym down</span>
             </button>
           )}
         </span>
@@ -658,13 +676,13 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         {props.status && <p className="status">{props.status}</p>}
       </header>
       {dock !== 'mini' && (
-      <div className={`stage ${props.compact ? 'compact' : ''} ${wall ? 'stage-wall' : ''}`} role={wall ? 'dialog' : undefined} aria-label={wall ? 'My twin, full screen' : undefined}>
+      <div className={`stage ${props.compact ? 'compact' : ''} ${wall ? 'stage-wall' : ''}`} role={wall ? 'dialog' : undefined} aria-label={wall ? 'My Sym, full screen' : undefined}>
         {props.onDock && (
-          <div className="dock" role="group" aria-label="The size of my twin">
-            <button className="link" aria-label="Make my twin smaller" title="Smaller" onClick={() => props.onDock?.(wall ? 'stage' : 'mini')}>
+          <div className="dock" role="group" aria-label="The size of my Sym">
+            <button className="link" aria-label="Make my Sym smaller" title="Smaller" onClick={() => props.onDock?.(wall ? 'stage' : 'mini')}>
               <span aria-hidden="true">&minus;</span>
             </button>
-            <button className="link" aria-label="Make my twin bigger" title="Bigger" disabled={wall} onClick={() => props.onDock?.('wall')}>
+            <button className="link" aria-label="Make my Sym bigger" title="Bigger" disabled={wall} onClick={() => props.onDock?.('wall')}>
               <span aria-hidden="true">+</span>
             </button>
           </div>
@@ -697,7 +715,7 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
       <main className={dock === 'mini' ? 'solo' : undefined} inert={wall}>{props.children}</main>
       <p className="sr-only" aria-live="polite">{props.live}</p>
       <footer inert={wall}>
-        <p className="muted">This is a class project. It uses play money only. It is for adults only.</p>
+        <p className="muted">BYT by Symbolon. This is a class project. It uses play money only. It is for adults only.</p>
         <span className="foot-links">
           {props.onLook && <button className="link" onClick={props.onLook}>Look: {props.look}</button>}
           {props.onDisplay && <button className="link" onClick={() => props.onDisplay?.('glance')}>Glance</button>}

@@ -31,7 +31,8 @@ import mirror as mirror_rules  # noqa: E402
 import rps  # noqa: E402
 import verifier  # noqa: E402
 import work as work_rules  # noqa: E402
-from content import CARDS, GATE_BY_ID, GATES, ONTOLOGY, PACK_BY_STEP, PACKS, RIGHT_KINDS, SKILL_BY_ID, Card, Gate, score  # noqa: E402
+from content import (CARDS, GATE_BY_ID, GATES, ONTOLOGY, PACK_BY_STEP, PACKS, RIGHT_KINDS, SKILL_BY_ID, TOPICS,  # noqa: E402
+                     TOPIC_AREA, TOPIC_NAME, Card, Gate, score, topic_id)
 from models import (  # noqa: E402
     Activity,
     ActivityItem,
@@ -47,6 +48,10 @@ from models import (  # noqa: E402
     SponsorIn,
     SponsorOut,
     World,
+    Commons,
+    Ripple,
+    RippleLink,
+    Happening,
     MadeOut,
     MoveOut,
     PostIn,
@@ -63,6 +68,9 @@ from models import (  # noqa: E402
     AgentUsage,
     AreaHit,
     AudienceOut,
+    Hub,
+    PairOut,
+    WantedOut,
     FactOut,
     FactsOut,
     Judgment,
@@ -356,8 +364,8 @@ def work_items(player_id: str) -> list[WorkItem]:
 
 
 def collective(job: work_rules.Job) -> tuple[list[str], int]:
-    """Every twin's answer to a job: real players' confirmed answers plus the made-up sample twins, who
-    answer by the zero-token rule of thumb. Returns (choices, how many of them are sample twins)."""
+    """Every Sym's answer to a job: real players' confirmed answers plus the made-up sample Syms, who
+    answer by the zero-token rule of thumb. Returns (choices, how many of them are sample Syms)."""
     real = db.confirmed_choices(job.id)
     samples = []
     for pid in db.sample_player_ids():
@@ -415,7 +423,7 @@ def gate_cards(gate_id: str, player: Player = Depends(current_player)) -> GateCa
     if not state.unlocked:
         raise HTTPException(403, "This gate is not open yet.")
     if gate.kind == "battle" and db.battle_for(player.id, gate.id) is None:
-        raise HTTPException(409, "Please start the battle first, so your twin can make its guesses.")
+        raise HTTPException(409, "Please start the battle first, so your Sym can make its guesses.")
     todo = [card_out(CARDS[cid]) for cid in made.get(gate.id, gate.card_ids) if cid not in answered]
     if gate.kind == "pattern":
         for c in todo:
@@ -428,7 +436,7 @@ BET_CROWD_DEFAULT = 0.6  # the share assumed right when no one else has tried a 
 
 
 def pattern_bet(player_id: str, card: Card) -> tuple[bool, int]:
-    """The twin's bet on one pattern puzzle: will its human get it, and how sure is the twin, 50 to 100.
+    """The Sym's bet on one pattern puzzle: will its human get it, and how sure is the Sym, 50 to 100.
     Plain counting: the human's record on every right-or-wrong card outside this gate, pulled toward how other
     players did on this puzzle. It uses nothing from inside the gate, so the bet is fixed before the gate starts."""
     mine = [r for r in db.responses_for(player_id) if r.is_correct is not None and CARDS.get(r.card_id) is not None
@@ -448,7 +456,7 @@ def sure_record(player_id: str) -> list[SureRow]:
 
 @app.post("/battles", response_model=BattleStarted)
 async def start_battle(body: BattleStart, request: Request, player: Player = Depends(current_player)) -> BattleStarted:
-    """The twin commits its predictions before the player sees a single card. Idempotent per gate."""
+    """The Sym commits its predictions before the player sees a single card. Idempotent per gate."""
     rate_limit(request, "battle", 6)
     gate = GATE_BY_ID.get(body.gate_id)
     if gate is None or gate.kind != "battle":
@@ -467,7 +475,7 @@ async def start_battle(body: BattleStart, request: Request, player: Player = Dep
 
 @app.post("/battles/{gate_id}/learn", response_model=LearnOut)
 async def learn_from_battle(gate_id: str, request: Request, player: Player = Depends(current_player)) -> LearnOut:
-    """The twin learns from a finished battle. Its picks stop being held back and become proof. If it guessed any
+    """The Sym learns from a finished battle. Its picks stop being held back and become proof. If it guessed any
     wrong, the Profiler reads the misses and rewrites the beliefs that failed. Code then records what changed.
     Runs once for a battle; after that it returns the same lessons."""
     rate_limit(request, "battle", 6)
@@ -530,7 +538,7 @@ def respond(body: ResponseIn, request: Request, background: BackgroundTasks,
     gate = GATE_BY_ID[card.gate_id]
     battle = db.battle_for(player.id, gate.id) if gate.kind == "battle" else None
     if gate.kind == "battle" and battle is None:
-        raise HTTPException(409, "Please start the battle first, so your twin can make its guesses.")
+        raise HTTPException(409, "Please start the battle first, so your Sym can make its guesses.")
 
     is_correct, points = score(card, body.choice)
     bet = pattern_bet(player.id, card) if gate.kind == "pattern" else None  # worked out before this pick is stored
@@ -682,7 +690,7 @@ _auto_busy: set[str] = set()
 
 
 async def auto_work(player: Player) -> None:
-    """The twin starts open jobs by itself, up to the number its owner chose for one day. It only answers: nothing
+    """The Sym starts open jobs by itself, up to the number its owner chose for one day. It only answers: nothing
     is paid until the owner checks the answer, the same as for a job the owner sent it to."""
     limit = db.auto_limit(player.id)
     if limit <= 0 or player.id in _auto_busy or db.work_started_today(player.id) >= limit:
@@ -703,7 +711,7 @@ async def auto_work(player: Player) -> None:
 
 @app.post("/me/auto", response_model=Jobs)
 def set_auto(body: AutoIn, player: Player = Depends(current_player)) -> Jobs:
-    """Choose how many jobs the twin may start by itself each day. 0 turns it off."""
+    """Choose how many jobs the Sym may start by itself each day. 0 turns it off."""
     if body.per_day not in market.AUTO_CHOICES:
         raise HTTPException(422, "Please choose from the list.")
     db.set_auto(player.id, body.per_day)
@@ -712,14 +720,14 @@ def set_auto(body: AutoIn, player: Player = Depends(current_player)) -> Jobs:
 
 @app.post("/me/one-to-one", response_model=Jobs)
 def set_one_to_one(body: OneToOneIn, player: Player = Depends(current_player)) -> Jobs:
-    """Opt in or out of one to one meetings: a seat may pay a royalty to see this twin's nickname and its answers."""
+    """Opt in or out of one to one meetings: a seat may pay a royalty to see this Sym's nickname and its answers."""
     db.set_one_to_one(player.id, body.on)
     return jobs(player)
 
 
 @app.post("/me/consent", response_model=Jobs)
 def set_consent(body: ConsentIn, player: Player = Depends(current_player)) -> Jobs:
-    """Opt in or out of data income: agencies may ask this twin batch questions and see counts only."""
+    """Opt in or out of data income: agencies may ask this Sym batch questions and see counts only."""
     db.set_data_income(player.id, body.data_income)
     return jobs(player)
 
@@ -733,11 +741,12 @@ def twin_facts(player_id: str, sample: bool) -> market.TwinFacts:
     return market.TwinFacts(player_id=player_id, sample=sample, picks=sum(counts.values()),
                             # a certificate vouches for a twin with a living owner: a free twin does not carry one
                             certified=not sample and any(c.kind == "twin" for c in db.certs_for(player_id)),
-                            leading_style=top[0] if top else None, trait_counts=counts)
+                            leading_style=top[0] if top else None, trait_counts=counts,
+                            topics=frozenset(topic_id(t.topic) for t in db.tendencies_for(player_id)))
 
 
 def market_twins() -> list[market.TwinFacts]:
-    """Every twin a group question may reach: the free twins, and the twins of players who chose to earn."""
+    """Every Sym a group question may reach: the free Syms, and the Syms of players who chose to earn."""
     return [twin_facts(pid, True) for pid in db.free_twin_ids()] + [twin_facts(pid, False) for pid in db.opted_in_player_ids()]
 
 
@@ -786,7 +795,7 @@ def agency_out(player: Player) -> Agency:
 
 
 def post_out(p) -> PostOut:
-    """A posted job as its agency sees it: counts only. The made-up sample twins answer too, and are counted apart."""
+    """A posted job as its agency sees it: counts only. The made-up sample Syms answer too, and are counted apart."""
     q = market.QUESTION_BY_ID[p.question_id]
     job = work_rules.JOB_BY_ID.get(p.id)
     choices, n_samples = collective(job) if job else ([], 0)
@@ -835,6 +844,47 @@ def needs_out(made: dict[str, list[str]]) -> list[NeedOut]:
     return [NeedOut(skill=sid, name=SKILL_BY_ID[sid]["name"], left=n, built=sid in built) for sid, n in left.items() if n > 0]
 
 
+EMERGE_MIN = 2  # agencies that must want two skills together before the pair is shown to creators
+
+
+def skills_of_question(question_id: str) -> set[str]:
+    """The skills a market question touches: those whose areas share a trait with one of its options."""
+    q = market.QUESTION_BY_ID.get(question_id)
+    traits = {o.trait for o in q.card.options if o.trait} if q else set()
+    return {s["id"] for s in ONTOLOGY["skills"] if market.skill_traits(s["id"]) & traits}
+
+
+def demand(made: dict[str, list[str]]) -> tuple[list[WantedOut], list[PairOut]]:
+    """What agencies are asking about, by skill, from everything they did: questions, jobs and skills they back.
+    Then the pairs of skills that at least EMERGE_MIN agencies want together: a new need that emerges from use and
+    that no one listed by hand. Counts of agencies only; no agency is named. Plain counting, no model.
+    (Letting new groupings emerge from what is asked for together follows VoiceMem: docs/SOURCES.md.)"""
+    by_org: dict[str, set[str]] = {}
+    for c in db.all_campaigns():
+        by_org.setdefault(c.org_id, set()).update(skills_of_question(c.question_id))
+    for p in db.all_postings():
+        by_org.setdefault(p.org_id, set()).update(skills_of_question(p.question_id))
+    for b in db.open_sponsorships():
+        by_org.setdefault(b.org_id, set()).add(b.skill)
+    built = {p.deck for p in PACKS if p.id in made}
+    wanted = []
+    for s in ONTOLOGY["skills"]:
+        n = sum(1 for skills in by_org.values() if s["id"] in skills)
+        if n:
+            wanted.append(WantedOut(skill=s["id"], name=s["name"], agencies=n, built=s["id"] in built,
+                                    waiting=sum(1 for step in s["steps"] if not step.get("gate") and PACK_BY_STEP.get((s["id"], step["name"])) is not None
+                                                and PACK_BY_STEP[(s["id"], step["name"])].id not in made)))
+    pairs: dict[tuple[str, str], int] = {}
+    for skills in by_org.values():
+        ordered = sorted(skills)
+        for i, a in enumerate(ordered):
+            for b in ordered[i + 1:]:
+                pairs[(a, b)] = pairs.get((a, b), 0) + 1
+    emerging = [PairOut(a=SKILL_BY_ID[a]["name"], b=SKILL_BY_ID[b]["name"], agencies=n)
+                for (a, b), n in sorted(pairs.items(), key=lambda kv: -kv[1]) if n >= EMERGE_MIN][:5]
+    return sorted(wanted, key=lambda w: -w.agencies), emerging
+
+
 def creator_out(player: Player) -> CreatorSeat:
     org = db.org_for(player.id, "creator")
     if org is None:
@@ -868,7 +918,7 @@ def creator_out(player: Player) -> CreatorSeat:
         exists=True, name=org.name, budget=db.wallet_balance(player.id, "creator"), min_twins=market.MIN_TWINS,
         pay=market.CREATOR_PAY, crew_fee=market.CREW_FEE, claim_fee=market.CLAIM_FEE,
         step_cards=market.STEP_CARDS, step_royalty=market.STEP_ROYALTY, packs=packs_out, made=made_out,
-        needs=needs_out(made), reach_earned=db.came_in(player.id, "creator", "reach"),
+        needs=needs_out(made), wanted=demand(made)[0], emerging=demand(made)[1], reach_earned=db.came_in(player.id, "creator", "reach"),
         sponsor_earned=db.came_in(player.id, "creator", "sponsor"),
         questions=[QuestionOut(id=q.id, kind=q.kind, question=q.question,
                                options=[OptionOut(id=o.id, label=o.label) for o in q.card.options]) for q in market.QUESTIONS],
@@ -907,7 +957,7 @@ def run_brief(body: BriefIn, request: Request, player: Player = Depends(current_
     twins = [twin_facts(pid, True) for pid in db.free_twin_ids()] + [twin_facts(pid, False) for pid in db.opted_in_player_ids()]
     asked = [t for t in twins if market.matches(t, body.audience)]
     if len(asked) < market.MIN_TWINS:
-        raise HTTPException(409, f"Fewer than {market.MIN_TWINS} twins match that group. No one was asked, and nothing was charged.")
+        raise HTTPException(409, f"Fewer than {market.MIN_TWINS} Syms match that group. No one was asked, and nothing was charged.")
     if body.kind == "survey":
         counts = market.tally(known, [market.answer(known, t) for t in asked])
     else:
@@ -987,8 +1037,8 @@ def get_meets(seat: str, player: Player = Depends(current_player)) -> Meets:
 
 @app.post("/seats/{seat}/meet", response_model=Meets)
 def meet(seat: str, body: MeetIn, request: Request, player: Player = Depends(current_player)) -> Meets:
-    """Meet one twin from a group one to one. Only a twin whose owner turned one to one on (or a made-up sample
-    twin) can be met. Code picks the twin; the seat cannot name one. The owner receives the whole royalty."""
+    """Meet one Sym from a group one to one. Only a Sym whose owner turned one to one on (or a made-up sample
+    Sym) can be met. Code picks the Sym; the seat cannot name one. The owner receives the whole royalty."""
     rate_limit(request, "campaign", 20)
     org = seat_org(seat, player)
     if body.audience not in market.AUDIENCE_NAME:
@@ -998,7 +1048,7 @@ def meet(seat: str, body: MeetIn, request: Request, player: Player = Depends(cur
            [twin_facts(pid, False) for pid in db.one_to_one_player_ids() if pid != player.id]
     pool = [t for t in pool if t.player_id not in met and market.matches(t, body.audience)]
     if not pool:
-        raise HTTPException(409, "No twin in that group is open to a one to one meeting right now. Nothing was charged.")
+        raise HTTPException(409, "No Sym in that group is open to a one to one meeting right now. Nothing was charged.")
     pick = max(pool, key=lambda t: (not t.sample, t.picks))  # a real twin before a sample; then the one that knows most
     if db.meet_twin(org.id, pick.player_id, pick.sample, market.MEET_PRICE, market.CREW_FEE) is None:
         raise HTTPException(409, SHORT)
@@ -1027,7 +1077,7 @@ def open_agency(body: OrgCreate, request: Request, player: Player = Depends(curr
 
 @app.post("/agency/campaigns", response_model=Agency)
 def run_campaign(body: CampaignIn, request: Request, player: Player = Depends(current_player)) -> Agency:
-    """Ask every matching twin one question. Counts only come back, and only for MIN_TWINS twins or more."""
+    """Ask every matching Sym one question. Counts only come back, and only for MIN_TWINS Syms or more."""
     rate_limit(request, "campaign", 20)
     org = db.org_for(player.id, "agency")
     if org is None:
@@ -1037,13 +1087,13 @@ def run_campaign(body: CampaignIn, request: Request, player: Player = Depends(cu
         raise HTTPException(422, "Please choose a question, who to ask and a price from the lists.")
     asked = [t for t in market_twins() if market.matches(t, body.audience) and market.in_tier(t, body.depth)]
     if len(asked) < market.MIN_TWINS:
-        raise HTTPException(409, f"Fewer than {market.MIN_TWINS} twins match that group. No one was asked, and nothing was charged.")
+        raise HTTPException(409, f"Fewer than {market.MIN_TWINS} Syms match that group. No one was asked, and nothing was charged.")
     free = sum(1 for t in asked if t.sample)
     member_pay = body.pay * market.TIER_TIMES[body.depth]  # deeper tiers pay each member more
     # asking the same group again costs more each time; the twins are paid the same and the extra goes to the growth fund
     cost, _extra = market.tier_cost(free, len(asked) - free, body.pay, body.depth, db.earlier_asks(org.id, body.audience))
     if db.wallet_balance(player.id, "agency") < cost:
-        raise HTTPException(409, "You do not have enough credits to ask that many twins at that price.")
+        raise HTTPException(409, "You do not have enough credits to ask that many Syms at that price.")
     counts = market.tally(q, [market.answer(q, t) for t in asked])
     done = db.run_campaign(org.id, q.id, q.kind, body.audience, body.pay, len(asked), free,
                            json.dumps(counts),
@@ -1051,13 +1101,13 @@ def run_campaign(body: CampaignIn, request: Request, player: Player = Depends(cu
                             for t in asked if not t.sample], cost, depth=body.depth,
                            to_samples=free * body.pay * market.FREE_SHARE)
     if done is None:
-        raise HTTPException(409, "You do not have enough credits to ask that many twins at that price.")
+        raise HTTPException(409, "You do not have enough credits to ask that many Syms at that price.")
     return agency_out(player)
 
 
 def job_hold(pay: int) -> int:
-    """Credits held for one place on a posted job: double pay in case the twin has a certificate, plus the share
-    that goes to creators whose skill steps the twin's owner passed."""
+    """Credits held for one place on a posted job: double pay in case the Sym has a certificate, plus the share
+    that goes to creators whose skill steps the Sym's owner passed."""
     return round(pay * work_rules.CERT_MULTIPLIER * (1 + market.REACH_SHARE))
 
 
@@ -1078,15 +1128,15 @@ def sponsor_skill(body: SponsorIn, request: Request, player: Player = Depends(cu
 
 @app.post("/agency/jobs", response_model=Agency)
 def post_job(body: PostIn, request: Request, player: Player = Depends(current_player)) -> Agency:
-    """Post a job for twins to take: one of the fixed questions, a pay and a number of places, all by taps.
-    The pay for every place is held now. Each twin answers with the Worker agent and its owner checks the answer."""
+    """Post a job for Syms to take: one of the fixed questions, a pay and a number of places, all by taps.
+    The pay for every place is held now. Each Sym answers with the Worker agent and its owner checks the answer."""
     rate_limit(request, "campaign", 20)
     org = db.org_for(player.id, "agency")
     if org is None:
         raise HTTPException(404, "Please open an agency first.")
     if (body.question_id not in market.QUESTION_BY_ID or body.pay not in market.JOB_PAY_CHOICES
             or body.seats not in market.JOB_SEATS):
-        raise HTTPException(422, "Please choose a question, a pay and a number of twins from the lists.")
+        raise HTTPException(422, "Please choose a question, a pay and a number of Syms from the lists.")
     posted = db.post_job(org.id, body.question_id, body.pay, body.seats, job_hold(body.pay))
     if posted is None:
         raise HTTPException(409, SHORT)
@@ -1096,7 +1146,7 @@ def post_job(body: PostIn, request: Request, player: Player = Depends(current_pl
 
 @app.post("/agency/jobs/{job_id}/close", response_model=Agency)
 def close_job(job_id: str, player: Player = Depends(current_player)) -> Agency:
-    """Close a posted job to new twins. The credits held for places no twin took come back."""
+    """Close a posted job to new Syms. The credits held for places no Sym took come back."""
     org = db.org_for(player.id, "agency")
     if org is None or not db.close_posting(org.id, job_id):
         raise HTTPException(404, "We could not find that open job.")
@@ -1105,7 +1155,7 @@ def close_job(job_id: str, player: Player = Depends(current_player)) -> Agency:
 
 @app.post("/jobs/{job_id}/run", response_model=JobOut)
 async def run_job(job_id: str, request: Request, player: Player = Depends(current_player)) -> JobOut:
-    """Send the twin to do a job. It answers once; the human reviews before anything is paid."""
+    """Send the Sym to do a job. It answers once; the human reviews before anything is paid."""
     rate_limit(request, "job", 6)
     job = work_rules.JOB_BY_ID.get(job_id)
     if job is None:
@@ -1118,7 +1168,7 @@ async def run_job(job_id: str, request: Request, player: Player = Depends(curren
     if row is None and posted is not None:
         mine = db.org_for(player.id, "agency")
         if mine is not None and posted.org_id == mine.id:
-            raise HTTPException(403, "Your own twin cannot take a job you posted.")
+            raise HTTPException(403, "Your own Sym cannot take a job you posted.")
         if posted.closed or db.seats_taken(job.id) >= posted.seats:
             raise HTTPException(409, "This job is full.")
     if row is None:
@@ -1130,17 +1180,17 @@ async def run_job(job_id: str, request: Request, player: Player = Depends(curren
 @app.post("/jobs/{job_id}/review", response_model=JobResult)
 def review_job(job_id: str, body: ReviewIn, request: Request, background: BackgroundTasks,
                player: Player = Depends(current_player)) -> JobResult:
-    """The human confirms or corrects the twin. Code pays the credits and adds the answer to the collective."""
+    """The human confirms or corrects the Sym. Code pays the credits and adds the answer to the collective."""
     rate_limit(request, "review", 30)
     job = work_rules.JOB_BY_ID.get(job_id)
     row = db.work_on(player.id, job_id) if job else None
     if job is None or row is None:
-        raise HTTPException(404, "Your twin has not done this job yet.")
+        raise HTTPException(404, "Your Sym has not done this job yet.")
     if row.verdict is not None:
         raise HTTPException(409, "You already checked this job.")
     if body.verdict == "approved":
         if row.answer is None:
-            raise HTTPException(422, "Your twin did not know. Please choose the answer yourself.")
+            raise HTTPException(422, "Your Sym did not know. Please choose the answer yourself.")
         final = row.answer
     else:
         if body.choice not in {o.id for o in job.card.options} or body.choice == row.answer:
@@ -1167,16 +1217,16 @@ def review_job(job_id: str, body: ReviewIn, request: Request, background: Backgr
     insight = None
     if others:
         crowd = max(job.card.options, key=lambda o: sum(1 for c in others if c == o.id)).id
-        level = "My twin learned this from me" if body.verdict == "corrected" else "I see this differently from most" if final != crowd else ""
+        level = "My Sym learned this from me" if body.verdict == "corrected" else "I see this differently from most" if final != crowd else ""
         if level:
             insight = cert_out(db.issue_cert(player.id, "insight", job.question[:120], level,
                                              sum(1 for c in others if c == final) / len(others), None, len(others)))
     split = [SplitRow(label=label, count=count, share=round(count / total, 3), yours=oid == final)
              for oid, label, count in work_rules.split(job, choices)]
-    note = ("Your twin answered the way you would. It received the full pay." if body.verdict == "approved"
-            else "Your twin was wrong, so it received a small pay. It has learned from your answer.")
+    note = ("Your Sym answered the way you would. It received the full pay." if body.verdict == "approved"
+            else "Your Sym was wrong, so it received a small pay. It has learned from your answer.")
     if body.verdict == "approved" and certified:
-        note = "Your twin answered the way you would. It has a certificate, so it received double pay."
+        note = "Your Sym answered the way you would. It has a certificate, so it received double pay."
     return JobResult(job=job_out(job, row, cleared_gates(player)), credits_earned=earned, credits=db.credits_for(player.id),
                      certified=certified, taps=len(db.responses_for(player.id)), beliefs=len(db.tendencies_for(player.id)),
                      twins=len(choices), sample_twins=n_samples, split=split, note=note, insight=insight)
@@ -1260,11 +1310,11 @@ def plan_for(player: Player) -> list[PlanOption]:
     out: list[PlanOption] = []
     waiting = [j for j in jobs_now if j.state == "review"]
     if waiting:
-        out.append(PlanOption(id="work", title="Check your twin's answer", why="Your twin did the job. It is paid only after you check.",
+        out.append(PlanOption(id="work", title="Check your Sym's answer", why="Your Sym did the job. It is paid only after you check.",
                               credits=sum(j.pay for j in waiting), minutes=1))
     open_jobs = sorted((j for j in jobs_now if j.state == "open"), key=lambda j: -j.pay)
     if open_jobs:
-        out.append(PlanOption(id="work", title="Send your twin to work",
+        out.append(PlanOption(id="work", title="Send your Sym to work",
                               why=f"{len(open_jobs)} {'job is' if len(open_jobs) == 1 else 'jobs are'} open. The best one pays {open_jobs[0].pay} credits.",
                               credits=open_jobs[0].pay, minutes=1))
     step = next((g for g in step_state(answered).values() if g.unlocked and g.done < g.total), None)
@@ -1284,10 +1334,10 @@ def plan_for(player: Player) -> list[PlanOption]:
         out.insert(0, PlanOption(id=f"retry:{gate.id}", title=f"Try again: {gate.title}",
                                  why="You missed the certificate. The wait is over, so you may try once more.", credits=market.STEP_BONUS, minutes=2))
     if len(db.throws_for(player.id)) < rps.ARENA_MIN:
-        out.append(PlanOption(id="arena", title="Play rock, paper, scissors with your twin",
-                              why=f"It learns how you throw. After {rps.ARENA_MIN} rounds it plays the other twins.", credits=0, minutes=1))
+        out.append(PlanOption(id="arena", title="Play rock, paper, scissors with your Sym",
+                              why=f"It learns how you throw. After {rps.ARENA_MIN} rounds it plays the other Syms.", credits=0, minutes=1))
     if not db.data_income_on(player.id):
-        out.append(PlanOption(id="work", title="Let your twin earn while you are away",
+        out.append(PlanOption(id="work", title="Let your Sym earn while you are away",
                               why="Agencies and creators pay it for group questions. You choose this on the work screen.", credits=0, minutes=1))
     return out[:4]
 
@@ -1312,7 +1362,7 @@ def rps_out(player: Player, just: RpsRound | None = None) -> RpsOut:
         table = []
         for i, (pid, thrown, free) in enumerate(sorted(others, key=lambda o: o[0])):
             won, lost, drawn = rps.match(mine, thrown, f"{player.id}:{pid}:{len(mine)}:{len(thrown)}")
-            table.append(RpsRival(name=f"Twin {i + 1}", free=free, won=won, lost=lost, drawn=drawn))
+            table.append(RpsRival(name=f"Sym {i + 1}", free=free, won=won, lost=lost, drawn=drawn))
         beaten = sum(1 for r in table if r.won > r.lost)
         out.rivals = sorted(table, key=lambda r: r.won - r.lost, reverse=True)
         out.rank, out.of = len(table) - beaten + 1, len(table) + 1
@@ -1382,13 +1432,13 @@ def my_judgment(player: Player = Depends(current_player)) -> Judgment:
 
 @app.get("/rps", response_model=RpsOut)
 def rps_state(player: Player = Depends(current_player)) -> RpsOut:
-    """Rock, paper, scissors against the caller's own twin: the score, the habits the twin has found, and the league."""
+    """Rock, paper, scissors against the caller's own Sym: the score, the habits the Sym has found, and the league."""
     return rps_out(player)
 
 
 @app.post("/rps", response_model=RpsOut)
 def rps_play(body: RpsIn, request: Request, player: Player = Depends(current_player)) -> RpsOut:
-    """One round. The twin's throw is worked out from the earlier throws alone, then both are stored together."""
+    """One round. The Sym's throw is worked out from the earlier throws alone, then both are stored together."""
     rate_limit(request, "rps", 120)
     twin, why = rps.twin_throw([t.mine for t in db.throws_for(player.id)])
     db.add_throw(player.id, body.throw, twin)
@@ -1397,10 +1447,60 @@ def rps_play(body: RpsIn, request: Request, player: Player = Depends(current_pla
 
 @app.get("/world", response_model=World)
 def world(request: Request) -> World:
-    """The whole game as totals, open to anyone: how many twins, seats and certificates there are, and how many
+    """The whole game as totals, open to anyone: how many Syms, seats and certificates there are, and how many
     credits moved between kinds of wallet. It names no player, no seat and no answer."""
     rate_limit(request, "world", 60)
     return World(**db.world())
+
+
+def how_long_ago(at: datetime) -> str:
+    """A time said loosely on purpose, so a happening cannot be matched to a person by its minute."""
+    at = at if at.tzinfo else at.replace(tzinfo=timezone.utc)
+    gone = datetime.now(timezone.utc) - at
+    if gone < timedelta(hours=1):
+        return "now"
+    if gone < timedelta(days=1):
+        return "today"
+    return "week" if gone < timedelta(days=7) else "earlier"
+
+
+@app.get("/commons", response_model=Commons)
+def commons(player: Player = Depends(current_player)) -> Commons:
+    """The first screen after signing in: who is here, what everyone knows together, and the last few things that
+    happened. Counts and nameless lines only. A time is said loosely (now, today, this week, earlier)."""
+    facts = db.commons(player.id)
+    seen = [Happening(who=who, text=words, when=how_long_ago(at), mine=mine) for at, who, words, mine in facts.pop("happenings")]
+    return Commons(nickname=player.nickname, happenings=seen, **facts)
+
+
+def times(n: int, one: str, many: str | None = None) -> str:
+    return f"{n} {one if n == 1 else many or one + 's'}"
+
+
+@app.get("/me/ripple", response_model=Ripple)
+def ripple(player: Player = Depends(current_player)) -> Ripple:
+    """What this person set moving: how their taps as a player reach their own agency and studio, how those seats
+    reach people, and what came back. Plain counting from their own rows. Other people appear only as counts."""
+    c = db.ripple(player.id)
+    links: list[RippleLink] = []
+
+    def add(src: str, dst: str, n: int, text: str, credits: float = 0) -> None:
+        if n > 0:
+            links.append(RippleLink(src=src, dst=dst, n=n, credits=round(credits, 2), text=text))
+
+    add("player", "everyone", c["taps"], f"You gave {times(c['taps'], 'tap')}. Each one is now part of what everyone knows together.")
+    add("player", "everyone", c["checks"], f"You checked your Sym {times(c['checks'], 'time')}. Those answers can be trusted now.", c["check_credits"])
+    add("everyone", "player", c["asks"], f"Other agencies asked your Sym {times(c['asks'], 'time')} and paid you.", c["ask_credits"])
+    add("player", "everyone", c["steps_passed"], f"You passed {times(c['steps_passed'], 'skill step')} that someone built. Passing pays you, and it pays the creator who built it.")
+    add("agency", "player", c["own_asks"], f"Your own agency asked your own Sym {times(c['own_asks'], 'time')}. Your taps as a player became answers on your agency desk.", c["own_ask_credits"])
+    add("player", "creator", c["own_steps_passed"], f"You passed {times(c['own_steps_passed'], 'step')} that your own studio built. It grew your Sym. A studio is not paid by its own owner.")
+    add("agency", "everyone", c["campaigns"], f"Your agency asked {times(c['campaigns'], 'question')}. They reached {times(c['syms_asked'], 'Sym')}" + (f" and paid {times(c['people_paid'], 'other person', 'other people')}." if c["people_paid"] else ". No other real person was among them yet."), c["paid_credits"])
+    add("agency", "everyone", c["jobs"], f"Your agency posted {times(c['jobs'], 'job')}. " + (f"People checked {times(c['jobs_checked'], 'answer')} for you and were paid." if c["jobs_checked"] else "No one has checked an answer yet."), c["job_credits"])
+    add("agency", "everyone", c["backed_passes"], f"A skill your agency backed was passed {times(c['backed_passes'], 'time')}. Your credits paid the player and the creator.", c["backed_credits"])
+    add("creator", "everyone", c["built"], f"Your studio built {times(c['built'], 'skill step')}. Anyone can play them.")
+    add("everyone", "creator", c["passes"], f"Other people passed your steps {times(c['passes'], 'time')}. Each pass paid your studio.", c["royalties"])
+    add("creator", "everyone", c["crew_asked"], f"Your studio asked {times(c['crew_asked'], 'Sym')} what to build next.")
+    return Ripple(agency=c["agency"], creator=c["creator"], links=links)
 
 
 def money_facts(player: Player) -> dict:
@@ -1411,13 +1511,13 @@ def money_facts(player: Player) -> dict:
         by_kind[m.label] = round(by_kind.get(m.label, 0) + m.credits, 2)
     return {"holds": purse.balance, "came_in": purse.came_in, "went_out": purse.went_out, "totals_by_kind": by_kind,
             "last_moves": [{"what": m.label, "credits": m.credits} for m in purse.lines[:5]],
-            "note": "Credits are play money. A token fee is what the twin's AI runs cost."}
+            "note": "Credits are play money. A token fee is what the Sym's AI runs cost."}
 
 
 def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None, CardOut | None]:
-    """Where a player stands, as the Guide may read it, with no identity in it. Also the moves the twin may offer
+    """Where a player stands, as the Guide may read it, with no identity in it. Also the moves the Sym may offer
     (id to label), a plain answer for when no model is available, the move that goes with it, and one card the
-    twin can ask right now. All of it is plain counting."""
+    Sym can ask right now. All of it is plain counting."""
     answered = db.answered_card_ids(player.id)
     states = gate_state(answered)
     nxt = next((g for g in states if g.unlocked and g.done < g.total), None)
@@ -1438,7 +1538,7 @@ def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None
     plan = plan_for(player)
     for option in plan:
         moves.setdefault(option.id, option.title)
-    moves["mine"] = "See what my twin knows"
+    moves["mine"] = "See what my Sym knows"
     moves["money"] = "See my money"
     weakest = min(areas, key=lambda v: v.level) if areas else None
     situation = {
@@ -1449,15 +1549,16 @@ def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None
         "work": {"open_jobs": [{"asked_by": j.requester_kind, "pays": j.pay} for j in open_jobs], "waiting_for_your_check": waiting,
                  "credits": db.credits_for(player.id), "has_certificate": is_certified(player)},
         "ways_to_earn": {
-            "jobs": "Send the twin to a job, then check its answer. The work screen lists them.",
+            "jobs": "Send the Sym to a job, then check its answer. The work screen lists them.",
             "data_income_is_on": db.data_income_on(player.id),
-            "data_income": "When it is on, agencies and creators may ask the twin a group question and pay it. It is turned on or off on the work screen.",
+            "data_income": "When it is on, agencies and creators may ask the Sym a group question and pay it. It is turned on or off on the work screen.",
             "one_to_one_is_on": db.one_to_one_on(player.id),
-            "one_to_one": f"When it is on, a seat may pay {market.MEET_PRICE} credits to meet the twin. It is turned on or off on the work screen.",
+            "one_to_one": f"When it is on, a seat may pay {market.MEET_PRICE} credits to meet the Sym. It is turned on or off on the work screen.",
             "skill_steps_open_now": [g.title for g in steps],
             "skill_step_bonus": f"Passing a skill step pays {market.STEP_BONUS} credits from the growth fund.",
         },
         "money": money_facts(player),
+        "topics": [t["name"] for t in TOPICS],
         "told_by_person": [{"scope": f.scope, "topic": f.topic, "statement": f.statement} for f in db.facts_for(player.id)],
         "how_sure_and_how_right": {
             "record": [{"said": {3: "sure", 2: "think so", 1: "a guess"}[row.level], "right": row.right, "of": row.total}
@@ -1485,7 +1586,7 @@ def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None
 
 @app.post("/twin/ask", response_model=AskOut)
 async def ask_twin(body: AskIn, request: Request, player: Player = Depends(current_player)) -> AskOut:
-    """Say one line to your twin. It answers in a sentence or two, offers one move, and may ask one card back.
+    """Say one line to your Sym. It answers in a sentence or two, offers one move, and may ask one card back.
     The line passes the prompt guard, goes to the Guide agent, and is not stored."""
     rate_limit(request, "ask", 10)
     said, flags = agents.strip_injections(body.text.strip(), source="player_talk", channel="typed")
@@ -1494,7 +1595,7 @@ async def ask_twin(body: AskIn, request: Request, player: Player = Depends(curre
     situation, moves, plain, plain_move, learn = situation_for(player)
     kind, say, move, note = ("offline", "", None, None)
     if said.strip() and not flags:
-        kind, say, move, note = await agents.talk(player.id, said.strip()[:200], situation, set(moves))
+        kind, say, move, note = await agents.talk(player.id, said.strip()[:200], narrow(situation, said), set(moves))
     if kind == "offline":
         say, move = plain, plain_move
     offer = None
@@ -1504,6 +1605,31 @@ async def ask_twin(body: AskIn, request: Request, player: Player = Depends(curre
         PENDING[player.id] = (time.monotonic(), note)
         offer = FactOut(scope=note[0], topic=note[1], statement=note[2])
     return AskOut(say=say, twin_kind=kind, move=MoveOut(id=move, label=moves[move]) if move in moves else None, learn=learn, offer=offer)
+
+
+# Narrow first, then send little: plain words in the line decide which parts of the situation the Guide is sent.
+# Talking is the twin's main running cost, so sending less is what lets it keep more of what it earns.
+# (The idea of choosing the topic before the model sees anything follows VoiceMem: docs/SOURCES.md.)
+ROUTES: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+    (("credit", "money", "earn", "pay", "paid", "cost", "wallet", "spend", "income", "royalt"), ("money", "ways_to_earn", "work")),
+    (("job", "work"), ("work", "ways_to_earn")),
+    (("know", "belie", "about me", "weak", "strong", "area", "brain", "learn"), ("beliefs", "areas", "weakest_area", "told_by_person")),
+    (("sure", "judg", "confiden", "risk", "decid"), ("how_sure_and_how_right", "beliefs")),
+    (("next", "should", "what now", "play", "gate"), ("progress", "weakest_area")),
+)
+ALWAYS_SENT = ("moves", "best_use_of_time_now", "topics")
+WHEN_UNSURE = ("beliefs", "told_by_person", "progress")  # a line that names none of the above is most often about the person
+
+
+def narrow(situation: dict, said: str) -> dict:
+    text = said.lower()
+    keep = set(ALWAYS_SENT)
+    for words, parts in ROUTES:
+        if any(w in text for w in words):
+            keep.update(parts)
+    if keep == set(ALWAYS_SENT):
+        keep.update(WHEN_UNSURE)
+    return {k: v for k, v in situation.items() if k in keep}
 
 
 MAX_FACTS = 30  # facts a player may let their twin keep
@@ -1517,14 +1643,14 @@ def facts_out(player: Player) -> FactsOut:
 
 @app.get("/twin/facts", response_model=FactsOut)
 def my_facts(player: Player = Depends(current_player)) -> FactsOut:
-    """What the caller told their twin and chose to keep. Their own rows only."""
+    """What the caller told their Sym and chose to keep. Their own rows only."""
     return facts_out(player)
 
 
 @app.post("/twin/facts", response_model=FactsOut)
 def keep_fact(request: Request, player: Player = Depends(current_player)) -> FactsOut:
-    """Keep the fact the twin just offered. The request carries no text: only a line the server itself offered,
-    in the twin's words and checked by code, can be stored. So nothing typed is ever written."""
+    """Keep the fact the Sym just offered. The request carries no text: only a line the server itself offered,
+    in the Sym's words and checked by code, can be stored. So nothing typed is ever written."""
     rate_limit(request, "facts", 20)
     waiting = PENDING.pop(player.id, None)
     if waiting is None or time.monotonic() - waiting[0] > OFFER_SECONDS:
@@ -1536,14 +1662,14 @@ def keep_fact(request: Request, player: Player = Depends(current_player)) -> Fac
 
 @app.delete("/twin/facts/{fact_id}", response_model=FactsOut)
 def forget_fact(fact_id: str, player: Player = Depends(current_player)) -> FactsOut:
-    """Make the twin forget one fact the caller told it."""
+    """Make the Sym forget one fact the caller told it."""
     db.remove_fact(player.id, fact_id)
     return facts_out(player)
 
 
 @app.get("/me/sphere", response_model=Sphere)
 def sphere(player: Player = Depends(current_player)) -> Sphere:
-    """What the twin's sphere shows now, and how it looked each time a gate was finished, oldest first."""
+    """What the Sym's sphere shows now, and how it looked each time a gate was finished, oldest first."""
     rows = db.responses_for(player.id)
     picks: list[tuple[str, str]] = []
     left = {g.id: len(g.card_ids) for g in GATES}
@@ -1562,11 +1688,13 @@ def sphere(player: Player = Depends(current_player)) -> Sphere:
         left[card.gate_id] -= 1
         if left[card.gate_id] == 0:
             history.append(frame(GATE_BY_ID[card.gate_id].title, r.created_at, sphere_at(picks)))
-    return Sphere(verticals=sphere_at(picks), links=joins, history=history)
+    hubs = [Hub(area=TOPIC_AREA[topic_id(t.topic)], name=TOPIC_NAME[topic_id(t.topic)]) for t in db.tendencies_for(player.id)]
+    hubs += [Hub(area=TOPIC_AREA[topic_id(f.topic)], name=TOPIC_NAME[topic_id(f.topic)], told=True) for f in db.facts_for(player.id)]
+    return Sphere(verticals=sphere_at(picks), links=joins, history=history, hubs=hubs[:12])
 
 
 def seat_groups(player: Player, by_weakest: bool) -> dict[str, list[dict]]:
-    """Every twin a seat may look at (the made-up sample twins and players who turned data income on), sorted into
+    """Every Sym a seat may look at (the made-up sample Syms and players who turned data income on), sorted into
     groups: by strongest thinking style for an agency, by the style most in need of growth for a creator."""
     out: dict[str, list[dict]] = {key: [] for key, _, _ in market.GROUPS}
     twins = [(pid, True) for pid in db.free_twin_ids()] + [(pid, False) for pid in db.opted_in_player_ids()]
@@ -1616,17 +1744,17 @@ def seat_sphere(seat: str, player: Player = Depends(current_player)) -> Sphere:
         label = name if key == "forming" else (f"Needs to grow: {name}" if seat == "creator" else f"Strongest in: {name}")
         if len(members) < market.MIN_TWINS:
             out.append(Vertical(key=key, name=label, color=color, level=0.0, earned=0.0, picks=0, steps_done=0, steps_total=0,
-                                count=None, hidden=True, details=[f"Fewer than {market.MIN_TWINS} twins are in this group, so nothing about it is shown."]))
+                                count=None, hidden=True, details=[f"Fewer than {market.MIN_TWINS} Syms are in this group, so nothing about it is shown."]))
             continue
         names = list(members[0]["areas"])
         mean = {a: sum(m["areas"][a] for m in members) / len(members) for a in names}
         top = sorted(names, key=lambda a: mean[a], reverse=not (seat == "creator"))[:2]
         samples = sum(1 for m in members if m["sample"])
         details = [
-            f"{len(members)} twins are in this group. {samples} of them are made-up sample twins.",
+            f"{len(members)} Syms are in this group. {samples} of them are made-up sample Syms.",
             f"{'Where they need the most help' if seat == 'creator' else 'Where they are strongest'}: {top[0]} and {top[1]}.",
             f"On average they are {round(100 * sum(m['progress'] for m in members) / len(members))} percent of the way through the game.",
-            f"{sum(1 for m in members if m['active'])} of them played in the last {market.ACTIVE_FULL_DAYS} days. Sample twins count as active.",
+            f"{sum(1 for m in members if m['active'])} of them played in the last {market.ACTIVE_FULL_DAYS} days. Sample Syms count as active.",
         ]
         if seat == "agency":
             times = asked.get(key, 0)
@@ -1680,12 +1808,12 @@ def untell(player: Player = Depends(current_player)) -> Mirror:
     return build_mirror(player)
 
 
-AGENT_LABEL = {"profiler": "Learning about you", "twin": "Twin battles", "worker": "Jobs"}
+AGENT_LABEL = {"profiler": "Learning about you", "twin": "Sym battles", "worker": "Jobs"}
 
 
 @app.get("/me/money", response_model=Money)
 def money(player: Player = Depends(current_player)) -> Money:
-    """Where every credit came from and what the twin cost to run. The caller's own rows only."""
+    """Where every credit came from and what the Sym cost to run. The caller's own rows only."""
     lines: list[MoneyLine] = []
     work_total = 0
     for w in db.work_for(player.id):
@@ -1706,12 +1834,12 @@ def money(player: Player = Depends(current_player)) -> Money:
             continue
         data_total += e.credits
         if e.kind == "One to one":
-            lines.append(MoneyLine(source="Data", label="A seat met your twin one to one",
-                                   detail="A royalty. It saw your nickname and your twin's answers.", credits=e.credits, at=db.iso(e.created_at)))
+            lines.append(MoneyLine(source="Data", label="A seat met your Sym one to one",
+                                   detail="A royalty. It saw your nickname and your Sym's answers.", credits=e.credits, at=db.iso(e.created_at)))
             continue
         asker = "a creator" if e.kind == "Creator" else "an agency"
         lines.append(MoneyLine(source="Data", label=f"{'A' if e.kind == 'Creator' else e.kind} question from {asker}",
-                               detail="One question to many twins. Only totals were seen.",
+                               detail="One question to many Syms. Only totals were seen.",
                                credits=e.credits, at=db.iso(e.created_at)))
     lines.sort(key=lambda m: m.at, reverse=True)
 
@@ -1731,7 +1859,7 @@ def money(player: Player = Depends(current_player)) -> Money:
             name=org.name, started_with=market.START_BUDGET, spent=sum(c.spent for c in camps), left=db.wallet_balance(player.id, "agency"),
             twins_asked=sum(c.twins for c in camps),
             lines=[MoneyLine(source="Agency", label=market.QUESTION_BY_ID[c.question_id].question,
-                             detail=f"{market.AUDIENCE_NAME.get(c.audience, c.audience)}, {market.TIER_NAME.get(c.depth, c.depth).lower()}: {c.twins} twins",
+                             detail=f"{market.AUDIENCE_NAME.get(c.audience, c.audience)}, {market.TIER_NAME.get(c.depth, c.depth).lower()}: {c.twins} Syms",
                              credits=-c.spent, at=db.iso(c.created_at)) for c in camps],
         )
     return Money(earned=work_total + data_total + growth_total, work_credits=work_total, data_credits=data_total,
@@ -1748,15 +1876,15 @@ MOVE_LABEL = {
     ("work", True): ("Work pay", "From a job requester, after you checked the job"),
     ("data", True): ("Data income", "From an agency. The agency saw only totals."),
     ("growth", True): ("Skill step bonus", "From the growth fund"),
-    ("data", False): ("Paid to twins", "For one question"),
-    ("samples", False): ("Paid to sample twins", "Made-up twins that fill the game while it is small"),
+    ("data", False): ("Paid to Syms", "For one question"),
+    ("samples", False): ("Paid to sample Syms", "Made-up Syms that fill the game while it is small"),
     ("fund_in", False): ("To the growth fund", "The extra for asking a group again, and the part held back from owners who were away"),
     ("fee", False): ("Token fee", "What your agents cost to run"),
-    ("royalty", True): ("One to one royalty", "A seat paid to meet your twin. It saw your nickname and your twin's answers."),
-    ("royalty", False): ("Royalty to a twin's owner", "To meet one twin one to one"),
+    ("royalty", True): ("One to one royalty", "A seat paid to meet your Sym. It saw your nickname and your Sym's answers."),
+    ("royalty", False): ("Royalty to a Sym's owner", "To meet one Sym one to one"),
     ("crew", False): ("Crew fee", "What your crew costs to send out. It goes to the game."),
     ("hold", False): ("Held for a job or a skill you back", "Held until it is used. What is not used comes back."),
-    ("reach", True): ("Reach royalty", "An agency paid a twin whose owner passed a skill step you built."),
+    ("reach", True): ("Reach royalty", "An agency paid a Sym whose owner passed a skill step you built."),
     ("sponsor", True): ("Sponsor pay", "An agency put credits behind this skill. It pays when a player passes a step."),
     ("release", True): ("Came back from a job", "The part of the held credits that was not needed"),
     ("claim", False): ("Claim fee", "To claim a skill step. It goes to the game."),
@@ -1811,7 +1939,7 @@ def deposit(body: DepositIn, request: Request, player: Player = Depends(current_
 EXPORT_NOTE = (
     "This file holds what you put in, and any results you brought with you. The cards, questions, skills, "
     "certificates given here, and anything the AI wrote belong to BYT. They are not in this file. You can read "
-    "all of them on the My twin screen, and you can delete them."
+    "all of them on the My Sym screen, and you can delete them."
 )
 
 
@@ -1858,7 +1986,7 @@ def usage_summary(player: Player = Depends(current_player)) -> UsageSummary:
 @app.post("/me/leave", response_model=Left)
 def leave_me(player: Player = Depends(current_player)) -> Left:
     """Leave the game. The login and nickname are removed and the wallets are closed, so this person is paid nothing
-    more. The twin stays as an anonymous free twin, and what the person's seats made stays for everyone else."""
+    more. The Sym stays as an anonymous free Sym, and what the person's seats made stays for everyone else."""
     db.leave(player.id)
     return Left()
 

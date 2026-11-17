@@ -1,4 +1,4 @@
-"""Rock, paper, scissors against the twin, the league of twins, and the dot pattern gates. All plain code."""
+"""Rock, paper, scissors against the Sym, the league of Syms, and the dot pattern gates. All plain code."""
 import rps
 from content import CARDS, GATE_BY_ID, pattern_cells
 
@@ -30,7 +30,7 @@ def test_rounds_are_stored_and_the_twin_starts_to_win(client, auth):
 
     # with 10 throws the twin is in the league. Other twins have a number, never a name.
     assert out["need"] == 0 and out["rivals"] and out["of"] == len(out["rivals"]) + 1 and 1 <= out["rank"] <= out["of"]
-    assert all(r["name"].startswith("Twin ") and r["won"] + r["lost"] + r["drawn"] == rps.MATCH_ROUNDS for r in out["rivals"])
+    assert all(r["name"].startswith("Sym ") and r["won"] + r["lost"] + r["drawn"] == rps.MATCH_ROUNDS for r in out["rivals"])
     other = signup(client, "Few Throws")
     assert client.get("/rps", headers=other).json()["need"] == rps.ARENA_MIN and client.get("/rps", headers=other).json()["rivals"] == []
 

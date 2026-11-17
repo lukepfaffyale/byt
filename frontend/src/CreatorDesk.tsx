@@ -6,6 +6,7 @@ import { MeetPanel, MetList } from './Meet'
 import { More } from './More'
 import { Tabs } from './Deck'
 import { usePager } from './pager'
+import { Rows } from './Rows'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 
@@ -17,7 +18,7 @@ const TASKS: [Task, string, string][] = [
   ['test', 'Test a skill', 'See how strong a group is in one skill. You see totals.'],
   ['skill', 'Claim a step', 'Take a waiting step, so it is yours to build.'],
   ['make', 'Build my step', 'Pick the cards for a step you claimed. Then players can play it.'],
-  ['meet', 'Meet one twin', 'Pay a royalty to see one twin and who it is.'],
+  ['meet', 'Meet one Sym', 'Pay a royalty to see one Sym and who it is.'],
 ]
 
 export function SplitBars({ rows }: { rows: { label: string; share: number }[] }) {
@@ -80,7 +81,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     return (
       <section aria-labelledby="creator-h" className="mine">
         <h1 id="creator-h">You can also be the one who makes skills.</h1>
-        <p className="lead">Open a creator seat. Send your crew to learn what twins need.</p>
+        <p className="lead">Open a creator seat. Send your crew to learn what Syms need.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <form onSubmit={(e) => {
           e.preventDefault()
@@ -142,7 +143,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const audiences = (
     <div className="chips" role="group" aria-label="Who to ask">
       <span className="chips-label">Who to ask</span>
-      {seat.audiences.map((a) => (
+      {seat.audiences.filter((a) => !a.id.startsWith('view-')).map((a) => (
         <button key={a.id} className="chip" aria-pressed={group === a.id} onClick={() => setGroup(a.id)}>{a.name}</button>
       ))}
     </div>
@@ -179,6 +180,19 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                 </li>
               ))}
             </ul>
+          )}
+          {seat.wanted.length > 0 && (
+            <>
+              <p className="line-top">What agencies are asking about</p>
+              <Rows pageKey="wanted" size={3} wide empty="" rows={seat.wanted.map((w) => ({
+                id: w.skill, top: `${w.agencies} ${w.agencies === 1 ? 'agency' : 'agencies'}`, label: w.name, gold: w.waiting > 0,
+                n: w.waiting > 0 ? `${w.waiting} to build` : w.built ? 'built' : '',
+                detail: <>{w.agencies} {w.agencies === 1 ? 'agency has' : 'agencies have'} asked about this skill, through a question, a job or by backing it. {w.waiting > 0 ? `${w.waiting} of its steps ${w.waiting === 1 ? 'is' : 'are'} still waiting for a creator.` : 'Every step of it that can be built is built.'} You never see which agency.</>,
+              }))} />
+              {seat.emerging.map((p) => (
+                <p key={p.a + p.b} className="fine">New need: {p.agencies} agencies want {p.a} and {p.b} together.</p>
+              ))}
+            </>
           )}
           <Tabs label="What my crew does" value={task} onChange={(id) => { setTask(id); setTopic(null); setCards([]); setError('') }}
             tabs={TASKS.map(([id, label]) => ({ id, label }))} />
@@ -259,7 +273,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
           {task && task !== 'meet' && task !== 'make' && topic && (
             <>
               {task !== 'skill' && (
-                <p className="fine">Each twin that answers gets {seat.pay} credit. Your crew costs {seat.crew_fee} credits. You pay only if {seat.min_twins} or more twins match.</p>
+                <p className="fine">Each Sym that answers gets {seat.pay} credit. Your crew costs {seat.crew_fee} credits. You pay only if {seat.min_twins} or more Syms match.</p>
               )}
               <button className="primary big" disabled={busy} onClick={send}>Send my crew</button>
             </>
@@ -271,14 +285,14 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                 setMeets(out)
                 setError('')
                 api.creator().then(setSeat).catch(fail)
-                announce('Your crew met one twin.')
+                announce('Your crew met one Sym.')
                 setReplay(meetScript({ boss: seat.name, group: groupName, nickname: out.met[0]?.nickname ?? '', price: out.price, fee: out.fee }))
               }} />
           )}
           <More>
             You never type a question. You pick from lists, so no one can ask for something private. Your crew is a
             computer program, not AI, so there is no AI cost. You pay a small crew fee to the game. For a group you
-            see totals only, and only when at least {seat.min_twins} twins match. A skill step is built from cards
+            see totals only, and only when at least {seat.min_twins} Syms match. A skill step is built from cards
             the game wrote. You pick which ones. You do not see the right answers.
           </More>
         </>
@@ -288,14 +302,14 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
         <>
           {seat.briefs.length === 0 && (!meets || meets.met.length === 0) && <p className="fine">Nothing has come back yet. Send your crew from My Studio.</p>}
           <Tabs label="What came back" value={got} onChange={setGot}
-            tabs={[{ id: 'briefs', label: 'From my crew', n: seat.briefs.length }, { id: 'met', label: 'Twins met', n: meets?.met.length ?? 0 }]} />
+            tabs={[{ id: 'briefs', label: 'From my crew', n: seat.briefs.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
           {got === 'briefs' && <ul className="lines">
             {back.rows.map((b) => (
               <li key={b.created_at + b.title}>
-                <span className="line-top">{b.kind === 'skill' || b.kind === 'build' ? 'Skill' : b.kind === 'test' ? 'Test' : 'Question'} · {b.audience}{b.twins > 0 ? ` · ${b.twins} twins` : ''} · {b.spent} credits</span>
+                <span className="line-top">{b.kind === 'skill' || b.kind === 'build' ? 'Skill' : b.kind === 'test' ? 'Test' : 'Question'} · {b.audience}{b.twins > 0 ? ` · ${b.twins} Syms` : ''} · {b.spent} credits</span>
                 <span>{b.title}</span>
                 {b.split.length > 0 && <SplitBars rows={b.split} />}
-                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} twins are free twins with no name. Some are made up, to fill the game while it is small.`}</span>
+                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} Syms are free Syms with no name. Some are made up, to fill the game while it is small.`}</span>
               </li>
             ))}
           </ul>}

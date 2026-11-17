@@ -87,7 +87,7 @@ class Prediction(SQLModel, table=True):
 
 
 class Fact(SQLModel, table=True):
-    """One thing a player told their twin, kept as a short line in the twin's own words. The player's words are
+    """One thing a player told their Sym, kept as a short line in the Sym's own words. The player's words are
     never stored. A line is written only after the player taps to keep it, and the player can remove it."""
     __tablename__ = "facts"
     id: str = Field(default_factory=new_id, primary_key=True)
@@ -99,7 +99,7 @@ class Fact(SQLModel, table=True):
 
 
 class Throw(SQLModel, table=True):
-    """One round of rock, paper, scissors between a player and their own twin. The twin's throw is worked out
+    """One round of rock, paper, scissors between a player and their own Sym. The Sym's throw is worked out
     from the earlier rows before this one is written."""
     __tablename__ = "throws"
     id: str = Field(default_factory=new_id, primary_key=True)
@@ -110,8 +110,8 @@ class Throw(SQLModel, table=True):
 
 
 class Lesson(SQLModel, table=True):
-    """One thing a twin changed after a battle: a belief it rewrote, added or dropped, or a pick it now counts.
-    This is the record that the twin learned from being wrong."""
+    """One thing a Sym changed after a battle: a belief it rewrote, added or dropped, or a pick it now counts.
+    This is the record that the Sym learned from being wrong."""
     __tablename__ = "lessons"
     id: str = Field(default_factory=new_id, primary_key=True)
     player_id: str = Field(foreign_key="players.id", index=True)
@@ -155,7 +155,7 @@ class SelfReport(SQLModel, table=True):
 
 
 class Work(SQLModel, table=True):
-    """One job a twin did for its human: the twin's answer, the human's verdict and the play credits paid."""
+    """One job a Sym did for its human: the Sym's answer, the human's verdict and the play credits paid."""
     __tablename__ = "work"
     __table_args__ = (UniqueConstraint("player_id", "job_id"),)
     id: str = Field(default_factory=new_id, primary_key=True)
@@ -172,7 +172,7 @@ class Work(SQLModel, table=True):
 
 
 class ActiveDay(SQLModel, table=True):
-    """One row for each day a player used the game. It shows a twin has a living owner. No time, no place, no device."""
+    """One row for each day a player used the game. It shows a Sym has a living owner. No time, no place, no device."""
     __tablename__ = "active_days"
     __table_args__ = (UniqueConstraint("player_id", "day"),)
     id: str = Field(default_factory=new_id, primary_key=True)
@@ -181,7 +181,7 @@ class ActiveDay(SQLModel, table=True):
 
 
 class Consent(SQLModel, table=True):
-    """Choices a player made about their twin. Off until the player turns one on."""
+    """Choices a player made about their Sym. Off until the player turns one on."""
     __tablename__ = "consents"
     player_id: str = Field(foreign_key="players.id", primary_key=True)
     data_income: bool = False  # agencies may include this twin in batch questions (counts only) and pay it
@@ -217,7 +217,7 @@ class Campaign(SQLModel, table=True):
 
 
 class Earning(SQLModel, table=True):
-    """Passive play credits a player's twin earned by answering an agency's batch question."""
+    """Passive play credits a player's Sym earned by answering an agency's batch question."""
     __tablename__ = "earnings"
     id: str = Field(default_factory=new_id, primary_key=True)
     player_id: str = Field(foreign_key="players.id", index=True)
@@ -243,8 +243,8 @@ class Brief(SQLModel, table=True):
 
 
 class Posting(SQLModel, table=True):
-    """A job an agency posted for twins to take. The pay is held when the job is posted, and paid when a player
-    checks the twin's answer. What is not used goes back to the agency."""
+    """A job an agency posted for Syms to take. The pay is held when the job is posted, and paid when a player
+    checks the Sym's answer. What is not used goes back to the agency."""
     __tablename__ = "postings"
     id: str = Field(primary_key=True)  # "post-" and a random id: the job id that work rows carry
     org_id: str = Field(foreign_key="orgs.id", index=True)
@@ -266,7 +266,7 @@ class MadeStep(SQLModel, table=True):
 
 
 class Meet(SQLModel, table=True):
-    """One twin a seat paid to meet one to one. Removed when the twin's owner or the seat's owner deletes their data."""
+    """One Sym a seat paid to meet one to one. Removed when the Sym's owner or the seat's owner deletes their data."""
     __tablename__ = "meets"
     id: str = Field(default_factory=new_id, primary_key=True)
     org_id: str = Field(foreign_key="orgs.id", index=True)
@@ -290,7 +290,7 @@ class Sponsorship(SQLModel, table=True):
 
 
 class AutoWork(SQLModel, table=True):
-    """A player's choice to let the twin start jobs by itself. Off (0) until the player chooses a number."""
+    """A player's choice to let the Sym start jobs by itself. Off (0) until the player chooses a number."""
     __tablename__ = "autowork"
     player_id: str = Field(foreign_key="players.id", primary_key=True)
     per_day: int = 0
@@ -298,7 +298,7 @@ class AutoWork(SQLModel, table=True):
 
 
 class OneToOne(SQLModel, table=True):
-    """A player's choice to let a seat meet their twin one to one for a royalty. Off until the player turns it on."""
+    """A player's choice to let a seat meet their Sym one to one for a royalty. Off until the player turns it on."""
     __tablename__ = "one_to_one"
     player_id: str = Field(foreign_key="players.id", primary_key=True)
     on: bool = False
@@ -307,7 +307,7 @@ class OneToOne(SQLModel, table=True):
 
 class Wallet(SQLModel, table=True):
     """Where play credits sit. A player, an agency and a creator seat each have one. The game has a few of its own
-    (the outside, the growth fund, job requesters, token fees, sample twins). A wallet holds no name."""
+    (the outside, the growth fund, job requesters, token fees, sample Syms). A wallet holds no name."""
     __tablename__ = "wallets"
     id: str = Field(default_factory=new_id, primary_key=True)
     owner_id: str | None = Field(default=None, foreign_key="players.id", index=True)  # None: the game's own, or closed
@@ -544,7 +544,7 @@ class LessonOut(Strict):
 
 
 class LearnOut(Strict):
-    """What the twin did with a finished battle. The picks become proof it may learn from, and each lesson is one change."""
+    """What the Sym did with a finished battle. The picks become proof it may learn from, and each lesson is one change."""
     twin_kind: str
     misses: int
     picks_added: int
@@ -552,7 +552,7 @@ class LearnOut(Strict):
 
 
 class AreaHit(Strict):
-    """One brain area in one battle: of your picks that fell in it, how many the twin guessed."""
+    """One brain area in one battle: of your picks that fell in it, how many the Sym guessed."""
     key: str
     name: str
     region: str
@@ -820,6 +820,22 @@ class NeedOut(Strict):
     built: bool  # at least one step of this skill is built
 
 
+class WantedOut(Strict):
+    """A skill agencies are asking about. Shown to creators as a count of agencies, never a name."""
+    skill: str
+    name: str
+    agencies: int
+    built: bool
+    waiting: int  # steps of this skill that a creator could still build
+
+
+class PairOut(Strict):
+    """Two skills that several agencies want together: a need no one listed by hand."""
+    a: str
+    b: str
+    agencies: int
+
+
 class PlanOption(Strict):
     id: str  # a move: "gate:<gate id>" or "work"
     title: str
@@ -883,7 +899,7 @@ class RpsRound(Strict):
 
 
 class RpsTell(Strict):
-    """One habit the twin leans on: after this throw, you throw that one, this often."""
+    """One habit the Sym leans on: after this throw, you throw that one, this often."""
     after: str
     then: str
     n: int
@@ -891,7 +907,7 @@ class RpsTell(Strict):
 
 
 class RpsRival(Strict):
-    """One other twin in the league. It has a number, never a name."""
+    """One other Sym in the league. It has a number, never a name."""
     name: str
     free: bool
     won: int
@@ -979,7 +995,7 @@ class MetAnswer(Strict):
 
 
 class MetTwin(Strict):
-    """One twin a seat paid to meet. Shown only while the twin's owner keeps one to one on."""
+    """One Sym a seat paid to meet. Shown only while the Sym's owner keeps one to one on."""
     open: bool
     nickname: str = ""
     sample: bool = False
@@ -1014,6 +1030,8 @@ class CreatorSeat(Strict):
     packs: list[PackOut] = []
     made: list[MadeOut] = []
     needs: list[NeedOut] = []
+    wanted: list[WantedOut] = []
+    emerging: list[PairOut] = []
     reach_earned: float = 0  # from agencies whose jobs were answered by twins whose owners passed this creator's steps
     sponsor_earned: float = 0  # from agencies that sponsor a skill this creator built a step for
     questions: list["QuestionOut"] = []
@@ -1094,7 +1112,7 @@ class PostIn(Strict):
 
 
 class PostOut(Strict):
-    """A job this agency posted: how many twins took it, how many answers were checked, and the totals."""
+    """A job this agency posted: how many Syms took it, how many answers were checked, and the totals."""
     id: str
     kind: str
     question: str
@@ -1119,7 +1137,7 @@ class MoveOut(Strict):
 
 
 class AskOut(Strict):
-    """The twin's answer to one line from its human. The line itself is not stored."""
+    """The Sym's answer to one line from its human. The line itself is not stored."""
     say: str
     twin_kind: Literal["model", "offline"]
     move: MoveOut | None = None
@@ -1135,7 +1153,7 @@ class FactOut(Strict):
 
 
 class FactsOut(Strict):
-    """Everything the caller told their twin and chose to keep."""
+    """Everything the caller told their Sym and chose to keep."""
     facts: list[FactOut]
 
 
@@ -1226,7 +1244,7 @@ class AgencyMoney(Strict):
 
 
 class Money(Strict):
-    """A player's books: what the twin earned and from whom, what it cost to run, and the agency's spend if they have one."""
+    """A player's books: what the Sym earned and from whom, what it cost to run, and the agency's spend if they have one."""
     earned: int
     work_credits: int
     data_credits: int
@@ -1296,7 +1314,15 @@ class SphereFrame(Strict):
     earned: list[float]
 
 
+class Hub(Strict):
+    """One belief the Sym holds, as a point on the brain picture: the area it sits in and the topic it is about."""
+    area: str
+    name: str
+    told: bool = False  # true for a fact the player said and chose to keep
+
+
 class Sphere(Strict):
+    hubs: list[Hub] = []
     verticals: list[Vertical]
     links: int  # picks that join two areas
     history: list[SphereFrame] = []  # oldest first; the present is `verticals`
@@ -1310,3 +1336,46 @@ class Deleted(Strict):
 
 class Left(Strict):
     left: bool = True
+
+
+class Happening(Strict):
+    """One thing that happened in the game, said with no name, no answer and no exact time."""
+    who: str  # person, sym, agency or creator
+    text: str
+    when: str  # now, today, week or earlier
+    mine: bool = False  # the reader did this one
+
+
+class Commons(Strict):
+    """Who is here and what is known together. Counts only, and a short stream of nameless happenings."""
+    nickname: str
+    people: int  # real people with a Sym
+    people_today: int  # of those, how many played today
+    stand_ins: int  # made-up Syms and Syms left behind, holding places until people come
+    agencies: int
+    creators: int
+    taps: int  # answers real people gave
+    checks: int  # answers of a Sym that its person checked
+    told: int  # things people told their Sym and chose to keep
+    lessons: int  # things Syms changed after being wrong
+    proofs: int  # certificates earned
+    beliefs: int  # beliefs Syms hold now
+    known: int  # taps, checks, told and lessons together
+    known_mine: int  # the reader's part of that
+    happenings: list[Happening] = []
+
+
+class RippleLink(Strict):
+    """One way that what a person did in one seat reached another seat or everyone else. Counted from the books."""
+    src: str  # player, agency, creator or everyone
+    dst: str
+    n: int
+    credits: float = 0
+    text: str
+
+
+class Ripple(Strict):
+    """What one person set moving, across their own seats and out to everyone. Their own data, as counts."""
+    agency: bool
+    creator: bool
+    links: list[RippleLink] = []

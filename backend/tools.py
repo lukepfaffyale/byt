@@ -12,7 +12,7 @@ from typing import Any
 from pydantic_ai import Agent, RunContext
 
 import db
-from content import CARDS, Card
+from content import CARDS, TOPICS, Card
 from work import JOB_BY_ID
 
 MAX_PICKS = 80
@@ -54,7 +54,7 @@ def _visible_picks(player_id: str) -> list[dict[str, Any]]:
 
 
 def card_brief(card: Card) -> dict[str, Any]:
-    """A card as the twin may see it: the question and the options. No trait tags, no answers."""
+    """A card as the Sym may see it: the question and the options. No trait tags, no answers."""
     return {"card_id": card.id, "card": card.prompt, "options": [{"id": o.id, "label": o.label} for o in card.options]}
 
 
@@ -67,7 +67,8 @@ def register_profiler_tools(agent: Agent[TwinDeps, Any]) -> None:
         picks = _visible_picks(ctx.deps.player_id)
         if not picks:
             return {"ok": False, "error": "This player has no picks yet."}
-        out = {"ok": True, "picks": picks, "trait_counts": db.trait_counts(ctx.deps.player_id)}
+        out = {"ok": True, "picks": picks, "trait_counts": db.trait_counts(ctx.deps.player_id),
+               "topics": [t["name"] for t in TOPICS]}
         told = [{"scope": f.scope, "topic": f.topic, "statement": f.statement} for f in db.facts_for(ctx.deps.player_id)]
         if told:
             out["told_by_person"] = told

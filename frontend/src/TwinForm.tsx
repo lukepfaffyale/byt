@@ -30,7 +30,7 @@ type Props = {
   mode?: 'fill' | 'clusters'
   /** the collective sky: one far, faint point behind the sphere for every twin in the game */
   sky?: number
-  /** alone, monochrome; together, technicolor: 0 draws the sphere in white, 1 in the full color of each area */
+  /** color comes from other people: 0 draws the sphere in white, 1 in the full color of each area */
   together?: number
   /** called when the player taps a point: the key of the area that point belongs to */
   onPick?: (areaKey: string) => void
@@ -43,6 +43,10 @@ type Props = {
   onAxis?: (index: number) => void
   /** which directions are live now (the seat you are in, time while the story plays): drawn in gold */
   axesOn?: boolean[]
+  /** the brain only: one marked point for each belief the twin holds, in the area it belongs to, with its topic */
+  hubs?: { area: string; name: string; told?: boolean }[]
+  /** called when the player taps one of those points */
+  onHub?: (index: number) => void
   /** where the picture is in time: 1 is now, 0 is the start. The frame turns through its fourth direction as time moves */
   time?: number
 }
@@ -173,9 +177,9 @@ function makeLinks(nodes: Node[], brain: boolean): Link[] {
  * turn gold where a skill step is finished. Pale lines join one area to another.
  * Point at a dot to see its area; tap it to open that area.
  */
-export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1 }: Props) {
+export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1, hubs, onHub }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time })
+  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub })
   const redraw = useRef<(() => void) | null>(null)
   const [tip, setTip] = useState<Tip | null>(null)
 
@@ -192,10 +196,12 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     target.current.onAxis = onAxis
     target.current.axesOn = axesOn
     target.current.time = time
+    target.current.hubs = hubs
+    target.current.onHub = onHub
     // a drag on the twin belongs to the twin, so the page does not scroll under the finger
     if (canvasRef.current) canvasRef.current.style.touchAction = 'none'
     redraw.current?.()
-  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time])
+  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub])
 
   useEffect(() => {
     if (pulseKey > 0) target.current.pulse = 1
@@ -270,9 +276,12 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     let frame = 0
     let hover = -1
     let hoverAxis = -1 // the name of a direction under the pointer
+    let hoverHub = -1 // a belief's point under the pointer
     let shownTime = target.current.time
     const ax = new Float32Array(4).fill(-1e6) // where each direction's name was drawn
     const ay = new Float32Array(4).fill(-1e6)
+    const hx = new Float32Array(12).fill(-1e6) // where each belief's point was drawn
+    const hy = new Float32Array(12).fill(-1e6)
     let held = 0 // the turning slows to a stop while a point is under the pointer
     let turned = still ? 0.6 : 0
     let lean = 0 // how far the player has tipped the sphere toward or away from them
@@ -345,7 +354,7 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const blink = still ? 0.75 : 0.6 + 0.4 * Math.sin(t * 0.6 + i * 1.7)
         ctx.beginPath()
         ctx.arc(fx * w + drift, fy * h + drift * 0.4, (0.6 + 0.9 * ((i * 7) % 5) / 4) * Math.min(1.6, size), 0, Math.PI * 2)
-        // the others are in color: together is technicolor
+        // the others are in color
         const hue = SKY[i % SKY.length]
         ctx.fillStyle = `rgba(${hue[0]}, ${hue[1]}, ${hue[2]}, ${0.6 * blink})`
         ctx.fill()
@@ -398,13 +407,14 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         ctx.moveTo(fx[a], fy[a])
         ctx.lineTo(fx[b], fy[b])
       }
-      ctx.strokeStyle = `rgba(223, 230, 242, ${0.16 + 0.16 * c})`
-      ctx.lineWidth = 0.8
+      // the frame stays in the background: thin, and a little brighter as the twin forms
+      ctx.strokeStyle = `rgba(223, 230, 242, ${0.09 + 0.09 * c})`
+      ctx.lineWidth = 0.7
       ctx.stroke()
       for (let i = 0; i < 16; i++) {
         ctx.beginPath()
-        ctx.arc(fx[i], fy[i], 1.4 * size, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(223, 230, 242, 0.7)'
+        ctx.arc(fx[i], fy[i], 1 * size, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(223, 230, 242, 0.45)'
         ctx.fill()
       }
       const names = target.current.axes
@@ -415,8 +425,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           ctx.moveTo(fx[0], fy[0])
           ctx.lineTo(fx[1 << d], fy[1 << d])
         }
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
-        ctx.lineWidth = 1.2
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)'
+        ctx.lineWidth = 1
         ctx.stroke()
         ctx.font = `600 ${Math.round(Math.max(9, Math.min(13, radius / 22)))}px system-ui, sans-serif`
         ctx.textAlign = 'center'
@@ -437,15 +447,15 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
             ctx.lineWidth = 2
             ctx.stroke()
           }
-          if (can) {
-            // each name is a control: a ring marks where to tap
+          if (can && lit) {
+            // the direction you are in, or point at, gets a ring; the others are only their names
             ctx.beginPath()
-            ctx.arc(fx[i], fy[i], (lit ? 5 : 3.5) * size, 0, Math.PI * 2)
-            ctx.strokeStyle = lit ? 'rgba(255, 214, 130, 1)' : 'rgba(235, 240, 250, 0.8)'
+            ctx.arc(fx[i], fy[i], 4.5 * size, 0, Math.PI * 2)
+            ctx.strokeStyle = 'rgba(255, 214, 130, 1)'
             ctx.lineWidth = 1.2
             ctx.stroke()
           }
-          ctx.fillStyle = lit ? 'rgba(255, 224, 160, 1)' : 'rgba(235, 240, 250, 0.9)'
+          ctx.fillStyle = lit ? 'rgba(255, 224, 160, 1)' : 'rgba(235, 240, 250, 0.62)'
           ctx.fillText(name.toUpperCase(), ax[d], ay[d] + 4)
         })
       } else {
@@ -459,8 +469,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           formed = weight[i] >= 0
           gold[i] = formed && map[slice[i]].earned > 0 ? 1 : 0
           tone[i] = formed ? colors[slice[i]] : DIM
-          // points outside every group stay faint, so the sphere keeps its shape
-          lit[i] = formed ? 1 : p.rank < 0.28 ? 0.38 : 0
+          // points outside every group stay faint, so the sphere reads as a place full of twins not yet reached
+          lit[i] = formed ? 1 : p.rank < 0.62 ? 0.3 + 0.12 * (still ? 0.5 : 0.5 + 0.5 * Math.sin(t * 0.8 + p.seed * 5)) : 0
           if (!formed) slice[i] = -1
         } else if (map) {
           const k = home[i]
@@ -501,6 +511,81 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         if (formed) lit[i] = 1 + Math.max(0, 1 - Math.abs(-spot[3] / BALL - wave) * 3.2) * 1.6
       }
 
+      // a seat's sphere: the seat is a core of light at the centre, and a line runs from it to each group.
+      // A group the seat has reached is gold, and signals travel out along its line and back: asking, answering
+      if (clusters && map) {
+        place(0, 0, 0, 0, false)
+        const coreX = spot[0]
+        const coreY = spot[1]
+        const sumX = new Float32Array(map.length)
+        const sumY = new Float32Array(map.length)
+        const members = new Float32Array(map.length)
+        for (let i = 0; i < COUNT; i++) {
+          if (weight[i] < 0 || slice[i] < 0) continue
+          sumX[slice[i]] += px[i]
+          sumY[slice[i]] += py[i]
+          members[slice[i]] += 1
+        }
+        const beat = still ? 1 : 1 + 0.12 * Math.sin(t * 1.4)
+        const core = ctx.createRadialGradient(coreX, coreY, 0, coreX, coreY, 26 * size * beat)
+        core.addColorStop(0, 'rgba(255, 244, 214, 0.95)')
+        core.addColorStop(0.35, 'rgba(255, 214, 130, 0.35)')
+        core.addColorStop(1, 'rgba(255, 214, 130, 0)')
+        ctx.fillStyle = core
+        ctx.beginPath()
+        ctx.arc(coreX, coreY, 26 * size * beat, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.font = `600 ${Math.round(Math.max(8, Math.min(11, radius / 26)))}px system-ui, sans-serif`
+        ctx.textAlign = 'center'
+        for (let k = 0; k < map.length; k++) {
+          let gx: number
+          let gy: number
+          if (members[k] === 0) {
+            // a group too small to show still has its place on the sphere: an empty ring, with no twin drawn in it
+            const angle = ((k + 0.5) / map.length) * 2 * Math.PI - Math.PI
+            place(Math.cos(angle) * BALL, 0, Math.sin(angle) * BALL, 0, false)
+            gx = spot[0]
+            gy = spot[1]
+            ctx.beginPath()
+            ctx.setLineDash([3, 4])
+            ctx.arc(gx, gy, 10 * size, 0, Math.PI * 2)
+            ctx.strokeStyle = `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, 0.5)`
+            ctx.lineWidth = 1
+            ctx.stroke()
+            ctx.setLineDash([])
+          } else {
+            gx = sumX[k] / members[k]
+            gy = sumY[k] / members[k]
+          }
+          if (Math.min(w, h) >= 260) {
+            ctx.fillStyle = `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, ${members[k] === 0 ? 0.5 : 0.85})`
+            ctx.fillText(map[k].name.replace(/^(Strongest in|Needs to grow): /, '').toUpperCase(), gx, gy + (members[k] === 0 ? 24 : 34) * size)
+          }
+          const reached = map[k].earned > 0
+          const col = reached ? GOLD : colors[k]
+          const bendX = (coreX + gx) / 2 + (gy - coreY) * 0.16
+          const bendY = (coreY + gy) / 2 - (gx - coreX) * 0.16
+          ctx.beginPath()
+          ctx.moveTo(coreX, coreY)
+          ctx.quadraticCurveTo(bendX, bendY, gx, gy)
+          ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${reached ? 0.55 : 0.2})`
+          ctx.lineWidth = reached ? 1.3 : 0.8
+          ctx.stroke()
+          if (!still) {
+            // one signal goes out; where the seat has reached the group, another comes back
+            for (const back of reached ? [false, true] : [false]) {
+              const f0 = (t * (reached ? 0.32 : 0.14) + k * 0.37 + (back ? 0.5 : 0)) % 1
+              const f = back ? 1 - f0 : f0
+              const g = 1 - f
+              ctx.beginPath()
+              ctx.arc(g * g * coreX + 2 * g * f * bendX + f * f * gx, g * g * coreY + 2 * g * f * bendY + f * f * gy, (reached ? 2 : 1.3) * size, 0, Math.PI * 2)
+              ctx.fillStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${reached ? 1 : 0.6})`
+              ctx.fill()
+            }
+          }
+        }
+      }
+
       // the links: inside one area they carry its color; between two areas they are pale, the cross connections
       ctx.lineWidth = Math.max(0.6, 0.55 * size)
       for (const l of links) {
@@ -513,7 +598,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         ctx.beginPath()
         ctx.moveTo(px[l.a], py[l.a])
         ctx.lineTo(px[l.b], py[l.b])
-        ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(0.9, (0.1 + 0.5 * near * near) * (0.55 + 0.45 * c) * hot)})`
+        // links inside one area carry the picture; the pale links between areas stay faint so the areas read
+        ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(0.9, (0.1 + 0.5 * near * near) * (0.55 + 0.45 * c) * hot * (map && !same ? 0.45 : 1))})`
         ctx.stroke()
       }
 
@@ -535,7 +621,9 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const col = gold[i] ? GOLD : tone[i]
         const sameArea = hover >= 0 && slice[i] === slice[hover] && slice[i] >= 0
         const alpha = (0.28 + 0.72 * depth[i]) * (0.7 + 0.3 * c) * lit[i] * (hover >= 0 && !sameArea ? 0.45 : 1)
-        const grow = clusters && weight[i] >= 0 ? 0.8 + 1.5 * weight[i] : gold[i] ? 1.7 : lit[i] > 1.2 ? 1.35 : lit[i] < 1 ? 0.7 : 1
+        // in a seat's sphere every twin breathes in its own time: a crowd, not a chart
+        const alive = clusters && weight[i] >= 0 && !still ? 1 + 0.2 * Math.sin(t * 1.3 + nodes[i].seed * 4) : 1
+        const grow = clusters && weight[i] >= 0 ? (0.8 + 1.5 * weight[i]) * alive : gold[i] ? 1.7 : lit[i] > 1.2 ? 1.35 : lit[i] < 1 ? 0.7 : 1
         ctx.beginPath()
         ctx.arc(px[i], py[i], (0.7 + 1.5 * depth[i]) * size * grow * (sameArea ? 1.25 : 1), 0, Math.PI * 2)
         ctx.fillStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(1, alpha)})`
@@ -544,7 +632,7 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
 
       // strands to other twins: the more this twin has worked with others, the more of them reach out from it
       if (map && !clusters && far > 0) {
-        const strands = Math.round(mix * 14)
+        const strands = Math.round(mix * 7)
         ctx.lineWidth = 0.6
         for (let s = 0; s < strands; s++) {
           let from = (s * 43 + 11) % COUNT
@@ -562,7 +650,7 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           ctx.beginPath()
           ctx.moveTo(px[from], py[from])
           ctx.quadraticCurveTo(mx, my, tx, ty)
-          ctx.strokeStyle = `rgba(${hue[0]}, ${hue[1]}, ${hue[2]}, 0.22)`
+          ctx.strokeStyle = `rgba(${hue[0]}, ${hue[1]}, ${hue[2]}, 0.15)`
           ctx.stroke()
           if (!still) {
             const f = (t * 0.18 + s * 0.31) % 1
@@ -574,6 +662,41 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           }
         }
       }
+
+      // beliefs: each one the twin holds is a marked point in the area it belongs to, named by its topic.
+      // A belief the player said and chose to keep is gold; one learned from taps is white.
+      hx.fill(-1e6)
+      const marks = map && !clusters && shape > 0.6 && Math.min(w, h) >= 260 ? (target.current.hubs ?? []).slice(0, 12) : []
+      ctx.font = `600 ${Math.round(Math.max(9, Math.min(12, radius / 24)))}px system-ui, sans-serif`
+      ctx.textAlign = 'left'
+      marks.forEach((hub, n) => {
+        const seed = SEEDS.find((s) => s.key === hub.area)?.at ?? [0.12, 0.25, 0.05]
+        const side = n % 2 === 0 ? 1 : -1
+        const lift = ((n >> 1) % 3 - 1) * 0.14
+        place(seed[0] * side * 1.32 * BALL, (seed[1] + lift) * 1.32 * BALL, seed[2] * 1.32 * BALL, 0, false)
+        hx[n] = spot[0]
+        hy[n] = spot[1]
+        const tint = hub.told ? '255, 214, 130' : '255, 255, 255'
+        const on = hoverHub === n
+        // a slow breath, each belief in its own time, so the brain is never quite still
+        const breath = still ? 1 : 1 + 0.18 * Math.sin(t * 1.1 + n * 1.7)
+        ctx.beginPath()
+        ctx.arc(spot[0], spot[1], (on ? 6.5 : 4) * size * breath, 0, Math.PI * 2)
+        ctx.strokeStyle = `rgba(${tint}, ${on ? 1 : 0.7})`
+        ctx.lineWidth = on ? 1.6 : 1
+        ctx.stroke()
+        if (on) {
+          // the name shows only for the belief you point at, so the picture is not covered in words
+          const text = `${hub.name.toUpperCase()}${hub.told ? ' · YOU TOLD ME' : ''}`
+          const wide = ctx.measureText(text).width
+          ctx.globalCompositeOperation = 'source-over'
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.78)'
+          ctx.fillRect(spot[0] + 10 * size, spot[1] - 9, wide + 12, 18)
+          ctx.fillStyle = `rgba(${tint}, 1)`
+          ctx.fillText(text, spot[0] + 10 * size + 6, spot[1] + 4)
+          ctx.globalCompositeOperation = 'lighter'
+        }
+      })
 
       if (hover >= 0 && lit[hover] > 0) {
         ctx.beginPath()
@@ -599,6 +722,18 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
       const my = ev.clientY - box.top
       for (let d = 0; d < 4; d++) {
         if (Math.abs(mx - ax[d]) < 44 && Math.abs(my - ay[d]) < 20) return d
+      }
+      return -1
+    }
+
+    // a belief's point under the pointer: -1 when there is none
+    const hubAt = (ev: PointerEvent): number => {
+      if (!target.current.onHub) return -1
+      const box = canvas.getBoundingClientRect()
+      const mx = ev.clientX - box.left
+      const my = ev.clientY - box.top
+      for (let n = 0; n < 12; n++) {
+        if (Math.abs(mx - hx[n]) < 13 && Math.abs(my - hy[n]) < 13) return n
       }
       return -1
     }
@@ -742,6 +877,19 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           }
         }
       }
+      const mark = hubAt(ev)
+      if (mark !== hoverHub) {
+        hoverHub = mark
+        again()
+      }
+      if (mark >= 0) {
+        canvas.style.cursor = 'pointer'
+        if (hover >= 0) {
+          hover = -1
+          setTip(null)
+        }
+        return
+      }
       const over = axisAt(ev)
       if (over !== hoverAxis) {
         hoverAxis = over
@@ -776,6 +924,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     }
     const onLeave = () => {
       hover = -1
+      hoverHub = -1
+      hoverAxis = -1
       canvas.style.cursor = ''
       setTip(null)
       again()
@@ -800,6 +950,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         return
       }
       if (Math.hypot(dx, dy) > 10) return
+      const mark = hubAt(ev)
+      if (mark >= 0) {
+        target.current.onHub?.(mark)
+        return
+      }
       const picked = axisAt(ev)
       if (picked >= 0) {
         target.current.onAxis?.(picked)

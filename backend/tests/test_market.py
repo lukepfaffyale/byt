@@ -1,4 +1,4 @@
-"""The agency seat: batch questions to opted-in twins, counts only, play credits both ways."""
+"""The agency seat: batch questions to opted-in Syms, counts only, play credits both ways."""
 import db
 import market
 from content import GATES

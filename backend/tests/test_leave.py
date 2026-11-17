@@ -1,4 +1,4 @@
-"""Leaving the game: the login, the nickname and the wallets go, and the twin and what the person made stay
+"""Leaving the game: the login, the nickname and the wallets go, and the Sym and what the person made stay
 for everyone else, with no royalties paid to the person who left."""
 import db
 import market

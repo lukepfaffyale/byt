@@ -10,16 +10,16 @@ const NODE_OF: Record<string, Node> = {
 }
 const NODES: Node[] = ['twins', 'agencies', 'creators', 'fund', 'held', 'game', 'outside', 'ai']
 const NAME: Record<Node, string> = {
-  twins: 'Twins', agencies: 'Agencies', creators: 'Creators', fund: 'Growth fund', held: 'Held for work', game: 'The game',
+  twins: 'Syms', agencies: 'Agencies', creators: 'Creators', fund: 'Growth fund', held: 'Held for work', game: 'The game',
   outside: 'Outside', ai: 'AI',
 }
 const ABOUT: Record<Node, string> = {
-  twins: 'Every twin and its owner. They earn here.',
-  agencies: 'They pay twins for answers, post jobs and back skills.',
+  twins: 'Every Sym and its owner. They earn here.',
+  agencies: 'They pay Syms for answers, post jobs and back skills.',
   creators: 'They build skill steps and earn when the steps are used.',
   fund: 'It pays every player who passes a skill step.',
   held: 'Credits an agency set aside for a job or a skill. What is not used goes back.',
-  game: 'Fees for crews and claims, and the pay of free twins.',
+  game: 'Fees for crews and claims, and the pay of free Syms.',
   outside: 'Play credits that people added, and the first job requesters.',
   ai: 'An AI can plug in here: it would read what people checked, with their yes. This point is drawn, not built.',
 }
@@ -98,7 +98,7 @@ export function WorldView({ compact }: { compact?: boolean }) {
   const top = Math.max(1, ...flows.map((l) => l.credits))
   const held = (n: Node) => Math.round(Object.entries(world.balances).filter(([k]) => NODE_OF[k] === n).reduce((sum, [, v]) => sum + v, 0))
   const twins = world.twins_members + world.twins_free + world.twins_forming
-  const said = `${twins} twins, ${world.agencies} agencies and ${world.creators} creators. ${world.checked_answers} answers checked by their owners.`
+  const said = `${twins} Syms, ${world.agencies} agencies and ${world.creators} creators. ${world.checked_answers} answers checked by their owners.`
   // fit every corner inside the frame, with room left for the names under the nodes
   const raw = CORNERS.map((c) => project(c, t))
   const fit = 1 / Math.max(...raw.map(([x, y]) => Math.max(Math.abs(x) / 138, Math.abs(y) / 112)))
@@ -154,7 +154,7 @@ export function WorldView({ compact }: { compact?: boolean }) {
       </p>
       {compact ? (
         <dl className="pair world-pair">
-          <div><dt>Twins</dt><dd>{twins}</dd></div>
+          <div><dt>Syms</dt><dd>{twins}</dd></div>
           <div><dt>Checked answers</dt><dd>{world.checked_answers}</dd></div>
           <div><dt>Corrections</dt><dd>{world.corrections}</dd></div>
           <div><dt>Insights</dt><dd>{world.certs_insight}</dd></div>
@@ -166,7 +166,7 @@ export function WorldView({ compact }: { compact?: boolean }) {
               { id: 'now', label: 'Numbers' }, { id: 'real', label: 'Real today' }]} />
           {why === 'now' ? (
             <dl className="pair world-pair">
-              <div><dt>Twins</dt><dd>{twins}</dd><dd className="muted">{world.twins_members} earn · {world.twins_free} free</dd></div>
+              <div><dt>Syms</dt><dd>{twins}</dd><dd className="muted">{world.twins_members} earn · {world.twins_free} free</dd></div>
               <div><dt>Checked</dt><dd>{world.checked_answers}</dd><dd className="muted">{world.corrections} corrected</dd></div>
               <div><dt>Insights</dt><dd>{world.certs_insight}</dd><dd className="muted">new things found</dd></div>
               <div><dt>Seats</dt><dd>{world.agencies + world.creators}</dd><dd className="muted">{world.open_jobs} open {world.open_jobs === 1 ? 'job' : 'jobs'} · {world.built_steps} {world.built_steps === 1 ? 'step' : 'steps'}</dd></div>
@@ -174,7 +174,7 @@ export function WorldView({ compact }: { compact?: boolean }) {
             </dl>
           ) : (
             <p className="world-say">
-              {why === 'income' && 'Your twin earns when it answers for you and you check it. There are no odds and no bets. Nothing here asks you to beat a machine at its own game.'}
+              {why === 'income' && 'Your Sym earns when it answers for you and you check it. There are no odds and no bets. Nothing here asks you to beat a machine at its own game.'}
               {why === 'ai' && `An AI can guess what most people want. It cannot know when it is wrong about you. ${world.checked_answers} checked answers, ${world.corrections} corrections and ${world.certs_insight} insights are that proof so far, each given with a yes from a living person.`}
               {why === 'people' && 'The same AI can then make things that fit real people, and the people who taught it are paid and keep the say. Agencies pay for answers. Creators are paid when their skills are used. The growth fund pays you for getting better.'}
               {why === 'real' && 'Every bright line on the map is a real move in the books of this game. The credits are play money, and this is a class project. The AI point is drawn, not built.'}

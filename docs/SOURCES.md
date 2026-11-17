@@ -6,15 +6,17 @@ papers can see plainly which ideas are theirs, which are ours, and in what order
 
 ## The short version
 
-- BYT was designed and built first. The idea was settled on 2026-11-14 and the twin, the battles, the economy,
-  the sphere in its four-dimensional frame, the brain picture, talking to the twin, the judgment record and the
+- BYT was designed and built first. The idea was settled on 2026-11-14 and the Sym, the battles, the economy,
+  the sphere in its four-dimensional frame, the brain picture, talking to the Sym, the judgment record and the
   games were built on 2026-11-14 and 2026-11-15.
 - All six sources below were found and read on 2026-11-15, after those parts existed. Each was brought in by the
   student because it looked like something BYT already did.
 - All six were published before BYT was started. BYT does not claim to have come first. It claims to have been
   built without them.
-- One idea was taken from a source after reading it, and it is credited where it is used: the split of a belief
-  into a trait of the person and a view about one topic, from VoiceMem (source 6).
+- Four ideas were taken from one source after reading it, and each is credited where it is used. All four come
+  from VoiceMem (source 6): the split of a belief into a trait and a view about one topic; a fixed list of topics
+  over what the Sym knows; choosing the relevant part before the model is sent anything; and needs that emerge
+  from what is asked for together.
 - No code, data, model, figure or text from any source is in this project. Nothing was cloned, installed or run.
 
 ## How this can be checked, and the limit of the check
@@ -94,30 +96,53 @@ https://pmc.ncbi.nlm.nih.gov/articles/PMC4870410/
 https://arxiv.org/abs/2608.26005 and https://xzf-thu.github.io/VoiceMem/
 
 - **Read:** 2026-11-15, in full, from the text of the paper.
-- **BYT already had, before it was read:** the brain picture on the left; talking to the twin, with one answer
-  and one move; beliefs the twin holds about its person; the battle that rewrites a belief after a wrong guess.
+- **BYT already had, before it was read:** the brain picture on the left; talking to the Sym, with one answer
+  and one move; beliefs the Sym holds about its person; the battle that rewrites a belief after a wrong guess.
 - **Taken after reading, and credited:**
   - The split of a belief into a trait of the person and a view about one topic (`tendencies.scope`, and the
     `scope` of a kept fact). This follows their two kinds of persona node: one for the person, one tied to a
     specific thing. Their warning that mixing the two turns a reaction to one situation into a trait is the
     reason it was added.
+  - A fixed list of topics (`topics` in the ontology, `content.topic_id`), with one belief for each topic and a
+    group an agency can ask ("has a view on"). Theirs is a two-level index of topics and the things inside them.
+    Ours is one level, set by hand, and tied to our market.
+  - Sending the model only the part a line is about (`main.narrow`). Theirs matches topics while a person is
+    still speaking and searches a small pool. Ours is a short list of plain words that picks which parts of the
+    situation to send.
+  - Needs that emerge from use (`main.demand`): pairs of skills that several agencies want together, shown to
+    creators. Theirs promotes memories that are recalled together into a new topic, with a model as judge. Ours
+    is plain counting, with no model, over what agencies asked for.
+  - The marked points for beliefs on the brain picture follow from the fixed list of topics.
+- **What a test showed:** the first idea (trait or topic) gave no measured gain in a small test: two steady
+  players, 35 of 40 with it and 37 of 40 without. It is kept because it is cheap and it names a real mistake,
+  not because it is proven. The other three are not yet measured against the real model.
 - **Not taken:** their code, their model, their data, their graph, their retrieval method, and their choice to
   store what a person says and how they sound. BYT stores no words and no sound: at most one short sentence in
-  the twin's own words, checked by code, and only after the player taps yes.
-- **Where the two differ in aim:** VoiceMem is a memory that lets a voice assistant serve a person. BYT is a twin
+  the Sym's own words, checked by code, and only after the player taps yes.
+- **Where the two differ in aim:** VoiceMem is a memory that lets a voice assistant serve a person. BYT is a Sym
   that is tested against its person's unseen choices, earns certificates only by that test, and is owned and paid
   through an economy of players, agencies and creators. None of that is in VoiceMem.
+
+### 7. A song: Venjent, "Till Death We Do Art"
+
+- **What it is:** a piece of music, named by the student from memory. It was not looked up or checked for this file.
+- **What came from it:** an idea, heard in one of its lines: that something is without color on its own and in
+  full color together with others. In BYT a Sym is drawn in white until it connects with other people (a checked
+  job, a question answered for an agency, the choice to earn), and color comes in as it does.
+- **What was removed on 2026-11-15:** an early build showed that idea on two screens in wording close to the
+  song's. The student asked for it to be said in our own words. It now reads "Color comes from other people."
+  No lyric is used anywhere in the project.
 
 ## What is BYT's own
 
 These parts do not come from any source above:
 
-- A twin whose beliefs are tested on picks it has never seen, against what most people pick.
+- A Sym whose beliefs are tested on picks it has never seen, against what most people pick.
 - Certificates issued by code only, earned by play, never bought, and not given for a score that guessing could
   reach.
 - Three seats (player, agency, creator), wallets, royalties, the growth fund and the price tiers.
-- Totals over at least five twins for any seat, consent before earning, and leaving that removes the person and
-  keeps an unnamed twin.
+- Totals over at least five Syms for any seat, consent before earning, and leaving that removes the person and
+  keeps an unnamed Sym.
 - The judgment record of how sure a player was against how often they were right.
 
 ## If a source is added later

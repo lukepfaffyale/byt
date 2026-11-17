@@ -1,5 +1,5 @@
 """The loops between seats: an agency backs a skill, a creator builds for it, a player passes and earns, and the
-creator earns again when an agency reaches that player. Also the plan, the twin that works by itself, and the world."""
+creator earns again when an agency reaches that player. Also the plan, the Sym that works by itself, and the world."""
 import db
 import market
 import work
@@ -52,7 +52,7 @@ def test_an_agency_backs_a_skill_a_creator_builds_it_and_both_loops_pay(client, 
     after = client.get("/agency", headers=boss).json()
     assert after["budget"] == round(market.START_BUDGET - 50 - 5 * hold + hold - earned - earned * market.REACH_SHARE, 2)
     # the twin was wrong and its human taught it: that is an insight certificate
-    assert result["insight"]["kind"] == "insight" and result["insight"]["level"] == "My twin learned this from me"
+    assert result["insight"]["kind"] == "insight" and result["insight"]["level"] == "My Sym learned this from me"
     assert client.post(f"/agency/jobs/{post['id']}/close", headers=boss).status_code == 200  # leave no open job behind
     assert db.ledger_total() == 0
 
@@ -68,7 +68,7 @@ def test_the_plan_the_twin_that_works_by_itself_and_the_world(client, auth):
     assert states.count("review") == 1  # one a day, and nothing is paid before the owner checks it
     client.get("/me", headers=auth)
     assert [j["state"] for j in client.get("/jobs", headers=auth).json()["jobs"]].count("review") == 1
-    assert client.get("/me/plan", headers=auth).json()["options"][0]["title"] == "Check your twin's answer"
+    assert client.get("/me/plan", headers=auth).json()["options"][0]["title"] == "Check your Sym's answer"
 
     world = client.get("/world")  # open to anyone
     assert world.status_code == 200 and "Tester" not in world.text and "nickname" not in world.text

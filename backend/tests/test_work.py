@@ -1,4 +1,4 @@
-"""Work income: the twin does a job, the human reviews, code pays and adds the answer to the collective."""
+"""Work income: the Sym does a job, the human reviews, code pays and adds the answer to the collective."""
 import db
 import work
 from content import GATES

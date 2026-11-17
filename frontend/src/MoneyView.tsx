@@ -4,7 +4,7 @@ import { Tabs } from './Deck'
 import { WalletCard, type Extra } from './WalletCard'
 
 type Seat = 'player' | 'agency' | 'creator'
-const SEAT_TAB: Record<Seat, string> = { player: 'My twin', agency: 'My agency', creator: 'My studio' }
+const SEAT_TAB: Record<Seat, string> = { player: 'My Sym', agency: 'My agency', creator: 'My studio' }
 
 /**
  * My money on one screen. The twin says in one line where things stand and offers the best next move.
@@ -48,18 +48,18 @@ export function MoneyView(props: { onChange?: () => void; onMove?: (id: string) 
     rows: [
       ...money.cost_by_agent.map((a) => ({ top: `${a.runs} ${a.runs === 1 ? 'run' : 'runs'}`, label: a.agent, n: `$${a.usd.toFixed(4)}` })),
       { top: 'share', label: `You played ${money.active_days} of the last 14 days`, n: `${Math.round(money.income_share * 100)}%`,
-        detail: 'This is the share your twin receives of what agencies pay it. A twin whose owner has not played for 7 days receives less.' },
+        detail: 'This is the share your Sym receives of what agencies pay it. A Sym whose owner has not played for 7 days receives less.' },
       { top: 'fund', label: 'The growth fund holds', n: String(money.fund), detail: 'It pays every player who passes a skill step.' },
-      { top: 'rule', label: 'How the cost is paid', n: '', detail: `The cost is real. The game measures it each time this twin uses AI. When your wallet holds enough, it pays that cost as a token fee. When it does not, the game pays. ${money.price_note}` },
+      { top: 'rule', label: 'How the cost is paid', n: '', detail: `The cost is real. The game measures it each time this Sym uses AI. When your wallet holds enough, it pays that cost as a token fee. When it does not, the game pays. ${money.price_note}` },
     ],
-    empty: 'Your twin has not used AI yet.',
+    empty: 'Your Sym has not used AI yet.',
   }
 
   return (
     <section aria-labelledby="money-h" className="mine money">
       <h1 id="money-h" className="sr-only">Money</h1>
       <div className="twin-line">
-        <span className="line-top">My twin</span>
+        <span className="line-top">My Sym</span>
         <p>{says}</p>
         {best && props.onMove && (
           <button className="secondary" onClick={() => props.onMove?.(best.id)}>

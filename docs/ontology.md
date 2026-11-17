@@ -16,7 +16,7 @@
 | `incomes` | Work income and data income: who answers, whether a person checks, who pays, what decides | This record; the rules live in `work.py` and `market.py` |
 | `agents` | The register of AI agents: seat served, job, one tool, what it reads, what it never reads, its output, how the output is checked | Tested against `agent.py`, `tools.py` and the prompt files |
 | `rules` | Every number a rule runs on, with where it lives in code and why | Tested against the code |
-| `groups` | The clusters on the agency and creator spheres: one for each thinking style, one for twins still forming, other agencies, creators; each with a color | `market.py`, the seat spheres |
+| `groups` | The clusters on the agency and creator spheres: one for each thinking style, one for Syms still forming, other agencies, creators; each with a color | `market.py`, the seat spheres |
 | `principles` | How worth is weighed: never by money. Each principle names the code that keeps it | Tested in `test_governance.py` |
 | `unmapped` | Trait tags that deliberately count toward nothing | `content.py` |
 
@@ -28,7 +28,7 @@
 4. Each style and faculty names the **skills** that help it. The Mind tab recommends: go deeper in the strongest,
    grow the weakest.
 5. A skill is a tree of **steps**. A finished step can earn a **certificate**, and turns points on the sphere gold.
-6. A certificate raises what the twin earns from **work**.
+6. A certificate raises what the Sym earns from **work**.
 
 Every arrow in that path is plain code reading this file. No model is on the path.
 

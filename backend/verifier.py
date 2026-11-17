@@ -1,7 +1,7 @@
 """The verifier: plain code, no model. It decides what counts as proof.
 
-- the baseline every twin must beat ("always guess the popular pick"),
-- a zero-token rule-of-thumb twin, used when the model is unavailable and as a cost comparison,
+- the baseline every Sym must beat ("always guess the popular pick"),
+- a zero-token rule-of-thumb Sym, used when the model is unavailable and as a cost comparison,
 - the score of a battle and whether it earns a certificate,
 - skill certificates straight from play.
 
@@ -32,7 +32,7 @@ def popular_choice(card: Card, picks_by_others: list[str]) -> str:
 
 
 def rule_of_thumb(card: Card, trait_counts: dict[str, int], fallback: str) -> str:
-    """Zero-token twin: pick the option whose trait the player has shown most often."""
+    """Zero-token Sym: pick the option whose trait the player has shown most often."""
     scored = [(trait_counts.get(o.trait or "", 0), o.id) for o in card.options]
     top = max(s for s, _ in scored)
     winners = [oid for s, oid in scored if s == top]
@@ -55,7 +55,7 @@ class BattleScore:
 
 
 def score_battle(rows: list[tuple[str | None, str, str]]) -> BattleScore:
-    """rows: (twin prediction or None, baseline choice, the player's real pick)."""
+    """rows: (Sym prediction or None, baseline choice, the player's real pick)."""
     return BattleScore(
         n=len(rows),
         twin_matches=sum(1 for predicted, _, actual in rows if predicted is not None and predicted == actual),
@@ -64,16 +64,16 @@ def score_battle(rows: list[tuple[str | None, str, str]]) -> BattleScore:
 
 
 def earns_twin_cert(score: BattleScore, twin_kind: str) -> tuple[bool, str]:
-    """A twin cert needs the real twin, enough cards, a clear win over the baseline and a floor on accuracy."""
+    """A Sym cert needs the real Sym, enough cards, a clear win over the baseline and a floor on accuracy."""
     if twin_kind != "model":
-        return False, "This was the practice twin. It does not use AI, so it cannot earn a certificate."
+        return False, "This was the practice Sym. It does not use AI, so it cannot earn a certificate."
     if score.n < MIN_BATTLE_CARDS:
         return False, "There were too few cards to earn a certificate."
     if score.twin_matches <= score.baseline_matches:
-        return False, "Your twin did not beat the crowd's guess yet. Play more gates to teach it, and it can try again."
+        return False, "Your Sym did not beat the crowd's guess yet. Play more gates to teach it, and it can try again."
     if score.accuracy < MIN_TWIN_ACCURACY:
-        return False, "Your twin beat the crowd's guess, but it needs more right answers to earn a certificate."
-    return True, "Your twin beat the crowd's guess. It earned a certificate."
+        return False, "Your Sym beat the crowd's guess, but it needs more right answers to earn a certificate."
+    return True, "Your Sym beat the crowd's guess. It earned a certificate."
 
 
 def luck(option_counts: list[int], need: int) -> float:

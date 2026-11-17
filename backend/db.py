@@ -111,7 +111,7 @@ def create_player(nickname: str) -> tuple[Player, str]:
 
 
 def twin_count() -> int:
-    """How many twins exist, the made-up sample twins included. A count only."""
+    """How many Syms exist, the made-up sample Syms included. A count only."""
     with Session(get_engine()) as s:
         return int(s.exec(select(func.count()).select_from(Player)).one())
 
@@ -249,7 +249,7 @@ def battles_for(player_id: str) -> list[Battle]:
 def create_battle(
     player_id: str, gate_id: str, topic: str, twin_kind: str, rows: list[tuple[str, str | None, float, str, str | None]]
 ) -> Battle:
-    """rows: (card id, twin prediction or None, confidence, baseline choice, the belief leaned on). One transaction."""
+    """rows: (card id, Sym prediction or None, confidence, baseline choice, the belief leaned on). One transaction."""
     with Session(get_engine()) as s:
         existing = s.exec(select(Battle).where(Battle.player_id == player_id, Battle.gate_id == gate_id)).first()
         if existing:
@@ -283,7 +283,7 @@ def reveal_prediction(battle_id: str, card_id: str, actual: str) -> Prediction |
 
 
 def release_picks(player_id: str, card_ids: list[str]) -> None:
-    """After a battle is scored, its picks stop being held back: they become proof the twin may learn from.
+    """After a battle is scored, its picks stop being held back: they become proof the Sym may learn from.
     The score stays honest, because every guess was sealed before the first card was shown."""
     with Session(get_engine()) as s:
         for r in s.exec(select(Response).where(Response.player_id == player_id, Response.held_out == True)).all():  # noqa: E712
@@ -433,7 +433,7 @@ def work_on(player_id: str, job_id: str) -> Work | None:
 
 
 def start_work(player_id: str, job_id: str, twin_kind: str, answer: str | None, reason: str) -> Work:
-    """Idempotent: a twin answers a job once."""
+    """Idempotent: a Sym answers a job once."""
     with Session(get_engine()) as s:
         row = s.exec(select(Work).where(Work.player_id == player_id, Work.job_id == job_id)).first()
         if row is None:
@@ -518,7 +518,7 @@ def post_job(org_id: str, question_id: str, pay: int, seats: int, hold: int) -> 
 
 
 def close_posting(org_id: str, job_id: str) -> bool:
-    """Close a job to new twins. The hold for every seat no twin took goes back. A twin that already started is
+    """Close a job to new Syms. The hold for every seat no Sym took goes back. A Sym that already started is
     still paid when its owner checks the answer. False if there is no such open job."""
     with Session(get_engine()) as s:
         row = s.get(Posting, job_id)
@@ -550,7 +550,7 @@ def sample_player_ids() -> list[str]:
 
 
 def free_twin_ids() -> list[str]:
-    """Free twins: anonymous, and not paid. The made-up twins that fill a small game, and the twins of players who
+    """Free Syms: anonymous, and not paid. The made-up Syms that fill a small game, and the Syms of players who
     left. A seat may count them in a group. No one can meet one of them one to one."""
     with Session(get_engine()) as s:
         return list(s.exec(select(Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX)
@@ -563,8 +563,8 @@ def has_left(s: Session, player_id: str) -> bool:
 
 
 def leave(player_id: str) -> None:
-    """The player leaves and the twin joins the collective. The login and the nickname are removed, the wallets are
-    closed so nothing more is paid to this person, and what the player told the twin about themselves is removed.
+    """The player leaves and the Sym joins the collective. The login and the nickname are removed, the wallets are
+    closed so nothing more is paid to this person, and what the player told the Sym about themselves is removed.
     The taps, the beliefs, the certificates and everything the player's seats made stay, with no one's name on
     them, so the game goes on for everyone else."""
     with Session(get_engine()) as s:
@@ -572,7 +572,7 @@ def leave(player_id: str) -> None:
         if player is None:
             return
         player.token_hash = f"{FREE_PREFIX}{secrets.token_hex(12)}"
-        player.nickname = "Free twin"
+        player.nickname = "Free Sym"
         s.add(player)
         # what the person told the twin in words goes with the person: a free twin keeps taps, not sayings
         for table in (Fact, SelfReport, Consent, OneToOne, Meet, AutoWork, ActiveDay):
@@ -651,7 +651,7 @@ def earlier_asks(org_id: str, audience: str) -> int:
 
 def fund_balance(start: int, step_kind: str) -> int:
     """The growth fund: what it started with, plus every extra an agency paid for asking a group again, plus
-    what was held back from twins whose owners had not played lately, minus every bonus it has paid.
+    what was held back from Syms whose owners had not played lately, minus every bonus it has paid.
     Never stored: it is the balance of the fund's wallet, counted from the moves. (It used to be counted from the
     campaign and earning rows, which went wrong when a player deleted their data: their past pay looked held back.)"""
     with Session(get_engine()) as s:
@@ -725,6 +725,11 @@ def maker_income(owner_id: str) -> dict[str, tuple[int, float]]:
         return out
 
 
+def all_campaigns() -> list[Campaign]:
+    with Session(get_engine()) as s:
+        return list(s.exec(select(Campaign)))
+
+
 def campaigns_for(org_id: str) -> list[Campaign]:
     with Session(get_engine()) as s:
         return list(s.exec(select(Campaign).where(Campaign.org_id == org_id).order_by(Campaign.created_at.desc())))
@@ -733,8 +738,8 @@ def campaigns_for(org_id: str) -> list[Campaign]:
 def run_campaign(org_id: str, question_id: str, kind: str, audience: str, pay: int, twins: int, sample_twins: int,
                  counts_json: str, paid: list[tuple[str, int]], spent: int, depth: str = "blend",
                  to_samples: float | None = None) -> Campaign | None:
-    """One transaction: charge the agency, store the counts, pay each real twin. None if the budget is short.
-    `spent` may be more than twins times pay: the extra is the price of asking the same group again."""
+    """One transaction: charge the agency, store the counts, pay each real Sym. None if the budget is short.
+    `spent` may be more than Syms times pay: the extra is the price of asking the same group again."""
     with Session(get_engine()) as s:
         org = s.get(Org, org_id)
         if org is None:
@@ -769,7 +774,7 @@ def briefs_for(org_id: str) -> list[Brief]:
 
 def run_brief(org_id: str, kind: str, topic: str, audience: str, twins: int, sample_twins: int, counts_json: str,
               paid: list[tuple[str, int]], to_samples: int, fee: int, fee_kind: str = "crew") -> Brief | None:
-    """One transaction: charge the seat, keep the counts, pay each real twin, pay the game its fee.
+    """One transaction: charge the seat, keep the counts, pay each real Sym, pay the game its fee.
     None if the wallet is short."""
     spent = sum(c for _, c in paid) + to_samples + fee
     with Session(get_engine()) as s:
@@ -829,7 +834,7 @@ def nickname_of(player_id: str) -> str:
 
 
 def meet_twin(org_id: str, player_id: str, sample: bool, price: int, fee: int) -> Meet | None:
-    """One transaction: the seat pays the royalty to the twin's owner and the fee to the game. None if short."""
+    """One transaction: the seat pays the royalty to the Sym's owner and the fee to the game. None if short."""
     with Session(get_engine()) as s:
         org = s.get(Org, org_id)
         if org is None:
@@ -914,7 +919,7 @@ def deposit(owner_id: str, kind: str, credits: int) -> None:
 def wallet_moves(owner_id: str, kind: str) -> list[tuple[datetime, str, str, int, int]]:
     """The moves of one of the caller's own wallets, newest first: when, why, what kind of wallet was on the other
     side, how much (above zero came in), and how many moves were put together. Moves that belong to one event (one
-    question paid to many twins) are one line. The other side is a kind of wallet, never a wallet or a person."""
+    question paid to many Syms) are one line. The other side is a kind of wallet, never a wallet or a person."""
     with Session(get_engine()) as s:
         mine = _wallet(s, owner_id, kind)
         s.commit()
@@ -981,7 +986,7 @@ def usage_rows() -> list[Usage]:
 
 
 def trait_counts(player_id: str, *, include_held_out: bool = False) -> dict[str, int]:
-    """How often the player picked each trait, from the picks the twin is allowed to see."""
+    """How often the player picked each trait, from the picks the Sym is allowed to see."""
     counts: Counter[str] = Counter()
     for r in responses_for(player_id):
         if r.held_out and not include_held_out:
@@ -1131,3 +1136,109 @@ def world() -> dict:
             "balances": {k: round(v / MILLI, 2) for k, v in balances.items()},
             "last_move": iso(last) if last else None,
         }
+
+
+def commons(player_id: str, most: int = 8) -> dict:
+    """Who is here and what is known together, for the first screen a player sees. Counts, plus the newest
+    happenings as (time, who, words, whether the reader did it). No name, answer or id leaves this function."""
+    with Session(get_engine()) as s:
+        def count(table, *where) -> int:
+            return int(s.exec(select(func.count()).select_from(table).where(*where)).one())
+
+        stand = set(s.exec(select(Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX) | Player.token_hash.startswith(FREE_PREFIX))))
+        people = count(Player) - len(stand)
+        real = lambda col: col.not_in(stand)  # noqa: E731
+        today = utcnow().date().isoformat()
+        tally = {}
+        for name, table, where in (("taps", Response, ()), ("checks", Work, (Work.verdict.is_not(None),)), ("told", Fact, ()),
+                                   ("lessons", Lesson, ())):
+            tally[name] = count(table, real(table.player_id), *where)
+            tally[name + "_mine"] = count(table, table.player_id == player_id, *where)
+        orgs = {o.id: (o.kind, o.owner_id) for o in s.exec(select(Org)).all()}
+        seen: list[tuple[datetime, str, str, bool]] = []
+
+        def newest(table, stamp, *where):
+            return s.exec(select(table).where(*where).order_by(stamp.desc()).limit(most)).all()
+
+        for p in newest(Player, Player.created_at, real(Player.id)):
+            seen.append((p.created_at, "person", "A new person joined.", p.id == player_id))
+        for c in newest(Cert, Cert.issued_at, real(Cert.player_id)):
+            words = {"twin": "A Sym proved it knows its person.", "skill": "A person earned proof of a skill."}.get(c.kind, "New proof was earned.")
+            seen.append((c.issued_at, "sym" if c.kind == "twin" else "person", words, c.player_id == player_id))
+        for w in newest(Work, Work.reviewed_at, Work.reviewed_at.is_not(None), real(Work.player_id)):
+            words = "A person corrected their Sym. It knows more now." if w.verdict == "corrected" else "A person checked their Sym. It was right."
+            seen.append((w.reviewed_at, "person", words, w.player_id == player_id))
+        battles = set()
+        for le in newest(Lesson, Lesson.created_at, real(Lesson.player_id)):
+            if le.battle_id not in battles:
+                battles.add(le.battle_id)
+                seen.append((le.created_at, "sym", "A Sym was wrong, and it learned.", le.player_id == player_id))
+        for f in newest(Fact, Fact.created_at, real(Fact.player_id)):
+            seen.append((f.created_at, "person", "A person told their Sym something new.", f.player_id == player_id))
+        for c in newest(Campaign, Campaign.created_at):
+            n = c.twins + c.sample_twins
+            seen.append((c.created_at, "agency", f"An agency asked {n} Syms a question.", orgs.get(c.org_id, ("", ""))[1] == player_id))
+        for b in newest(Brief, Brief.created_at, Brief.kind.in_(("survey", "test"))):
+            n = b.twins + b.sample_twins
+            seen.append((b.created_at, "creator", f"A creator asked {n} Syms a question.", orgs.get(b.org_id, ("", ""))[1] == player_id))
+        for m in newest(MadeStep, MadeStep.created_at):
+            seen.append((m.created_at, "creator", "A creator built a new skill step.", orgs.get(m.org_id, ("", ""))[1] == player_id))
+        for j in newest(Posting, Posting.created_at):
+            seen.append((j.created_at, "agency", "An agency posted a job for Syms.", orgs.get(j.org_id, ("", ""))[1] == player_id))
+        seen.sort(key=lambda row: row[0], reverse=True)
+        known = tally["taps"] + tally["checks"] + tally["told"] + tally["lessons"]
+        mine = tally["taps_mine"] + tally["checks_mine"] + tally["told_mine"] + tally["lessons_mine"]
+        return {
+            "people": people, "stand_ins": len(stand),
+            "people_today": count(ActiveDay, ActiveDay.day == today, real(ActiveDay.player_id)),
+            "agencies": sum(1 for kind, _ in orgs.values() if kind == "agency"),
+            "creators": sum(1 for kind, _ in orgs.values() if kind == "creator"),
+            "taps": tally["taps"], "checks": tally["checks"], "told": tally["told"], "lessons": tally["lessons"],
+            "proofs": count(Cert, real(Cert.player_id)), "beliefs": count(Tendency, real(Tendency.player_id)),
+            "known": known, "known_mine": mine, "happenings": seen[:most],
+        }
+
+
+def ripple(player_id: str) -> dict:
+    """Counts of what one person set moving: as a player, as an agency and as a creator. Every number is that
+    person's own rows, or a count of other people with no name and no answer."""
+    with Session(get_engine()) as s:
+        orgs = {o.kind: o for o in s.exec(select(Org).where(Org.owner_id == player_id)).all()}
+        agency, creator = orgs.get("agency"), orgs.get("creator")
+        camp_org = {c.id: c.org_id for c in s.exec(select(Campaign)).all()}
+        step_org = {"step:" + m.id: m.org_id for m in s.exec(select(MadeStep)).all()}
+        out = {"agency": agency is not None, "creator": creator is not None, "taps": 0, "checks": 0, "check_credits": 0,
+               "asks": 0, "ask_credits": 0, "own_asks": 0, "own_ask_credits": 0, "steps_passed": 0, "own_steps_passed": 0,
+               "campaigns": 0, "syms_asked": 0, "people_paid": 0, "paid_credits": 0, "jobs": 0, "jobs_checked": 0, "job_credits": 0,
+               "backed_passes": 0, "backed_credits": 0, "built": 0, "passes": 0, "royalties": 0.0, "crew_asked": 0}
+        out["taps"] = int(s.exec(select(func.count()).select_from(Response).where(Response.player_id == player_id)).one())
+        for w in s.exec(select(Work).where(Work.player_id == player_id, Work.verdict.is_not(None))).all():
+            out["checks"] += 1
+            out["check_credits"] += w.credits
+        for e in s.exec(select(Earning).where(Earning.player_id == player_id)).all():
+            ref = e.campaign_id or ""
+            if ref in camp_org:
+                own = agency is not None and camp_org[ref] == agency.id
+                out["own_asks" if own else "asks"] += 1
+                out["own_ask_credits" if own else "ask_credits"] += e.credits
+            elif ref in step_org:
+                out["own_steps_passed" if creator is not None and step_org[ref] == creator.id else "steps_passed"] += 1
+        if agency is not None:
+            mine = [c for c in s.exec(select(Campaign).where(Campaign.org_id == agency.id)).all()]
+            out["campaigns"], out["syms_asked"] = len(mine), sum(c.twins for c in mine)
+            paid = s.exec(select(Earning).where(Earning.campaign_id.in_([c.id for c in mine]), Earning.player_id != player_id)).all()
+            out["people_paid"], out["paid_credits"] = len({e.player_id for e in paid}), sum(e.credits for e in paid)
+            posts = [p.id for p in s.exec(select(Posting).where(Posting.org_id == agency.id)).all()]
+            done = s.exec(select(Work).where(Work.job_id.in_(posts), Work.verdict.is_not(None))).all()
+            out["jobs"], out["jobs_checked"], out["job_credits"] = len(posts), len(done), sum(w.credits for w in done)
+            backed = s.exec(select(Sponsorship).where(Sponsorship.org_id == agency.id)).all()
+            out["backed_passes"], out["backed_credits"] = sum(b.passes for b in backed), sum(b.spent for b in backed)
+        if creator is not None:
+            refs = [ref for ref, org_id in step_org.items() if org_id == creator.id]
+            out["built"] = len(refs)
+            out["passes"] = int(s.exec(select(func.count()).select_from(Earning).where(Earning.campaign_id.in_(refs), Earning.player_id != player_id)).one())
+            crew = s.exec(select(Brief).where(Brief.org_id == creator.id, Brief.kind.in_(("survey", "test")))).all()
+            out["crew_asked"] = sum(b.twins for b in crew)
+    if out["creator"]:
+        out["royalties"] = round(sum(total for _, total in maker_income(player_id).values()), 2)
+    return out

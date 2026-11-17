@@ -640,4 +640,194 @@
 {"ts": "2026-11-16T02:37:22.129Z", "run_id": "dd760a9102c0", "event": "tool_call", "tool": "get_picks"}
 ,
 {"ts": "2026-11-16T02:37:22.144Z", "run_id": "dd760a9102c0", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 5923}
+,
+{"ts": "2026-11-16T02:37:35.067Z", "run_id": "dd760a9102c0", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3771, "cached_tokens": 0, "output_tokens": 1271, "ms": 13076}
+,
+{"ts": "2026-11-16T02:37:35.364Z", "run_id": "e0c62b0add69", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:37:35.748Z", "run_id": "8881327979c2", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:37:35.875Z", "run_id": "e0c62b0add69", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:37:35.897Z", "run_id": "e0c62b0add69", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 9056}
+,
+{"ts": "2026-11-16T02:37:36.063Z", "run_id": "8881327979c2", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:37:36.079Z", "run_id": "7a6a7c896d47", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:37:36.092Z", "run_id": "8881327979c2", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 9271}
+,
+{"ts": "2026-11-16T02:37:36.248Z", "run_id": "6a264a59f982", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:37:36.267Z", "run_id": "7a6a7c896d47", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:37:36.289Z", "run_id": "7a6a7c896d47", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 10549}
+,
+{"ts": "2026-11-16T02:37:36.465Z", "run_id": "6a264a59f982", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:37:36.490Z", "run_id": "6a264a59f982", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 10549}
+,
+{"ts": "2026-11-16T02:37:48.398Z", "run_id": "8881327979c2", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4541, "cached_tokens": 0, "output_tokens": 1310, "ms": 12649}
+,
+{"ts": "2026-11-16T02:37:49.256Z", "run_id": "6a264a59f982", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4863, "cached_tokens": 3631, "output_tokens": 1197, "ms": 13008}
+,
+{"ts": "2026-11-16T02:37:50.159Z", "run_id": "e0c62b0add69", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4485, "cached_tokens": 0, "output_tokens": 1289, "ms": 14795}
+,
+{"ts": "2026-11-16T02:37:58.367Z", "run_id": "7a6a7c896d47", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4863, "cached_tokens": 0, "output_tokens": 2154, "ms": 22290}
+,
+{"ts": "2026-11-16T02:38:01.273Z", "run_id": "41104fe7a6b0", "event": "turn", "agent": "twin", "task": "Predict your human's pick on each of the 10 cards."}
+,
+{"ts": "2026-11-16T02:38:01.557Z", "run_id": "41104fe7a6b0", "event": "tool_call", "tool": "get_brief"}
+,
+{"ts": "2026-11-16T02:38:01.569Z", "run_id": "41104fe7a6b0", "event": "tool_result", "tool": "get_brief", "ok": true, "chars": 2832}
+,
+{"ts": "2026-11-16T02:38:06.092Z", "run_id": "41104fe7a6b0", "event": "stop", "agent": "twin", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2665, "cached_tokens": 0, "output_tokens": 406, "ms": 4818}
+,
+{"ts": "2026-11-16T02:38:06.396Z", "run_id": "bb66d9444415", "event": "turn", "agent": "profiler", "task": "The twin guessed some picks wrong. Read the missed predictions and profile this player again."}
+,
+{"ts": "2026-11-16T02:38:06.640Z", "run_id": "bb66d9444415", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:38:06.659Z", "run_id": "bb66d9444415", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 12634}
+,
+{"ts": "2026-11-16T02:38:20.378Z", "run_id": "bb66d9444415", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 5406, "cached_tokens": 0, "output_tokens": 1162, "ms": 13981}
+,
+{"ts": "2026-11-16T02:38:20.601Z", "run_id": "5ae8e1c67d47", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:38:20.705Z", "run_id": "39729a2cff34", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:38:20.857Z", "run_id": "5ae8e1c67d47", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:38:20.873Z", "run_id": "39729a2cff34", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:38:20.887Z", "run_id": "5ae8e1c67d47", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 2974}
+,
+{"ts": "2026-11-16T02:38:20.897Z", "run_id": "39729a2cff34", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 2974}
+,
+{"ts": "2026-11-16T02:38:20.921Z", "run_id": "0d1e55c11217", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:38:21.148Z", "run_id": "0d1e55c11217", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:38:21.159Z", "run_id": "0d1e55c11217", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 3186}
+,
+{"ts": "2026-11-16T02:38:21.381Z", "run_id": "0d1e55c11217", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3056, "cached_tokens": 0, "output_tokens": 866, "ms": 459}
+,
+{"ts": "2026-11-16T02:38:27.845Z", "run_id": "39729a2cff34", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3004, "cached_tokens": 1772, "output_tokens": 626, "ms": 7139}
+,
+{"ts": "2026-11-16T02:38:28.701Z", "run_id": "5ae8e1c67d47", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3004, "cached_tokens": 0, "output_tokens": 737, "ms": 8100}
+,
+{"ts": "2026-11-16T02:38:45.966Z", "run_id": "7bbb63a0a096", "event": "turn", "agent": "twin", "task": "Predict your human's pick on each of the 10 cards."}
+,
+{"ts": "2026-11-16T02:38:46.459Z", "run_id": "7bbb63a0a096", "event": "tool_call", "tool": "get_brief"}
+,
+{"ts": "2026-11-16T02:38:46.473Z", "run_id": "7bbb63a0a096", "event": "tool_result", "tool": "get_brief", "ok": true, "chars": 2698}
+,
+{"ts": "2026-11-16T02:38:51.531Z", "run_id": "7bbb63a0a096", "event": "stop", "agent": "twin", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2628, "cached_tokens": 0, "output_tokens": 442, "ms": 5564}
+,
+{"ts": "2026-11-16T02:38:51.940Z", "run_id": "d2eed30bee3c", "event": "turn", "agent": "profiler", "task": "The twin guessed some picks wrong. Read the missed predictions and profile this player again."}
+,
+{"ts": "2026-11-16T02:38:52.162Z", "run_id": "d2eed30bee3c", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:38:52.185Z", "run_id": "d2eed30bee3c", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 5552}
+,
+{"ts": "2026-11-16T02:39:04.096Z", "run_id": "d2eed30bee3c", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3659, "cached_tokens": 0, "output_tokens": 1267, "ms": 12157}
+,
+{"ts": "2026-11-16T02:39:04.345Z", "run_id": "40ee6b80ebe8", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:39:04.439Z", "run_id": "40ee6b80ebe8", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:39:04.461Z", "run_id": "40ee6b80ebe8", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 7721}
+,
+{"ts": "2026-11-16T02:39:04.695Z", "run_id": "6838a11bde86", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:39:04.881Z", "run_id": "6838a11bde86", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:39:04.905Z", "run_id": "6838a11bde86", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 9056}
+,
+{"ts": "2026-11-16T02:39:04.953Z", "run_id": "7957e4239222", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:39:05.111Z", "run_id": "38aeeff64e0d", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T02:39:05.229Z", "run_id": "7957e4239222", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:39:05.243Z", "run_id": "6838a11bde86", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4485, "cached_tokens": 0, "output_tokens": 1289, "ms": 547}
+,
+{"ts": "2026-11-16T02:39:05.274Z", "run_id": "38aeeff64e0d", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T02:39:05.291Z", "run_id": "7957e4239222", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 10549}
+,
+{"ts": "2026-11-16T02:39:05.306Z", "run_id": "38aeeff64e0d", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 10549}
+,
+{"ts": "2026-11-16T02:39:05.543Z", "run_id": "7957e4239222", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4863, "cached_tokens": 0, "output_tokens": 2154, "ms": 589}
+,
+{"ts": "2026-11-16T02:39:05.575Z", "run_id": "38aeeff64e0d", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4863, "cached_tokens": 0, "output_tokens": 2154, "ms": 464}
+,
+{"ts": "2026-11-16T02:39:26.159Z", "run_id": "40ee6b80ebe8", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 4161, "cached_tokens": 0, "output_tokens": 2087, "ms": 21813}
+,
+{"ts": "2026-11-16T02:39:30.185Z", "run_id": "60b0b1d996a0", "event": "turn", "agent": "twin", "task": "Predict your human's pick on each of the 10 cards."}
+,
+{"ts": "2026-11-16T02:39:30.597Z", "run_id": "60b0b1d996a0", "event": "tool_call", "tool": "get_brief"}
+,
+{"ts": "2026-11-16T02:39:30.607Z", "run_id": "60b0b1d996a0", "event": "tool_result", "tool": "get_brief", "ok": true, "chars": 3197}
+,
+{"ts": "2026-11-16T02:39:35.388Z", "run_id": "60b0b1d996a0", "event": "stop", "agent": "twin", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2738, "cached_tokens": 0, "output_tokens": 428, "ms": 5201}
+,
+{"ts": "2026-11-16T02:55:39.572Z", "run_id": "f8982c7c91fb", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T02:55:41.761Z", "run_id": "f8982c7c91fb", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T02:55:41.773Z", "run_id": "f8982c7c91fb", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 3402}
+,
+{"ts": "2026-11-16T02:55:43.804Z", "run_id": "f8982c7c91fb", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 3007, "cached_tokens": 0, "output_tokens": 204, "ms": 4231}
+,
+{"ts": "2026-11-16T02:55:43.844Z", "run_id": "bcbd21ec4055", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T02:55:43.856Z", "run_id": "bcbd21ec4055", "event": "stop", "agent": "guide", "stop_reason": "RuntimeError", "requests": 1, "tool_calls": 0, "input_tokens": 0, "cached_tokens": 0, "output_tokens": 0, "ms": 13}
+,
+{"ts": "2026-11-16T02:55:55.445Z", "run_id": "e77cb385817e", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T02:55:55.866Z", "run_id": "e77cb385817e", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T02:55:55.874Z", "run_id": "e77cb385817e", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 1727}
+,
+{"ts": "2026-11-16T02:55:58.223Z", "run_id": "e77cb385817e", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2629, "cached_tokens": 0, "output_tokens": 162, "ms": 2778}
+,
+{"ts": "2026-11-16T03:21:19.126Z", "run_id": "475e1cb26366", "event": "turn", "agent": "profiler", "task": "Profile this player from their picks."}
+,
+{"ts": "2026-11-16T03:21:19.233Z", "run_id": "6cafcffaa48a", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T03:21:22.241Z", "run_id": "475e1cb26366", "event": "tool_call", "tool": "get_picks"}
+,
+{"ts": "2026-11-16T03:21:22.255Z", "run_id": "475e1cb26366", "event": "tool_result", "tool": "get_picks", "ok": true, "chars": 1567}
+,
+{"ts": "2026-11-16T03:21:25.938Z", "run_id": "6cafcffaa48a", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T03:21:25.946Z", "run_id": "6cafcffaa48a", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 1379}
+,
+{"ts": "2026-11-16T03:21:28.396Z", "run_id": "475e1cb26366", "event": "stop", "agent": "profiler", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2672, "cached_tokens": 0, "output_tokens": 494, "ms": 9269}
+,
+{"ts": "2026-11-16T03:21:28.955Z", "run_id": "6cafcffaa48a", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2586, "cached_tokens": 0, "output_tokens": 273, "ms": 9721}
+,
+{"ts": "2026-11-16T03:21:29.024Z", "run_id": "073bae36eef6", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T03:21:29.114Z", "run_id": "073bae36eef6", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T03:21:29.124Z", "run_id": "073bae36eef6", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 1608}
+,
+{"ts": "2026-11-16T03:21:33.548Z", "run_id": "073bae36eef6", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2629, "cached_tokens": 0, "output_tokens": 412, "ms": 4524}
+,
+{"ts": "2026-11-16T03:21:33.597Z", "run_id": "d794f43ea518", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T03:21:33.694Z", "run_id": "d794f43ea518", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T03:21:33.704Z", "run_id": "d794f43ea518", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 1717}
+,
+{"ts": "2026-11-16T03:21:37.320Z", "run_id": "d794f43ea518", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2653, "cached_tokens": 0, "output_tokens": 382, "ms": 3722}
+,
+{"ts": "2026-11-16T03:21:37.361Z", "run_id": "7bfb87960f94", "event": "turn", "agent": "guide", "task": "Answer your human, and offer one move."}
+,
+{"ts": "2026-11-16T03:21:37.485Z", "run_id": "7bfb87960f94", "event": "tool_call", "tool": "get_situation"}
+,
+{"ts": "2026-11-16T03:21:37.494Z", "run_id": "7bfb87960f94", "event": "tool_result", "tool": "get_situation", "ok": true, "chars": 1339}
+,
+{"ts": "2026-11-16T03:21:40.801Z", "run_id": "7bfb87960f94", "event": "stop", "agent": "guide", "stop_reason": "completed", "requests": 2, "tool_calls": 1, "input_tokens": 2575, "cached_tokens": 0, "output_tokens": 66, "ms": 3439}
 ]

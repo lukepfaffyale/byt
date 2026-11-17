@@ -23,20 +23,20 @@ export function MeetPanel(props: { seat: Seat; meets: Meets; group?: string; onM
 
   return (
     <>
-      <div className="chips" role="group" aria-label="Which group the twin comes from">
-        <span className="chips-label">A twin from which group</span>
-        {meets.audiences.map((a) => (
+      <div className="chips" role="group" aria-label="Which group the Sym comes from">
+        <span className="chips-label">A Sym from which group</span>
+        {meets.audiences.filter((a) => !a.id.startsWith('view-')).map((a) => (
           <button key={a.id} className="chip" aria-pressed={group === a.id} onClick={() => setGroup(a.id)}>{a.name}</button>
         ))}
       </div>
       <p className="fine">
-        Meeting one twin costs {cost} credits. {meets.price} go to the twin's owner as a royalty. {meets.fee} go to the game for your crew.
+        Meeting one Sym costs {cost} credits. {meets.price} go to the Sym's owner as a royalty. {meets.fee} go to the game for your crew.
       </p>
-      <button className="primary big" disabled={busy} onClick={go}>Meet one twin</button>
+      <button className="primary big" disabled={busy} onClick={go}>Meet one Sym</button>
       <More>
-        Asking a group is cheap and shows totals only. Meeting one twin costs much more, because you see who it is:
-        its nickname and its answers. You can only meet a twin whose owner said yes. You pick the group and the game
-        picks the twin. If the owner later says no, the twin is hidden from you again.
+        Asking a group is cheap and shows totals only. Meeting one Sym costs much more, because you see who it is:
+        its nickname and its answers. You can only meet a Sym whose owner said yes. You pick the group and the game
+        picks the Sym. If the owner later says no, the Sym is hidden from you again.
       </More>
     </>
   )
@@ -48,14 +48,14 @@ export function MetList({ meets }: { meets: Meets }) {
   if (meets.met.length === 0) return null
   return (
     <>
-      <h2>Twins I met one to one</h2>
+      <h2>Syms I met one to one</h2>
       <ul className="lines">
         {rows.map((m) => (
           <li key={m.at}>
             <span className="line-top">{new Date(m.at).toLocaleDateString()} · royalty {m.paid} credits</span>
             {m.open ? (
               <>
-                <span><strong>{m.nickname}</strong>{m.sample ? ' (a made-up sample twin)' : ''}</span>
+                <span><strong>{m.nickname}</strong>{m.sample ? ' (a made-up sample Sym)' : ''}</span>
                 <span className="muted">Strongest in: {m.strongest.join(' and ')}</span>
                 <ul className="met-answers">
                   {m.answers.map((a) => (
@@ -64,7 +64,7 @@ export function MetList({ meets }: { meets: Meets }) {
                 </ul>
               </>
             ) : (
-              <span className="muted">The owner of this twin turned one to one off. You cannot see it now.</span>
+              <span className="muted">The owner of this Sym turned one to one off. You cannot see it now.</span>
             )}
           </li>
         ))}

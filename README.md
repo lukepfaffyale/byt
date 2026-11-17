@@ -1,11 +1,13 @@
-# BYT
+# BYT, by Symbolon
 
-**Beat your twin. Benefit from your twin. Be everywhere.**
+BYT is the game. Symbolon is the working name for its maker. A symbolon was a token two people broke in half when they made a pact; each kept a half, and one half later proved who you were by fitting the other. A player's stand-in in the game is called a Sym: not a copy of the player, but the other half that has to fit. It is a name for a class project, not a registered company or trademark.
 
-A machine can do the work. It cannot feel. BYT is a game in which people, by choice, teach a twin the part only they have.
+**Beat your Sym. Benefit from your Sym. Be everywhere.**
+
+A machine can do the work. It cannot feel. BYT is a game in which people, by choice, teach a Sym the part only they have.
 
 A tap-only game. You clear short gates (picks, one-move strategy boards, quick reactions) and your taps build a
-digital twin that belongs to you. The twin then predicts picks it has never seen. If it beats the crowd guess, it
+Sym that belongs to you. The Sym then predicts picks it has never seen. If it beats the crowd guess, it
 earns a certificate.
 
 This is a class project (MGT 409, final project). It is a work in progress; this file will carry the full
@@ -16,7 +18,7 @@ grader's run steps before submission.
 You need Python 3.12 or newer and Node 20 or newer.
 
 1. Put a `.env` file in this folder, or one folder above it, with your key:
-   `PORTKEY_API_KEY=your-key-here` (see `.env.example`). Without a key the game still runs, with a practice twin
+   `PORTKEY_API_KEY=your-key-here` (see `.env.example`). Without a key the game still runs, with a practice Sym
    that uses no AI model.
 2. Back end, from the `backend` folder:
    - `python -m venv venv`

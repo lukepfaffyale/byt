@@ -1,4 +1,4 @@
-"""Jobs an agency posts: taps only, the pay is held up front, the twin's owner checks the answer, and the agency
+"""Jobs an agency posts: taps only, the pay is held up front, the Sym's owner checks the answer, and the agency
 pays from its own wallet. The player never learns which agency asked."""
 import db
 import market

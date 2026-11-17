@@ -8,9 +8,9 @@ const ANIMALS = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'go
 const BANDS = ['Very low', 'Low', 'Average', 'High', 'Very high']
 const LETTER_KEYS = ['ei', 'sn', 'tf', 'jp'] as const
 const VERDICT: Record<Axis['verdict'], string> = {
-  aligned: 'Same as what you told your twin',
-  differs: 'Different from what you told your twin',
-  open: 'Not clear yet: your twin needs more picks',
+  aligned: 'Same as what you told your Sym',
+  differs: 'Different from what you told your Sym',
+  open: 'Not clear yet: your Sym needs more picks',
   'not told': '',
 }
 
@@ -129,7 +129,7 @@ export function MirrorView({ view, onSkill, open }: { view: 'type' | 'mind' | 'b
               <p><span className="line-top">At your best</span> {s.strength}</p>
               <p><span className="line-top">Be careful of</span> {s.watch}</p>
               <p className="muted">
-                You picked this {s.picks} of the {s.chances} times you could{s.told !== null ? `. You told your twin: ${BANDS[s.told - 1].toLowerCase()}` : ''}.
+                You picked this {s.picks} of the {s.chances} times you could{s.told !== null ? `. You told your Sym: ${BANDS[s.told - 1].toLowerCase()}` : ''}.
               </p>
               <SkillLinks skills={s.skills} onSkill={onSkill} />
             </Bar>
@@ -171,7 +171,7 @@ export function MirrorView({ view, onSkill, open }: { view: 'type' | 'mind' | 'b
       </p>
       <p className="mirror-sub">Our guess, from {mirror.picks_used} picks</p>
 
-      <Tabs label="Our guess, and what you told your twin" value={part} onChange={setPart}
+      <Tabs label="Our guess, and what you told your Sym" value={part} onChange={setPart}
         tabs={[{ id: 'guess', label: 'Our guess' }, { id: 'letters', label: 'My letters' }, { id: 'styles', label: 'My styles' }, { id: 'stars', label: 'Stars' }]} />
 
       {part === 'guess' && (
@@ -249,12 +249,12 @@ export function MirrorView({ view, onSkill, open }: { view: 'type' | 'mind' | 'b
           )}
 
           <div className="tell-foot">
-            <button className="link" disabled={!anyTold} onClick={clear}>Clear what I told my twin</button>
+            <button className="link" disabled={!anyTold} onClick={clear}>Clear what I told my Sym</button>
             <span className="muted" role="status" aria-live="polite">{status}</span>
-            <More label="About telling your twin">
+            <More label="About telling your Sym">
               You do not have to do this. Tap only what you want the game to store. The game never sends it to the AI
               model, and you can clear it. Star sign and year animal are here for one test: do they guess your picks
-              better than your twin does?
+              better than your Sym does?
             </More>
           </div>
         </div>

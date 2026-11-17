@@ -14,17 +14,17 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
   strobing). Space or Enter works as the tap. A player can skip the reflex gate with no penalty to the journey; the
   reflex cert is the only thing skipped. Timing is never required anywhere else.
 - **No time limits** on preference, strategy or logic cards. Time is recorded, never enforced.
-- **Announcements:** points earned, right or wrong, the twin's pick and the battle score are announced through one
-  polite `aria-live` region. Loading states ("your twin is thinking") are announced too.
-- **Motion:** with the device setting for reduced motion on, nothing moves and the twin is one still picture,
-  redrawn when the twin changes. A "Motion" switch under the twin lets the player turn movement on or off; their
+- **Announcements:** points earned, right or wrong, the Sym's pick and the battle score are announced through one
+  polite `aria-live` region. Loading states ("your Sym is thinking") are announced too.
+- **Motion:** with the device setting for reduced motion on, nothing moves and the Sym is one still picture,
+  redrawn when the Sym changes. A "Motion" switch under the Sym lets the player turn movement on or off; their
   choice is kept in the browser and wins over the device setting in both directions. Nothing flashes.
 - **Color (BYT house style, second pass, 2026-11-14: infinite black, a lit horizon, sharp lines, platinum for
   structure, gold for what is active or earned):** backdrop `#010206`, text `#f5f7fb`, muted text `#a9b1c4`, labels
   `#c6cede`, gold `#ffd98a`, dark ink on the light button, control borders about 4:1. These pairs are estimated
   from the first pass and not yet measured. Lettering filled with a light gradient falls back to a plain color
   under forced colors. Right and wrong carry an icon and a word, never color alone.
-- **The twin** is a canvas: a sphere of connected points, one colored slice for each area. It has a text
+- **The Sym** is a canvas: a sphere of connected points, one colored slice for each area. It has a text
   alternative that states how formed it is. Color is never the only signal: a legend under it names each area with
   its number, and each legend entry is a button that opens the same view a tap on a dot does, so the sphere can be
   used by keyboard and screen reader. Pointing at a dot shows its area and state in words.
@@ -33,7 +33,7 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
   and closes with Escape.
 - **Plain words:** every word a player reads is fifth-grade plain English with no idioms, slang or contractions.
 - **Layout:** one column on a phone, usable at 320px wide with no horizontal scroll, and at 200% zoom. From 1000px
-  wide the twin holds the left and the content the right. The phone layout and the zoom are not yet checked in the
+  wide the Sym holds the left and the content the right. The phone layout and the zoom are not yet checked in the
   second-pass style; on a phone the legend and the story control are hidden, and the Brain tab gives the same content.
 - **Screens of every size:** from 1000px wide, two columns. Below that, one column with the menu fixed at the bottom
   and safe-area padding for notched screens; no sideways scroll at 390px wide (checked in a 390 by 800 frame; the

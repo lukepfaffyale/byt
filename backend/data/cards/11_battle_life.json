@@ -1,5 +1,5 @@
 {
-  "gate": {"id": "battle-life", "title": "Twin battle: weekend and food", "kind": "battle", "deck": "Weekend and food"},
+  "gate": {"id": "battle-life", "title": "Sym battle: weekend and food", "kind": "battle", "deck": "Weekend and food"},
   "cards": [
     {"id": "bl-01", "prompt": "What do you do on Friday night?", "options": [{"id": "a", "label": "I go out with a group", "trait": "social"}, {"id": "b", "label": "I stay home", "trait": "solo"}]},
     {"id": "bl-02", "prompt": "You have a free Saturday. What is it like?", "options": [{"id": "a", "label": "I already have a plan", "trait": "plan"}, {"id": "b", "label": "I see what happens", "trait": "spontaneous"}]},

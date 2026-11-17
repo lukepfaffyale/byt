@@ -1,8 +1,8 @@
-"""The market: an agency asks many twins one question and pays each twin that answers. Plain code, no model.
+"""The market: an agency asks many Syms one question and pays each Sym that answers. Plain code, no model.
 
-This is data income, the small passive stream. Every twin answers with the zero-token rule of thumb, so a
-query costs no tokens. An agency only ever gets counts per option, and only when at least MIN_TWINS twins
-match its audience. A player's twin is included only if the player opted in.
+This is data income, the small passive stream. Every Sym answers with the zero-token rule of thumb, so a
+query costs no tokens. An agency only ever gets counts per option, and only when at least MIN_TWINS Syms
+match its audience. A player's Sym is included only if the player opted in.
 """
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-from content import KNOWN_TRAITS, ONTOLOGY, Card, Option
+from content import KNOWN_TRAITS, ONTOLOGY, TOPICS, Card, Option
 
 QUESTIONS_PATH = Path(__file__).resolve().parent / "data" / "questions.json"
 MIN_TWINS = 5  # below this an agency gets nothing back and is charged nothing
@@ -50,8 +50,8 @@ ACTIVE_HALF_DAYS = 30  # played within this many days: half; longer ago: a quart
 
 
 def activity_share(days_since: int | None) -> float:
-    """The part of data income a twin receives, from how lately its owner played. Agencies and creators pay for
-    twins with living owners; the part held back goes to the growth fund. Money held or spent plays no part."""
+    """The part of data income a Sym receives, from how lately its owner played. Agencies and creators pay for
+    Syms with living owners; the part held back goes to the growth fund. Money held or spent plays no part."""
     if days_since is None:
         return 0.25
     if days_since <= ACTIVE_FULL_DAYS:
@@ -60,13 +60,13 @@ def activity_share(days_since: int | None) -> float:
 
 
 def twin_pay(price: int, days_since: int | None) -> int:
-    """What one twin receives from an agency's price. A twin whose owner has been away is still asked and still
-    paid, never less than 1 credit; a twin with an active owner receives the full price."""
+    """What one Sym receives from an agency's price. A Sym whose owner has been away is still asked and still
+    paid, never less than 1 credit; a Sym with an active owner receives the full price."""
     return max(1, math.ceil(price * activity_share(days_since)))
 
 
 def together(jobs_checked: int, questions_answered: int, earning_on: bool) -> float:
-    """Alone, a twin is black and white. Each connection with others brings in color: a job it did for someone
+    """Alone, a Sym is black and white. Each connection with others brings in color: a job it did for someone
     and its human checked, a question it answered for an agency, and the choice to let it earn. 0 to 1."""
     return round(min(1.0, (jobs_checked + questions_answered + (1 if earning_on else 0)) / TOGETHER_FULL), 3)
 
@@ -77,7 +77,7 @@ def price_times(earlier_asks: int) -> float:
 
 
 def campaign_cost(twins: int, pay: int, earlier_asks: int) -> tuple[int, int]:
-    """(what the agency pays in all, how much of it is extra for asking again). The twins get pay each; the
+    """(what the agency pays in all, how much of it is extra for asking again). The Syms get pay each; the
     extra goes to the growth fund."""
     base = twins * pay
     total = math.ceil(base * price_times(earlier_asks))
@@ -88,7 +88,7 @@ def campaign_cost(twins: int, pay: int, earlier_asks: int) -> tuple[int, int]:
 # The deepest tier of all is one twin, met one to one for MEET_PRICE.
 FREE_SHARE = 0.5  # a free twin costs this share of the price for each twin
 TIERS: tuple[tuple[str, str, int], ...] = (
-    ("blend", "Free twins and members", 1),
+    ("blend", "Free Syms and members", 1),
     ("members", "Members only", 2),
     ("core", "Members with a certificate", 3),
 )
@@ -105,7 +105,7 @@ def in_tier(twin: "TwinFacts", depth: str) -> bool:
 
 
 def tier_base(free: int, members: int, pay: int, depth: str) -> float:
-    """What one ask costs before the price of asking again: free twins at a share, members at the tier's price."""
+    """What one ask costs before the price of asking again: free Syms at a share, members at the tier's price."""
     return free * pay * FREE_SHARE + members * pay * TIER_TIMES[depth]
 
 
@@ -117,10 +117,12 @@ def tier_cost(free: int, members: int, pay: int, depth: str, earlier_asks: int) 
 
 
 AUDIENCES: tuple[tuple[str, str], ...] = (
-    ("all", "Every twin"),
+    ("all", "Every Sym"),
     ("members", "Members who earn"),
-    ("certified", "Twins with a certificate"),
-) + tuple((s["id"], f"Strongest style: {s['name']}") for s in ONTOLOGY["styles"])
+    ("certified", "Syms with a certificate"),
+) + tuple((s["id"], f"Strongest style: {s['name']}") for s in ONTOLOGY["styles"]) + tuple(
+    # twins that hold a belief about one topic: a narrower, more useful group than a style
+    (f"view-{t['id']}", f"Has a view on: {t['name']}") for t in TOPICS if t["id"] != "general")
 AUDIENCE_NAME = dict(AUDIENCES)
 
 # The seat spheres: one cluster of points for each group. The groups and their colors are named in the ontology.
@@ -171,13 +173,14 @@ QUESTION_BY_ID = {q.id: q for q in QUESTIONS}
 
 @dataclass(frozen=True)
 class TwinFacts:
-    """What the market needs to know about one twin. No nickname, and the id never leaves the server."""
+    """What the market needs to know about one Sym. No nickname, and the id never leaves the server."""
     player_id: str
     sample: bool
     picks: int
     certified: bool
     leading_style: str | None
     trait_counts: dict[str, int]
+    topics: frozenset[str] = frozenset()  # the topics this twin holds a belief about
 
 
 def matches(twin: TwinFacts, audience: str) -> bool:
@@ -189,11 +192,13 @@ def matches(twin: TwinFacts, audience: str) -> bool:
         return not twin.sample
     if audience == "certified":
         return twin.certified
+    if audience.startswith("view-"):
+        return audience[5:] in twin.topics
     return twin.leading_style == audience
 
 
 def answer(question: Question, twin: TwinFacts) -> str:
-    """The option whose trait this twin's human has shown most often. The first option wins a tie."""
+    """The option whose trait this Sym's human has shown most often. The first option wins a tie."""
     return max(question.card.options, key=lambda o: twin.trait_counts.get(o.trait or "", 0)).id
 
 
@@ -203,7 +208,7 @@ def skill_traits(skill_id: str) -> frozenset[str]:
 
 
 def band(twin: TwinFacts, traits: frozenset[str]) -> str:
-    """Where one twin stands on a skill, from plain counting: the share of its picks that fall in the skill's areas."""
+    """Where one Sym stands on a skill, from plain counting: the share of its picks that fall in the skill's areas."""
     share = sum(twin.trait_counts.get(t, 0) for t in traits) / max(1, twin.picks)
     return "strong" if share >= TEST_STRONG else "partway" if share >= TEST_PARTWAY else "new"
 

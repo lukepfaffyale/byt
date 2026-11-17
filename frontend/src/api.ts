@@ -143,7 +143,9 @@ export type Creator = {
   audiences: { id: string; name: string }[]
   skills: { id: string; name: string; about: string; waiting: string[]; claimed: string[]; later: string[] }[]
   step_cards: number; step_royalty: number
-  needs: { skill: string; name: string; left: number; built: boolean }[]; reach_earned: number; sponsor_earned: number
+  needs: { skill: string; name: string; left: number; built: boolean }[]
+  wanted: { skill: string; name: string; agencies: number; built: boolean; waiting: number }[]
+  emerging: { a: string; b: string; agencies: number }[]; reach_earned: number; sponsor_earned: number
   packs: { id: string; skill: string; step: string; cards: { id: string; prompt: string; options: string[] }[] }[]
   made: { skill: string; step: string; cards: number; passes: number; earned: number }[]
   briefs: Brief[]
@@ -171,6 +173,12 @@ export type World = {
   corrections: number; agent_runs: number; agent_cost_usd: number
   flows: { src: string; dst: string; credits: number; moves: number }[]; balances: Record<string, number>; last_move: string | null
 }
+export type Commons = {
+  nickname: string; people: number; people_today: number; stand_ins: number; agencies: number; creators: number
+  taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number
+  happenings: { who: string; text: string; when: string; mine: boolean }[]
+}
+export type Ripple = { agency: boolean; creator: boolean; links: { src: string; dst: string; n: number; credits: number; text: string }[] }
 export type Posting = {
   id: string; kind: string; question: string; pay: number; seats: number; taken: number; checked: number; held: number; open: boolean
   sample_twins: number; split: { label: string; count: number; share: number }[]; created_at: string
@@ -214,7 +222,8 @@ export type WalletLine = { at: string; kind: string; label: string; detail: stri
 export type WalletOut = { seat: 'player' | 'agency' | 'creator'; balance: number; came_in: number; went_out: number; lines: WalletLine[] }
 export type Wallets = { wallets: WalletOut[]; deposit_choices: number[]; note: string }
 export type SphereFrame = { label: string; at: string; levels: number[]; earned: number[] }
-export type Sphere = { verticals: Vertical[]; links: number; history: SphereFrame[]; mode: 'fill' | 'clusters'; balance: number | null }
+export type Hub = { area: string; name: string; told: boolean }
+export type Sphere = { hubs?: Hub[]; verticals: Vertical[]; links: number; history: SphereFrame[]; mode: 'fill' | 'clusters'; balance: number | null }
 export type WorkItem = { requester: string; question: string; twin_answer: string; your_answer: string; verdict: string; credits: number }
 export type Told = {
   ei: 'E' | 'I' | null
@@ -387,6 +396,8 @@ export const api = {
     call<Agency>('POST', '/agency/campaigns', { question_id, audience, pay, depth }),
   plan: () => call<{ options: PlanOption[] }>('GET', '/me/plan'),
   world: () => call<World>('GET', '/world'),
+  commons: () => call<Commons>('GET', '/commons'),
+  ripple: () => call<Ripple>('GET', '/me/ripple'),
   auto: (per_day: number) => call<JobsOut>('POST', '/me/auto', { per_day }),
   sponsor: (skill: string, budget: number) => call<Agency>('POST', '/agency/sponsor', { skill, budget }),
   ask: (text: string) => call<AskOut>('POST', '/twin/ask', { text }),

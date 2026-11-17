@@ -109,31 +109,31 @@ export function TwinTalk(props: { where?: string; onMove: (id: string) => void; 
   }
 
   return (
-    <section className="talk" aria-label="Talk to my twin">
+    <section className="talk" aria-label="Talk to my Sym">
       <form onSubmit={(e) => { e.preventDefault(); ask(text) }}>
-        <label htmlFor="talk-in" className="sr-only">Say something to my twin</label>
-        <input id="talk-in" value={text} onChange={(e) => setText(e.target.value)} maxLength={200} autoComplete="off" placeholder="Say something to my twin" />
+        <label htmlFor="talk-in" className="sr-only">Say something to my Sym</label>
+        <input id="talk-in" value={text} onChange={(e) => setText(e.target.value)} maxLength={200} autoComplete="off" placeholder="Say something to my Sym" />
         {Listen && <button type="button" className="link" aria-pressed={hearing} onClick={listen}>{hearing ? 'Listening' : 'Speak'}</button>}
         <button className="link" disabled={busy || !text.trim()}>Send</button>
       </form>
       <div className="talk-bar">
         {!reply && !busy && (
-          <div className="chips" role="group" aria-label="Things to ask my twin">
+          <div className="chips" role="group" aria-label="Things to ask my Sym">
             {(QUICK[where] ?? QUICK.journey).map((q) => <button key={q} className="chip" onClick={() => ask(q)}>{q}</button>)}
           </div>
         )}
         <More label="How my words are used">
-          Your words go to an AI model once, so your twin can answer. They are not saved. If your twin asks to
+          Your words go to an AI model once, so your Sym can answer. They are not saved. If your Sym asks to
           keep something, it shows you one short sentence in its own words, and it is stored only if you tap yes.
-          Do not say your name or anything private. Your twin learns from your taps, not from your words. If you tap Speak, your browser turns
+          Do not say your name or anything private. Your Sym learns from your taps, not from your words. If you tap Speak, your browser turns
           your voice into words, and the browser's maker may receive the sound. We never do.
         </More>
       </div>
-      {busy && <p className="muted" aria-live="polite">My twin is thinking.</p>}
+      {busy && <p className="muted" aria-live="polite">My Sym is thinking.</p>}
       {error && <p className="error" role="alert">{error}</p>}
       {reply && (
         <div className="talk-reply">
-          <span className="line-top">My twin{reply.twin_kind === 'offline' ? ' · practice twin, no AI' : ''}</span>
+          <span className="line-top">My Sym{reply.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}</span>
           <p className="talk-say">{reply.say}</p>
           {reply.move && <button className="primary" onClick={() => onMove(reply.move?.id ?? '')}>{reply.move.label}</button>}
           {reply.offer && !kept && (
@@ -144,7 +144,7 @@ export function TwinTalk(props: { where?: string; onMove: (id: string) => void; 
                 <button className="chip" disabled={busy} onClick={() => {
                   setBusy(true)
                   api.keepFact()
-                    .then(() => { setKept('Kept. You can make me forget it on the My Twin screen.'); onLearned() })
+                    .then(() => { setKept('Kept. You can make me forget it on the My Sym screen.'); onLearned() })
                     .catch((e: unknown) => setError(e instanceof Error ? e.message : 'The game could not keep that.'))
                     .finally(() => setBusy(false))
                 }}>Yes, keep it</button>
@@ -163,7 +163,7 @@ export function TwinTalk(props: { where?: string; onMove: (id: string) => void; 
             </div>
           )}
           <span className="talk-foot">
-            {!reply.learn && <button className="link" disabled={busy} onClick={() => ask('Ask me a question, so you can learn about me.')}>Teach my twin more</button>}
+            {!reply.learn && <button className="link" disabled={busy} onClick={() => ask('Ask me a question, so you can learn about me.')}>Teach my Sym more</button>}
             {'speechSynthesis' in window && <button className="link" aria-pressed={voice} onClick={toggleVoice}>Read aloud: {voice ? 'on' : 'off'}</button>}
           </span>
         </div>

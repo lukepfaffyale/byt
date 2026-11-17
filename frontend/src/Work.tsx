@@ -70,11 +70,11 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
     }
     watched.current = false
     setStage({ name: 'running', job })
-    announce('Your twin is working.')
+    announce('Your Sym is working.')
     api
       .runJob(job.id)
       .then((done) => {
-        announce('Your twin answered. Please check its answer.')
+        announce('Your Sym answered. Please check its answer.')
         // the picture plays to its end (or is skipped) before the answer is shown
         if (watched.current) setStage({ name: 'review', job: done, correcting: done.answer === null })
         else setStage({ name: 'running', job, done })
@@ -92,7 +92,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
       .then((result) => {
         setBusy(false)
         setStage({ name: 'result', result })
-        announce(`Your twin earned ${result.credits_earned} credits.`)
+        announce(`Your Sym earned ${result.credits_earned} credits.`)
         onChange()
       })
       .catch(fail)
@@ -120,10 +120,10 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
         {answer && !stage.correcting && (
           <>
             <div className="said">
-              <span className="line-top">Your twin answered for you</span>
+              <span className="line-top">Your Sym answered for you</span>
               <strong>{answer.label}</strong>
               {job.reason && <span className="muted">"{job.reason}"</span>}
-              <span className="fine">{job.twin_kind === 'model' ? 'The AI twin' : 'The practice twin (it does not use AI)'}</span>
+              <span className="fine">{job.twin_kind === 'model' ? 'The AI Sym' : 'The practice Sym (it does not use AI)'}</span>
             </div>
             <button className="primary big" disabled={busy} onClick={() => review(job, 'approved', null)}>Yes, that is right</button>
             <button className="link" disabled={busy} onClick={() => setStage({ name: 'review', job, correcting: true })}>
@@ -133,7 +133,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
         )}
         {(stage.correcting || !answer) && (
           <>
-            <p className="muted">{answer ? 'Tap the answer you would give. Your twin learns from it.' : 'Your twin did not know. Tap your answer, and your twin will learn from it.'}</p>
+            <p className="muted">{answer ? 'Tap the answer you would give. Your Sym learns from it.' : 'Your Sym did not know. Tap your answer, and your Sym will learn from it.'}</p>
             <div className="options">
               {job.options.filter((o) => o.id !== job.answer).map((o) => (
                 <button key={o.id} className="option" disabled={busy} onClick={() => review(job, 'corrected', o.id)}>
@@ -151,25 +151,25 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
     const r = stage.result
     return (
       <section aria-labelledby="work-h" className="mine">
-        <h1 id="work-h" className="sr-only">Your twin was paid</h1>
+        <h1 id="work-h" className="sr-only">Your Sym was paid</h1>
         <p className="stat">+{r.credits_earned}</p>
-        <p className="stat-label">credits your twin earned · {r.credits} in total</p>
+        <p className="stat-label">credits your Sym earned · {r.credits} in total</p>
         <p className="fine">{r.note}</p>
         {r.insight && (
           <p className="cert">
             <span className="cert-kind">Insight certificate</span>
             <strong>{r.insight.level}</strong>
-            <span>{Math.round(r.insight.accuracy * r.insight.n)} of {r.insight.n} other twins answer as you do</span>
+            <span>{Math.round(r.insight.accuracy * r.insight.n)} of {r.insight.n} other Syms answer as you do</span>
           </p>
         )}
 
         <h2>From your taps to the whole group</h2>
         <ol className="lines chain">
-          <li><span className="line-top">You</span><span>{r.taps} taps. Each tap tells your twin something.</span></li>
-          <li><span className="line-top">Your twin</span><span>{r.beliefs} {r.beliefs === 1 ? 'belief' : 'beliefs'} about you, made from those taps</span></li>
+          <li><span className="line-top">You</span><span>{r.taps} taps. Each tap tells your Sym something.</span></li>
+          <li><span className="line-top">Your Sym</span><span>{r.beliefs} {r.beliefs === 1 ? 'belief' : 'beliefs'} about you, made from those taps</span></li>
           <li><span className="line-top">The job</span><span>1 answer for {r.job.requester}, given as you would give it</span></li>
           <li>
-            <span className="line-top">The whole group · {r.twins} twins answered</span>
+            <span className="line-top">The whole group · {r.twins} Syms answered</span>
             <ul className="bars split-bars">
               {r.split.map((row) => (
                 <li key={row.label} className={`bar ${row.yours ? 'leading' : ''}`}>
@@ -185,7 +185,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
           <li><span className="line-top">How it is used</span><span>{r.job.feeds}</span></li>
         </ol>
         <p className="fine">
-          {r.sample_twins} of the {r.twins} twins are made-up sample twins. So these numbers are only an example
+          {r.sample_twins} of the {r.twins} Syms are made-up sample Syms. So these numbers are only an example
           until more people play. Credits are play money.
         </p>
         <button className="primary big" onClick={() => { setStage({ name: 'list' }); load() }}>See more jobs</button>
@@ -196,7 +196,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
   return (
     <section aria-labelledby="work-h" className="mine">
       <h1 id="work-h" className="sr-only">Work</h1>
-      {tab === 'jobs' && <Readout value={credits} label={<>credits your twin holds{certified ? ' · it has a certificate, so it earns double' : ''}</>} />}
+      {tab === 'jobs' && <Readout value={credits} label={<>credits your Sym holds{certified ? ' · it has a certificate, so it earns double' : ''}</>} />}
       {error && <p className="error" role="alert">{error}</p>}
       {!jobs && !error && <p className="muted" aria-live="polite">Loading.</p>}
       <Tabs label="Work" value={tab} onChange={setTab}
@@ -213,7 +213,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
               {j.state === 'locked' && <span className="muted">Opens after you finish {j.after_gates} {j.after_gates === 1 ? 'gate' : 'gates'}</span>}
               {j.state === 'done' && <span className="muted">Done · earned {j.credits} credits</span>}
               {(j.state === 'open' || j.state === 'review') && (
-                <button className="secondary gate-go" onClick={() => send(j)}>{j.state === 'open' ? 'Send my twin' : 'Check its answer'}</button>
+                <button className="secondary gate-go" onClick={() => send(j)}>{j.state === 'open' ? 'Send my Sym' : 'Check its answer'}</button>
               )}
             </li>
           ))}
@@ -227,32 +227,32 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
           <span className="line-top">Earn while you are away · {data.credits} credits from {data.answers} {data.answers === 1 ? 'question' : 'questions'}</span>
           <span>
             {data.on ? 'On. ' : 'Off. '}
-            Agencies and creators may ask your twin a question. They see only counts across many twins, never one person.
+            Agencies and creators may ask your Sym a question. They see only counts across many Syms, never one person.
           </span>
           <button className="secondary gate-go" aria-pressed={data.on}
             onClick={() => api.consent(!data.on).then(take).catch(fail)}>
-            {data.on ? 'Turn off' : 'Let my twin earn'}
+            {data.on ? 'Turn off' : 'Let my Sym earn'}
           </button>
         </li>
         <li>
           <span className="line-top">One to one · {meet.price} credits each time · met {meet.times} {meet.times === 1 ? 'time' : 'times'}</span>
           <span>
             {meet.on ? 'On. ' : 'Off. '}
-            A seat may pay you {meet.price} credits to meet your twin alone. It sees your nickname, your two strongest
-            areas and your twin's answers. It does not see your taps.
+            A seat may pay you {meet.price} credits to meet your Sym alone. It sees your nickname, your two strongest
+            areas and your Sym's answers. It does not see your taps.
           </span>
           <button className="secondary gate-go" aria-pressed={meet.on}
             onClick={() => api.oneToOne(!meet.on).then(take).catch(fail)}>
-            {meet.on ? 'Turn off' : 'Let my twin be met'}
+            {meet.on ? 'Turn off' : 'Let my Sym be met'}
           </button>
         </li>
         <li>
           <span className="line-top">Work by itself · {auto.per_day === 0 ? 'off' : `up to ${auto.per_day} ${auto.per_day === 1 ? 'job' : 'jobs'} a day`}</span>
           <span>
-            Your twin may start jobs without you. It is paid only after you check each answer.
+            Your Sym may start jobs without you. It is paid only after you check each answer.
             So far it earned {auto.earned} credits and cost {auto.upkeep} to run.
           </span>
-          <span className="chips" role="group" aria-label="Jobs my twin may start by itself each day">
+          <span className="chips" role="group" aria-label="Jobs my Sym may start by itself each day">
             {auto.choices.map((n) => (
               <button key={n} className="chip" aria-pressed={auto.per_day === n} onClick={() => api.auto(n).then(take).catch(fail)}>{n === 0 ? 'Off' : n}</button>
             ))}
@@ -262,7 +262,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
         </>
       )}
       <More>
-        Your twin answers as you would. You say if the answer is right, or you correct it. A twin with a certificate
+        Your Sym answers as you would. You say if the answer is right, or you correct it. A Sym with a certificate
         earns double. The companies that ask are made up, and credits are play money.
       </More>
     </section>

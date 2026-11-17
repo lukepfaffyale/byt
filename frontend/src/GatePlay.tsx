@@ -92,13 +92,13 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
       .then((b) => {
         if (cancelled) return
         setBattle(b)
-        announce(`Your twin guessed ${b.twin_matches} of ${b.n} picks. The crowd's guess (what most people pick) got ${b.baseline_matches} right. Your twin is now studying what it got wrong.`)
+        announce(`Your Sym guessed ${b.twin_matches} of ${b.n} picks. The crowd's guess (what most people pick) got ${b.baseline_matches} right. Your Sym is now studying what it got wrong.`)
         // the loss is fed back: the twin studies its misses and its beliefs are rewritten
         return api.learn(gateId).then((l) => {
           if (cancelled) return
           setLearned(l)
           onProgress()
-          announce(l.misses === 0 ? 'Your twin got every card right. Its beliefs held.' : `Your twin studied ${l.misses} wrong ${l.misses === 1 ? 'guess' : 'guesses'} and made ${l.lessons.length} ${l.lessons.length === 1 ? 'change' : 'changes'} to what it believes.`)
+          announce(l.misses === 0 ? 'Your Sym got every card right. Its beliefs held.' : `Your Sym studied ${l.misses} wrong ${l.misses === 1 ? 'guess' : 'guesses'} and made ${l.lessons.length} ${l.lessons.length === 1 ? 'change' : 'changes'} to what it believes.`)
         })
       })
       .catch((e: unknown) => {
@@ -150,7 +150,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
         onProgress()
         if (isBattle) {
           setTally((t) => ({ twin: t.twin + (out.twin_match ? 1 : 0), crowd: t.crowd + (out.crowd_match ? 1 : 0), done: t.done + 1 }))
-          announce(`Your twin said: ${out.twin_choice}. ${out.twin_match ? 'Your twin was right.' : 'Your twin was wrong. It will study this after the battle.'}`)
+          announce(`Your Sym said: ${out.twin_choice}. ${out.twin_match ? 'Your Sym was right.' : 'Your Sym was wrong. It will study this after the battle.'}`)
         } else {
           const said = card.board ? (out.is_correct ? 'That move wins.' : 'That move does not win.') : out.is_correct ? 'That is right.' : 'That is not right.'
           announce(`${said} You get ${out.points_earned} points.`)
@@ -193,8 +193,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
         {isBattle ? (
           <>
             <p className="twin-says">I am learning about you.</p>
-            <h1>Your twin is making its guesses now.</h1>
-            <p className="muted">Your twin saves its guesses before you see any card. It cannot change them later.</p>
+            <h1>Your Sym is making its guesses now.</h1>
+            <p className="muted">Your Sym saves its guesses before you see any card. It cannot change them later.</p>
           </>
         ) : (
           <p>Loading the gate.</p>
@@ -206,12 +206,12 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
   if (finished && isBattle) {
     return (
       <section aria-labelledby="done-h" className="gate-done">
-        <h1 id="done-h" tabIndex={-1}>{battle?.cert ? 'Your twin knows you.' : 'The battle is over.'}</h1>
+        <h1 id="done-h" tabIndex={-1}>{battle?.cert ? 'Your Sym knows you.' : 'The battle is over.'}</h1>
         {!battle && !error && <p aria-live="polite">Counting the results.</p>}
         {battle && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin{battle.twin_kind === 'offline' ? ' · practice twin, no AI' : ''}</span>
+              <span className="line-top">My Sym{battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}</span>
               <p>
                 I guessed {battle.twin_matches} of your {battle.n} picks before you made them. The crowd's guess got {battle.baseline_matches}.{' '}
                 {!learned ? 'I am studying what I got wrong.'
@@ -225,7 +225,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
                 { id: 'areas', label: 'Where I know you', n: battle.areas.length },
                 { id: 'score', label: 'Score', n: `${battle.twin_matches}/${battle.n}` },
               ]} />
-            {after === 'learned' && !learned && <p className="muted" aria-live="polite">My twin is studying its wrong guesses.</p>}
+            {after === 'learned' && !learned && <p className="muted" aria-live="polite">My Sym is studying its wrong guesses.</p>}
             {after === 'learned' && learned && (
               <>
                 <Rows pageKey="lessons" size={4} wide empty="Nothing changed." rows={learned.lessons.map((l, i) => ({
@@ -251,21 +251,21 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
                     </li>
                   ))}
                 </ul>
-                <p className="fine">Each pick you made falls in one area. The number is how many of those my twin had guessed. The areas are loose textbook links. Nothing here measures a brain.</p>
+                <p className="fine">Each pick you made falls in one area. The number is how many of those my Sym had guessed. The areas are loose textbook links. Nothing here measures a brain.</p>
               </>
             )}
             {after === 'score' && (
               <>
                 <dl className="pair">
-                  <div><dt>My twin</dt><dd>{battle.twin_matches}</dd><dd className="muted">of {battle.n}</dd></div>
+                  <div><dt>My Sym</dt><dd>{battle.twin_matches}</dd><dd className="muted">of {battle.n}</dd></div>
                   <div><dt>The crowd's guess</dt><dd>{battle.baseline_matches}</dd><dd className="muted">what most people pick</dd></div>
                   <div><dt>Every battle so far</dt><dd>{battle.record.join(' · ')}</dd><dd className="muted">oldest first</dd></div>
                 </dl>
                 {battle.cert ? (
                   <p className="cert">
                     <span className="cert-kind">Certificate</span>
-                    <strong>Twin: {battle.cert.topic}</strong>
-                    <span>{Math.round(battle.cert.accuracy * 100)} percent right on {battle.cert.n} picks your twin had not seen</span>
+                    <strong>Sym: {battle.cert.topic}</strong>
+                    <span>{Math.round(battle.cert.accuracy * 100)} percent right on {battle.cert.n} picks your Sym had not seen</span>
                   </p>
                 ) : (
                   <p className="muted">{battle.note}</p>
@@ -303,7 +303,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
         {record.some((r) => r.total > 0) && (
           <>
             <div className="twin-line">
-              <span className="line-top">My twin</span>
+              <span className="line-top">My Sym</span>
               <p>
                 {calls.total > 0 && `I called ${calls.right} of ${calls.total} of your answers before you gave them.`}
                 {(() => {
@@ -321,8 +321,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
             </dl>
           </>
         )}
-        {bonus > 0 && <p className="fine">You passed a skill step. The growth fund paid your twin {bonus} credits.</p>}
-        {sponsored > 0 && <p className="fine">An agency backs this skill. It paid your twin {sponsored} more credits.</p>}
+        {bonus > 0 && <p className="fine">You passed a skill step. The growth fund paid your Sym {bonus} credits.</p>}
+        {sponsored > 0 && <p className="fine">An agency backs this skill. It paid your Sym {sponsored} more credits.</p>}
         <button className="primary big" onClick={leave} autoFocus>Go back to Journey</button>
       </section>
     )
@@ -332,14 +332,14 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
     <section aria-labelledby="card-h" className="play">
       <p className="muted">
         {gate.title} · card {index + 1} of {cards.length}
-        {isBattle && twinKind === 'offline' ? ' · practice twin' : ''}
+        {isBattle && twinKind === 'offline' ? ' · practice Sym' : ''}
       </p>
       <div className="progress" role="progressbar" aria-label="Your progress in this gate" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={index}>
         <span style={{ width: `${(index / cards.length) * 100}%` }} />
       </div>
       {isBattle && (
-        <p className="duel" aria-label={`So far: your twin ${tally.twin}, the crowd's guess ${tally.crowd}, of ${tally.done} cards.`}>
-          <span><strong>{tally.twin}</strong> my twin</span>
+        <p className="duel" aria-label={`So far: your Sym ${tally.twin}, the crowd's guess ${tally.crowd}, of ${tally.done} cards.`}>
+          <span><strong>{tally.twin}</strong> my Sym</span>
           <span><strong>{tally.crowd}</strong> the crowd</span>
           <span><strong>{tally.done}</strong> played</span>
         </p>
@@ -373,7 +373,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
       {result && isBattle && (
         <div className={`result ${result.twin_match ? 'right' : 'wrong'}`}>
           <p>
-            <strong>{result.twin_match ? '✓ Your twin was right.' : '✗ Your twin was wrong.'}</strong> Your twin said: {result.twin_choice}
+            <strong>{result.twin_match ? '✓ Your Sym was right.' : '✗ Your Sym was wrong.'}</strong> Your Sym said: {result.twin_choice}
             {result.twin_sure !== null && `, ${result.twin_sure} percent sure`}. The crowd's guess was {result.crowd_match ? 'right' : 'wrong'}.
           </p>
           {result.twin_because && <p className="leaned"><span className="line-top">{result.twin_match ? 'The belief that got it right' : 'The belief that failed'}</span> {result.twin_because}</p>}
@@ -382,7 +382,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
         </div>
       )}
       {card.board?.game === 'pattern' && !result && card.bet_sure !== null && (
-        <p className="twin-says">My twin has bet on whether you get this one. It is {card.bet_sure} percent sure of its bet.</p>
+        <p className="twin-says">My Sym has bet on whether you get this one. It is {card.bet_sure} percent sure of its bet.</p>
       )}
       {card.board && chosen && !result && (
         <div className="chips sure" role="group" aria-label="How sure are you?">
@@ -402,7 +402,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
           </p>
           {result.twin_bet !== null && (
             <p className="leaned">
-              <span className="line-top">My twin's bet</span>
+              <span className="line-top">My Sym's bet</span>
               I bet you would {result.twin_bet ? 'get it' : 'miss it'}, {result.twin_bet_sure} percent sure. {result.twin_bet === result.is_correct ? 'I called it.' : 'I was wrong about you.'}
             </p>
           )}

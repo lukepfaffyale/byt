@@ -3,7 +3,7 @@ import { api } from './api'
 import { still } from './motion'
 
 type Event = { at: string; who: string; label: string; detail: string; credits: number }
-const WHO = { player: 'My twin', agency: 'My agency crew', creator: 'My creator crew' } as const
+const WHO = { player: 'My Sym', agency: 'My agency crew', creator: 'My creator crew' } as const
 
 function ago(at: string): string {
   const min = Math.max(0, Math.round((Date.now() - new Date(at).getTime()) / 60000))
@@ -43,7 +43,7 @@ export function Signal(props: { tick: string; jobs: number; onWork: () => void }
 
   const last = events[0]
   return (
-    <aside className={still() ? 'signal calm' : 'signal'} aria-label="Signal from my twin and my crews">
+    <aside className={still() ? 'signal calm' : 'signal'} aria-label="Signal from my Sym and my crews">
       <button className="signal-head" aria-expanded={open} aria-controls="signal-list" onClick={() => setOpen(!open)}>
         <span className="signal-dot" aria-hidden="true" />
         <span className="line-top">Signal</span>
@@ -53,7 +53,7 @@ export function Signal(props: { tick: string; jobs: number; onWork: () => void }
       </button>
       {jobs > 0 && (
         <button className="signal-ask" onClick={onWork}>
-          <span className="line-top">My twin asks</span> {jobs === 1 ? 'A job is open.' : `${jobs} jobs are open.`} May I go to work?
+          <span className="line-top">My Sym asks</span> {jobs === 1 ? 'A job is open.' : `${jobs} jobs are open.`} May I go to work?
         </button>
       )}
       <ol id="signal-list" className="signal-list" hidden={!open}>
@@ -64,7 +64,7 @@ export function Signal(props: { tick: string; jobs: number; onWork: () => void }
             <span>{e.label}</span>
           </li>
         ))}
-        {events.length === 0 && <li><span>Nothing yet. Play a gate, or send your twin to work.</span></li>}
+        {events.length === 0 && <li><span>Nothing yet. Play a gate, or send your Sym to work.</span></li>}
       </ol>
     </aside>
   )

@@ -1,4 +1,4 @@
-"""Talking to the twin: one line in, a short answer and one move out. The line is guarded and never stored."""
+"""Talking to the Sym: one line in, a short answer and one move out. The line is guarded and never stored."""
 from pydantic_ai.models.test import TestModel
 
 import agent
@@ -41,7 +41,7 @@ def test_a_fact_is_kept_only_after_a_yes_and_only_in_the_twins_words(client, aut
     agent.MODEL_OVERRIDE = TestModel(custom_output_args={"say": "Good to know.", "move": None, "note": note})
     assert client.post("/twin/facts", headers=auth).status_code == 409  # nothing was offered yet
     out = client.post("/twin/ask", json={"text": "I am slow in the morning and I like it quiet."}, headers=auth).json()
-    assert out["offer"] == {"id": "", "scope": "topic", "topic": "mornings", "statement": note["statement"]}
+    assert out["offer"] == {"id": "", "scope": "topic", "topic": "free time", "statement": note["statement"]}  # mapped to the fixed list
     assert client.get("/twin/facts", headers=auth).json()["facts"] == []  # an offer is not stored
     kept = client.post("/twin/ask", json={"text": "I am slow in the morning."}, headers=auth).json()["offer"]
     facts = client.post("/twin/facts", headers=auth).json()["facts"]

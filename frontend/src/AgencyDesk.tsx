@@ -74,7 +74,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     api
       .runCampaign(question, audience, pay, depth)
       .then((a) => {
-        done(a, `You asked ${a.campaigns[0]?.twins ?? 0} twins.`)
+        done(a, `You asked ${a.campaigns[0]?.twins ?? 0} Syms.`)
         setQuestion(null)
         const c = a.campaigns[0]
         if (c) setReplay(groupScript({ boss: a.name, what: c.question, group: c.audience, twins: c.twins, samples: c.sample_twins,
@@ -115,7 +115,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     return (
       <section aria-labelledby="agency-h" className="mine">
         <h1 id="agency-h">You can also be the one who asks.</h1>
-        <p className="lead">Open an agency. Ask every twin 1 question. Pay the twins that answer.</p>
+        <p className="lead">Open an agency. Ask every Sym 1 question. Pay the Syms that answer.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <form onSubmit={open}>
           <label htmlFor="agency-name">Agency name (made up, not a real company)</label>
@@ -124,8 +124,8 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
           <button className="primary big" disabled={busy || name.trim().length < 2}>Open my agency</button>
         </form>
         <More>
-          You start with credits, which are play money. You see only counts across at least {agency.min_twins} twins,
-          never one person. The game asks only twins whose owners said yes.
+          You start with credits, which are play money. You see only counts across at least {agency.min_twins} Syms,
+          never one person. The game asks only Syms whose owners said yes.
         </More>
       </section>
     )
@@ -149,7 +149,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       {view === 'desk' && (
         <>
           <Tabs label="What to do" value={mode} onChange={setMode}
-            tabs={[{ id: 'ask', label: 'Ask a group' }, { id: 'job', label: 'Post a job' }, { id: 'skill', label: 'Back a skill' }, { id: 'one', label: 'Meet one twin' }]} />
+            tabs={[{ id: 'ask', label: 'Ask a group' }, { id: 'job', label: 'Post a job' }, { id: 'skill', label: 'Back a skill' }, { id: 'one', label: 'Meet one Sym' }]} />
 
           {mode === 'ask' && (
             <>
@@ -164,7 +164,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                 <>
                   <div className="chips" role="group" aria-label="Who to ask">
                     <span className="chips-label">Who to ask</span>
-                    {agency.audiences.filter((a) => a.id !== 'members' && a.id !== 'certified').map((a) => (
+                    {agency.audiences.filter((a) => a.id !== 'members' && a.id !== 'certified' && (!a.id.startsWith('view-') || !!agency.reach[a.id]?.blend)).map((a) => (
                       <button key={a.id} className="chip" aria-pressed={audience === a.id} onClick={() => setAudience(a.id)}>{a.name}</button>
                     ))}
                   </div>
@@ -174,8 +174,8 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                       <button key={t.id} className="chip" aria-pressed={depth === t.id} onClick={() => setDepth(t.id)}>{t.name} · {t.times}x</button>
                     ))}
                   </div>
-                  <div className="chips" role="group" aria-label="Price for each twin">
-                    <span className="chips-label">Price for each twin</span>
+                  <div className="chips" role="group" aria-label="Price for each Sym">
+                    <span className="chips-label">Price for each Sym</span>
                     {agency.pay_choices.map((p) => (
                       <button key={p} className="chip" aria-pressed={pay === p} onClick={() => setPay(p)}>{p}</button>
                     ))}
@@ -191,10 +191,10 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                         </span>
                       </>
                     ) : (
-                      <span>Fewer than {agency.min_twins} twins match here, so no one can be asked. Pick a wider group or a wider tier. One twin alone costs {agency.meet_price} credits.</span>
+                      <span>Fewer than {agency.min_twins} Syms match here, so no one can be asked. Pick a wider group or a wider tier. One Sym alone costs {agency.meet_price} credits.</span>
                     )}
                   </p>
-                  <button className="primary big" disabled={busy || !reach} onClick={run}>Ask the twins</button>
+                  <button className="primary big" disabled={busy || !reach} onClick={run}>Ask the Syms</button>
                 </>
               )}
             </>
@@ -202,7 +202,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
 
           {mode === 'job' && (
             <>
-              <p className="fine">A job pays more than a question. Each twin answers with AI. Then its owner checks the answer. You pay only for checked answers.</p>
+              <p className="fine">A job pays more than a question. Each Sym answers with AI. Then its owner checks the answer. You pay only for checked answers.</p>
               <div className="chips" role="group" aria-label="Pick a question for the job">
                 {agency.questions.filter((q) => !jobQ || q.id === jobQ).map((q) => (
                   <button key={q.id} className="chip wide" aria-pressed={jobQ === q.id} onClick={() => setJobQ(jobQ === q.id ? null : q.id)}>
@@ -218,15 +218,15 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                       <button key={p} className="chip" aria-pressed={jobPay === p} onClick={() => setJobPay(p)}>{p}</button>
                     ))}
                   </div>
-                  <div className="chips" role="group" aria-label="How many twins may take it">
-                    <span className="chips-label">How many twins may take it</span>
+                  <div className="chips" role="group" aria-label="How many Syms may take it">
+                    <span className="chips-label">How many Syms may take it</span>
                     {agency.job_seats.map((n) => (
                       <button key={n} className="chip" aria-pressed={jobSeats === n} onClick={() => setJobSeats(n)}>{n}</button>
                     ))}
                   </div>
                   <p className="quote">
                     <span className="quote-n">{Math.round(jobPay * agency.hold_times * jobSeats)}</span>
-                    <span>credits held now. A twin with a certificate gets double pay. A tenth more goes to creators whose skills that twin's owner passed. What is not used comes back.</span>
+                    <span>credits held now. A Sym with a certificate gets double pay. A tenth more goes to creators whose skills that Sym's owner passed. What is not used comes back.</span>
                   </p>
                   <button className="primary big" disabled={busy} onClick={post}>Post this job</button>
                 </>
@@ -262,7 +262,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                 setMeets(out)
                 setError('')
                 api.agency().then(setAgency).catch(fail)
-                announce('Your crew met one twin.')
+                announce('Your crew met one Sym.')
                 setReplay(meetScript({ boss: agency.name, group: groupName, nickname: out.met[0]?.nickname ?? '', price: out.price, fee: out.fee }))
               }} />
           )}
@@ -273,11 +273,11 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
         <WalletCard key={agency.budget} seat="agency" onChange={() => { api.agency().then(setAgency).catch(fail) }} />
       )}
 
-      {view === 'results' && agency.campaigns.length === 0 && agency.postings.length === 0 && agency.sponsorships.length === 0 && (!meets || meets.met.length === 0) && <p className="fine">No answers yet. Ask the twins a question on My Desk.</p>}
+      {view === 'results' && agency.campaigns.length === 0 && agency.postings.length === 0 && agency.sponsorships.length === 0 && (!meets || meets.met.length === 0) && <p className="fine">No answers yet. Ask the Syms a question on My Desk.</p>}
       {view === 'results' && (
         <Tabs label="What came back" value={got} onChange={setGot}
           tabs={[{ id: 'asks', label: 'Questions', n: agency.campaigns.length }, { id: 'jobs', label: 'Jobs', n: agency.postings.length },
-            { id: 'skills', label: 'Skills backed', n: agency.sponsorships.length }, { id: 'met', label: 'Twins met', n: meets?.met.length ?? 0 }]} />
+            { id: 'skills', label: 'Skills backed', n: agency.sponsorships.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
       )}
       {view === 'results' && got === 'skills' && agency.sponsorships.length > 0 && (
         <ul className="lines">
@@ -295,10 +295,10 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
         <ul className="lines">
           {jobsBack.rows.map((p) => (
             <li key={p.id}>
-              <span className="line-top">Job · {p.kind} · {p.pay} credits each · {p.taken} of {p.seats} twins · {p.open ? 'open' : 'closed'}</span>
+              <span className="line-top">Job · {p.kind} · {p.pay} credits each · {p.taken} of {p.seats} Syms · {p.open ? 'open' : 'closed'}</span>
               <span>{p.question}</span>
               <SplitBars rows={p.split} />
-              <span className="muted">{p.checked} checked by {p.checked === 1 ? 'its owner' : 'their owners'}. {p.sample_twins} more are free twins with no name, which cost nothing. Some are made up.</span>
+              <span className="muted">{p.checked} checked by {p.checked === 1 ? 'its owner' : 'their owners'}. {p.sample_twins} more are free Syms with no name, which cost nothing. Some are made up.</span>
               {p.open && <button className="secondary" disabled={busy} onClick={() => close(p.id)}>Close this job. Unused credits come back.</button>}
             </li>
           ))}
@@ -309,7 +309,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       <ul className="lines">
         {asks.rows.map((c) => (
           <li key={c.created_at + c.question}>
-            <span className="line-top">{c.kind} · {c.audience} · {c.depth} · {c.twins} twins · {c.spent} credits{c.extra > 0 ? ` (${c.extra} to the growth fund)` : ''}</span>
+            <span className="line-top">{c.kind} · {c.audience} · {c.depth} · {c.twins} Syms · {c.spent} credits{c.extra > 0 ? ` (${c.extra} to the growth fund)` : ''}</span>
             <span>{c.question}</span>
             <ul className="bars split-bars">
               {c.split.map((row) => (
@@ -322,7 +322,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                 </li>
               ))}
             </ul>
-            <span className="muted">{c.sample_twins} of the {c.twins} twins are free twins with no name. Some are made up, to fill the game while it is small.</span>
+            <span className="muted">{c.sample_twins} of the {c.twins} Syms are free Syms with no name. Some are made up, to fill the game while it is small.</span>
           </li>
         ))}
       </ul>
@@ -330,9 +330,9 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       {view === 'results' && got === 'asks' && asks.pager}
       {view === 'results' && got === 'met' && meets && <MetList meets={meets} />}
       <More>
-        For a group you see counts only, and only when at least {agency.min_twins} twins match. The twins answer with
-        a simple computer program, not with AI, so a question has no AI cost. A job is different: each twin answers
-        with AI and its owner checks the answer, so it costs more. To see one twin and who it is, you pay
+        For a group you see counts only, and only when at least {agency.min_twins} Syms match. The Syms answer with
+        a simple computer program, not with AI, so a question has no AI cost. A job is different: each Sym answers
+        with AI and its owner checks the answer, so it costs more. To see one Sym and who it is, you pay
         its owner a large royalty, and only if the owner said yes. Credits are play money.
       </More>
     </section>

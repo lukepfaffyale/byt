@@ -64,7 +64,7 @@ export function SkillsView({ focus, onPlay }: { focus: string | null; onPlay: (g
         ))}
       </ul>
       <More>
-        Each step you finish can earn a certificate. A computer program checks it. Steps marked "Coming later" open when a creator in the game builds them. Passing a step pays your twin from the growth fund.
+        Each step you finish can earn a certificate. A computer program checks it. Steps marked "Coming later" open when a creator in the game builds them. Passing a step pays your Sym from the growth fund.
       </More>
     </div>
   )
