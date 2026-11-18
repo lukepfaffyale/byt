@@ -1214,3 +1214,34 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 /* the name in the corner is the way back to the welcome */
 :root .brand-home { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit; color: inherit; }
 :root .brand-home:hover, :root .brand-home:focus-visible { text-shadow: 0 0 16px rgba(255, 191, 122, 0.7); }
+
+/* ==========================================================================================================
+   My Sym on a page: a living body on the left, its words, and the one thing it asks for.
+   A path is drawn from the body to the button, behind the words.
+   ========================================================================================================== */
+.sym-cue {
+  --mark: var(--amber);
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 16px 18px 16px 96px; min-height: 100px; margin-bottom: 14px;
+  background:
+    linear-gradient(var(--mark), var(--mark)) left top / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left top / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 1px 16px no-repeat,
+    linear-gradient(180deg, rgba(255, 191, 122, 0.05), rgba(134, 211, 230, 0.015));
+  box-shadow: inset 0 0 44px rgba(255, 191, 122, 0.04);
+  animation: assemble 0.5s ease-out both;
+}
+.sym-cue-life { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sym-cue-say { position: relative; flex: 1 1 18rem; display: grid; gap: 4px; }
+.sym-cue-say .line-top { color: var(--amber); display: flex; align-items: center; gap: 8px; }
+.sym-cue-say .line-top::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: live 1.8s ease-in-out infinite; }
+.sym-cue-say p { margin: 0; font-weight: 200; font-size: 1.08rem; line-height: 1.35; min-height: 2.7em; text-shadow: 0 0 14px #02050a, 0 0 4px #02050a; }
+:root .sym-cue .sym-cue-go { position: relative; flex: 0 0 auto; margin-left: auto; }
+@media (max-width: 560px) {
+  .sym-cue { padding-left: 18px; padding-top: 92px; }
+  :root .sym-cue .sym-cue-go { margin-left: 0; width: 100%; }
+}

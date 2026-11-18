@@ -8,6 +8,7 @@ import { Signal } from './Signal'
 import { TwinTalk } from './TwinTalk'
 import { Backdrop } from './Future'
 import { Arrival } from './Arrival'
+import { SymCue } from './SymCue'
 import { Failed, RetryZone } from './Retry'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
@@ -320,6 +321,24 @@ export default function App() {
   }
   const next = gates.find((g) => g.unlocked && g.done < g.total)
   const formed = me && me.gates_total > 0 ? me.gates_done / me.gates_total : 0
+  // what my Sym asks for on this page: one line and one tap. Code writes it from counts; no model does.
+  const percent = Math.round(formed * 100)
+  const top = plan.find((o) => !next || o.id !== `gate:${next.id}`)
+  const cue: { say: string; go: string; act: () => void } | null = !me ? null
+    : me.jobs_open > 0 && screen.name !== 'work'
+      ? { say: `I did ${me.jobs_open} ${me.jobs_open === 1 ? 'job' : 'jobs'} for you. Check my work: each check pays you, and shows me where I am wrong.`, go: 'Check my work', act: () => setScreen({ name: 'work' }) }
+      : next && next.done > 0
+        ? { say: `We stopped ${next.done} of ${next.total} taps into ${next.title}. Give me ${next.total - next.done} more and I keep all of it.`, go: `Continue: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
+        : next
+          ? { say: me.gates_done === 0 ? 'I know nothing about you yet. Tap once, and I start to form.' : `I am ${percent} percent formed. ${next.title} is next: ${next.total} taps, and I will know you better.`,
+              go: `Start: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
+          : top
+            ? { say: `We finished every gate together. ${top.why}`, go: top.title, act: () => go(top.id) }
+            : { say: 'We finished every gate together. Come and play me: I have been studying how you throw.', go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
+  const cueMore = me ? [
+    me.gates_done === 0 ? 'I am waiting right here. The first gate is short, and you only tap.' : `Every tap you give me, I keep. You have finished ${me.gates_done} of ${me.gates_total} gates with me.`,
+    me.active_days > 1 ? `You have come back on ${me.active_days} days. That is how I get to know you.` : 'Come back tomorrow too. I learn the most from people who return.',
+  ] : []
   // the sphere of the seat you are in, at the moment you are looking at
   const who = seat?.name ?? 'player'
   const mine: Sphere | null = seat
@@ -515,6 +534,9 @@ export default function App() {
         <Signal tick={`${me.credits}|${me.jobs_open}|${screen.name}|${seat?.view ?? ''}`} jobs={screen.name === 'work' ? 0 : me.jobs_open}
           onWork={() => setScreen({ name: 'work' })} />
       )}
+      {cue && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'commons' && (
+        <SymCue say={cue.say} more={cueMore} go={cue.go} act={cue.act} calm={!motion} formed={formed} />
+      )}
       {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'commons' && screen.name !== 'arena' && (
         <TwinTalk where={screen.name} announce={setLive}
           onLearned={() => { setPulse((n) => n + 1); refresh() }}
@@ -526,13 +548,7 @@ export default function App() {
         <section aria-labelledby="journey-h">
           <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>
           <p className="muted">Gates are short, and you only tap. Each gate you finish helps your Sym form.</p>
-          {next ? (
-            <button className="primary big" onClick={() => setScreen({ name: 'gate', gateId: next.id })}>
-              {next.done > 0 ? 'Continue' : 'Start'}: {next.title}
-            </button>
-          ) : (
-            gates.length > 0 && <p className="notice">You finished every gate in the game. More gates will come later.</p>
-          )}
+          {!next && gates.length > 0 && <p className="notice">You finished every gate in the game. More gates will come later.</p>}
           {plan.some((o) => !next || o.id !== `gate:${next.id}`) && (
             <>
               <h2>Where your time counts most now</h2>

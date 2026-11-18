@@ -636,3 +636,12 @@ After signing in, and on each fresh load, a person first sees the whole game fro
 - Drawn: where each body sits, which bodies are joined, and the order the paths grow in. No path is a real link between two people. The line "Every tap you make forges a path" is a picture of the idea, not a record.
 - Privacy: it reads `GET /commons` only, so counts and no names. No body stands for a known person except the one marked as you.
 - Access: the picture is hidden from screen readers and a written description takes its place. Any tap, Escape, Enter or Space ends the opening. With motion off there is no opening: one still picture and the choices. The full opening plays once per browser (a flag in local storage, no personal data); after that it is quick.
+
+## My Sym asks for the next tap (2026-11-17)
+
+On the player's pages a panel shows the Sym as a living body that speaks in the first person and offers one button (`frontend/src/SymCue.tsx`). Its job is to bring the person back to tapping.
+
+- Every line is written by code in `App.tsx` from counts the person already sees elsewhere: open jobs, taps left in a gate, gates finished, days played. No model writes these lines and nothing new is collected.
+- The Sym encourages; it does not pressure. No countdowns, no loss warnings, no made-up urgency, and no claim that is not a real count.
+- The path from the body to the button, and the signals on it, are drawn. They record nothing.
+- With motion off the panel is still and the full line shows at once. A screen reader gets the whole line as text.
