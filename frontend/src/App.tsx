@@ -7,6 +7,7 @@ import { GatePlay } from './GatePlay'
 import { Signal } from './Signal'
 import { TwinTalk } from './TwinTalk'
 import { Backdrop } from './Future'
+import { Arrival } from './Arrival'
 import { Failed, RetryZone } from './Retry'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
@@ -122,6 +123,8 @@ export default function App() {
   const [error, setError] = useState('')
   const [live, setLive] = useState('')
   const [intent, setIntent] = useState<'agency' | 'creator' | undefined>(undefined)
+  // the ecosystem meets a person each time they come in; it steps aside once they choose where to go
+  const [welcome, setWelcome] = useState(true)
   const [pulse, setPulse] = useState(0)
   const [areas, setAreas] = useState<Vertical[]>([])
   const [hubs, setHubs] = useState<Hub[]>([])
@@ -298,6 +301,7 @@ export default function App() {
       >
         <Start onStarted={(seat) => {
           if (seat !== 'player') setIntent(seat)  // everyone meets the game first; the Sym then points at the seat they came for
+          setWelcome(true)
           setSignedIn(true)
         }} />
       </Shell>
@@ -409,6 +413,18 @@ export default function App() {
     )
   }
 
+  if (welcome && me) {
+    const leave = (to: Screen) => {
+      setWelcome(false)
+      setScreen(to)
+    }
+    return (
+      <Arrival calm={!motion} next={next} intent={intent}
+        onPlay={(gateId) => leave({ name: 'gate', gateId })} onJourney={() => leave({ name: 'journey' })}
+        onSeat={(s) => leave({ name: s, view: 'desk' } as Screen)} onEnter={() => leave({ name: 'commons' })} />
+    )
+  }
+
   return (
     <Shell
       live={live}
@@ -462,6 +478,7 @@ export default function App() {
       }
       read={seat ? `You are in the ${seat.name === 'agency' ? 'Agency' : 'Creator'} seat` : `My Sym · ${Math.round(formed * 100)} percent formed · ${Math.round((me?.together ?? 0) * 100)} percent in color · ${me?.twins ?? 0} Syms in the sky`}
       onAbout={() => setScreen({ name: 'about' })}
+      onHome={() => setWelcome(true)}
       nav={
         seat ? (
           <nav aria-label={seat.name === 'agency' ? 'Agency menu' : 'Creator menu'}>
@@ -660,7 +677,7 @@ export default function App() {
   )
 }
 
-function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; alone?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void }) {
+function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; onHome?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; alone?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void }) {
   const dock = props.dock ?? 'stage'
   const wall = dock === 'wall'
   return (
@@ -668,7 +685,7 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
       <Backdrop calm={props.motion === false} />
       <header inert={wall}>
         <span className="brand-row">
-          <span className="brand">BYT</span>
+          {props.onHome ? <button className="brand brand-home" onClick={props.onHome} aria-label="BYT: back to the welcome">BYT</button> : <span className="brand">BYT</span>}
           {dock === 'mini' && (
             <button className="twin-home" onClick={() => props.onDock?.('stage')} title="Bring my Sym down">
               {props.twin}

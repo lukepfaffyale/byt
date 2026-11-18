@@ -627,3 +627,12 @@ Nothing is official, licensed or for sale. The same statement is on the About sc
   to the Sym until its person taps.
 - The frame with four directions around the brain is much fainter, so it reads as space. Its four names still
   work as controls.
+
+## The arrival: the ecosystem meets a person at the door (2026-11-17)
+
+After signing in, and on each fresh load, a person first sees the whole game from far off (`frontend/src/Arrival.tsx`). It starts as one light marked as you, paths grow outward from it, and the view draws back until everyone is in sight. It ends on three choices: Player, Agency, Creator, plus a link to the Everyone hub.
+
+- Real: the number of bodies of each kind (people, stand-ins, agencies, creators, each capped for drawing), the four counts in the corner, and the small lights along the paths (one for each thing known, capped at 1,500; the amber ones are the share that came from this person).
+- Drawn: where each body sits, which bodies are joined, and the order the paths grow in. No path is a real link between two people. The line "Every tap you make forges a path" is a picture of the idea, not a record.
+- Privacy: it reads `GET /commons` only, so counts and no names. No body stands for a known person except the one marked as you.
+- Access: the picture is hidden from screen readers and a written description takes its place. Any tap, Escape, Enter or Space ends the opening. With motion off there is no opening: one still picture and the choices. The full opening plays once per browser (a flag in local storage, no personal data); after that it is quick.

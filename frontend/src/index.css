@@ -1159,3 +1159,58 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 .failed { display: grid; gap: 12px; justify-items: start; }
 /* when the whole page could not load, say it once: the first message stays, the ones after it are hidden */
 .failed ~ .failed, .failed ~ * .failed { display: none; }
+
+/* ==========================================================================================================
+   The arrival: the whole game seen from far off, the moment a person comes in. It fills the screen.
+   The picture is the page; the words sit on it, large and few.
+   ========================================================================================================== */
+.arrival { position: fixed; inset: 0; z-index: 60; overflow: hidden auto; background: #02050a; color: var(--text); display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; }
+.arrival.done { cursor: auto; }
+.arrival-space { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; }
+.arrival-mark { position: fixed; top: 22px; left: max(20px, 3vw); margin: 0; font-weight: 800; letter-spacing: 0.5em; font-size: 0.8rem; color: var(--text); }
+:root .arrival .arrival-skip { position: fixed; top: 16px; right: max(20px, 3vw); letter-spacing: 0.3em; text-transform: uppercase; font-size: 0.68rem; color: var(--teal); }
+.arrival-beat { position: relative; margin: 0 auto 12vh; padding: 0 20px; max-width: 34ch; text-align: center; font-weight: 200; font-size: clamp(1.3rem, 2.6vw, 2.1rem); line-height: 1.3; text-shadow: 0 0 30px rgba(2, 5, 10, 0.9); animation: assemble 0.6s ease-out both; }
+.arrival-read { position: fixed; top: 20px; right: max(20px, 3vw); margin: 0; display: flex; gap: 26px; animation: assemble 0.8s ease-out both; }
+.arrival-read div { display: grid; justify-items: end; }
+.arrival-read dt { font-size: 0.6rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--teal); }
+.arrival-read dd { margin: 0; font-weight: 200; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.arrival-end { position: relative; display: grid; gap: 12px; padding: 12vh max(20px, 3vw) 26px; background: linear-gradient(to bottom, rgba(2, 5, 10, 0), rgba(2, 5, 10, 0.7) 40%); animation: assemble 0.9s ease-out both; }
+:root .arrival .arrival-end h1 { margin: 0; font-size: clamp(2rem, 5.2vw, 4.2rem); line-height: 0.95; outline: none; font-weight: 800; letter-spacing: -0.02em; text-transform: uppercase; color: var(--text); background: none; -webkit-text-fill-color: currentColor; }
+.arrival-said { margin: 0; font-weight: 200; font-size: clamp(1rem, 1.6vw, 1.3rem); color: var(--teal); }
+.arrival-roles { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+:root .arrival .arrival-role {
+  --mark: rgba(134, 211, 230, 0.8);
+  width: 100%; height: 100%; display: grid; gap: 8px; align-content: start; text-align: left; padding: 16px 18px; color: var(--text); cursor: pointer;
+  border: none; border-radius: 0; font: inherit;
+  background:
+    linear-gradient(var(--mark), var(--mark)) left top / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left top / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) left bottom / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right top / 1px 16px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 16px 1px no-repeat,
+    linear-gradient(var(--mark), var(--mark)) right bottom / 1px 16px no-repeat,
+    linear-gradient(180deg, rgba(134, 211, 230, 0.07), rgba(4, 6, 12, 0.55));
+  backdrop-filter: blur(5px);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+:root .arrival .arrival-role.lead { --mark: var(--amber); }
+:root .arrival .arrival-role:hover, :root .arrival .arrival-role:focus-visible { --mark: var(--amber); outline: none; transform: translateY(-3px); box-shadow: inset 0 0 50px rgba(255, 191, 122, 0.1), 0 0 40px -10px rgba(255, 191, 122, 0.6); }
+.arrival-role-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.arrival-role-name { font-weight: 800; font-size: clamp(1.2rem, 2.2vw, 1.8rem); letter-spacing: 0.02em; text-transform: uppercase; }
+.arrival-role-n { font-weight: 200; font-size: 1.5rem; color: var(--teal); font-variant-numeric: tabular-nums; }
+.arrival-role-what { font-weight: 200; font-size: 0.92rem; line-height: 1.4; color: #c6cede; }
+.arrival-role-go { margin-top: 4px; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+:root .arrival .arrival-in { justify-self: start; letter-spacing: 0.3em; text-transform: uppercase; font-size: 0.68rem; color: var(--teal); }
+@media (max-width: 760px) {
+  .arrival-roles { grid-template-columns: 1fr; gap: 10px; }
+  .arrival-end { padding-top: 34vh; }
+  .arrival-read { gap: 14px; }
+  .arrival-read dd { font-size: 1.1rem; }
+  .arrival-role-what { font-size: 0.85rem; }
+}
+
+/* the name in the corner is the way back to the welcome */
+:root .brand-home { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit; color: inherit; }
+:root .brand-home:hover, :root .brand-home:focus-visible { text-shadow: 0 0 16px rgba(255, 191, 122, 0.7); }
