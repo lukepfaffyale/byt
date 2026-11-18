@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 _TMP = Path(tempfile.mkdtemp())
 os.environ["DATABASE_URL"] = "sqlite:///" + (_TMP / "test.db").as_posix()
+os.environ["BYT_LIFE"] = "off"  # the BOT Syms do not move by themselves during tests; a test moves them
 os.environ["PORTKEY_API_KEY"] = ""  # set before main loads .env, so the real key is never picked up
 
 import pytest  # noqa: E402
@@ -26,6 +27,7 @@ import main  # noqa: E402
 @pytest.fixture()
 def client():
     main._hits.clear()
+    main._bot_facts.clear()
     agent.MODEL_OVERRIDE = None
     with TestClient(main.app) as c:
         yield c

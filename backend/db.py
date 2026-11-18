@@ -8,6 +8,7 @@ the token.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import random
 import secrets
@@ -25,7 +26,11 @@ from models import (ActiveDay, Battle, Brief, Campaign, Cert, Consent, AutoWork,
 LOCAL_DB = Path(__file__).resolve().parent / "data" / "local.db"
 FREE_PREFIX = "free-"  # a player who left: the login is gone, and the twin stays as an anonymous free twin
 SAMPLE_PREFIX = "sample-"  # sample players carry this in place of a token hash, so nobody can sign in as one
-SAMPLE_COUNT = 12
+# One BOT Sym for each United Nations country. The country is a label for where the bot stands on the map; its
+# tastes are random and are not drawn from, or a claim about, the people of that country.
+COUNTRIES: list[str] = json.loads((Path(__file__).resolve().parent / "data" / "countries.json").read_text(encoding="utf-8"))["countries"]
+SAMPLE_COUNT = len(COUNTRIES)
+BOT_FULL = 12  # the first bots have answered every card: the steady crowd that a battle is scored against
 _engine: Engine | None = None
 
 
@@ -57,33 +62,97 @@ def ensure_schema() -> None:
     seed_samples()
 
 
-def seed_samples() -> None:
-    """Twelve made-up players with consistent tastes, so "the popular pick" exists on a fresh copy.
+def _bot_cards() -> list:
+    return [c for c in CARDS.values() if c.kind in ("preference", "battle")]
 
-    Each sample has a fixed leaning per trait and picks the option it leans toward. They are generated
-    from fixed seeds, are not real people, and cannot be signed in to. Safe on every start: a sample that
-    is missing is created, and a sample that has not answered a card added later answers it now.
-    """
+
+def _bot_lean(i: int) -> dict[str, float]:
+    """A BOT Sym's fixed leaning for each trait. Drawn from one random spread for every bot: the country it
+    carries is a place label only and plays no part in its tastes."""
     traits = sorted({o.trait for c in CARDS.values() for o in c.options if o.trait})
+    rng = random.Random(409_000 + i)
+    return {t: rng.random() for t in traits}
+
+
+def _bot_answer(i: int, card, lean: dict[str, float]) -> Response:
+    pick = random.Random(f"{i}-{card.id}")
+    choice = max(card.options, key=lambda o: lean.get(o.trait or "", 0.5) + pick.random() * 0.25).id
+    return Response(player_id="", card_id=card.id, choice=choice, response_ms=pick.randint(700, 4000), held_out=card.kind == "battle")
+
+
+def bot_name(i: int) -> str:
+    return f"BOT Sym {COUNTRIES[i - 1]}"
+
+
+def seed_samples() -> None:
+    """The BOT Syms: one made-up player for each United Nations country, so the game has a crowd and a working
+    economy on a fresh copy.
+
+    Each bot has a fixed leaning per trait and picks the option it leans toward. They are generated from fixed
+    seeds, are not real people, and cannot be signed in to. The first twelve have answered every card (they are
+    the crowd a battle is scored against). The others start part of the way through and play on over time
+    (`bot_play`). Safe on every start: a bot that is missing is created.
+    """
+    cards = _bot_cards()
     with Session(get_engine()) as s:
+        have = {p.token_hash: p for p in s.exec(select(Player).where(Player.token_hash.startswith(SAMPLE_PREFIX)))}
         for i in range(1, SAMPLE_COUNT + 1):
-            rng = random.Random(409_000 + i)
-            lean = {t: rng.random() for t in traits}
             marker = f"{SAMPLE_PREFIX}{i:02d}"
-            player = s.exec(select(Player).where(Player.token_hash == marker)).first()
-            if player is None:
-                player = Player(nickname=f"Sample {i:02d}", token_hash=marker, consent_at=utcnow())
+            player = have.get(marker)
+            fresh = player is None
+            if fresh:
+                player = Player(nickname=bot_name(i), token_hash=marker, consent_at=utcnow())
                 s.add(player)
                 s.flush()
-            done = set(s.exec(select(Response.card_id).where(Response.player_id == player.id)))
-            for card in CARDS.values():
-                if card.kind not in ("preference", "battle") or card.id in done:
+            elif player.nickname != bot_name(i):
+                player.nickname = bot_name(i)
+                s.add(player)
+            if not fresh and i > BOT_FULL:
+                continue  # it already exists: it plays on by itself from where it is
+            share = 1.0 if i <= BOT_FULL else 0.35 + 0.55 * random.Random(911_000 + i).random()
+            done = set() if fresh else set(s.exec(select(Response.card_id).where(Response.player_id == player.id)))
+            lean = _bot_lean(i)
+            for card in cards[: max(1, round(len(cards) * share))]:
+                if card.id in done:
                     continue
-                pick = random.Random(f"{i}-{card.id}")
-                choice = max(card.options, key=lambda o: lean.get(o.trait or "", 0.5) + pick.random() * 0.25).id
-                s.add(Response(player_id=player.id, card_id=card.id, choice=choice, response_ms=pick.randint(700, 4000),
-                               held_out=card.kind == "battle"))
+                row = _bot_answer(i, card, lean)
+                row.player_id = player.id
+                s.add(row)
         s.commit()
+
+
+def bot_play(rng: random.Random, most: int = 6) -> bool:
+    """One BOT Sym answers a few more cards, as a person who came back to play would. False when every bot is done."""
+    cards = _bot_cards()
+    with Session(get_engine()) as s:
+        bots = list(s.exec(select(Player).where(Player.token_hash.startswith(SAMPLE_PREFIX))))
+        rng.shuffle(bots)
+        for player in bots[:12]:
+            done = set(s.exec(select(Response.card_id).where(Response.player_id == player.id)))
+            todo = [c for c in cards if c.id not in done]
+            if not todo:
+                continue
+            i = int(player.token_hash[len(SAMPLE_PREFIX):])
+            lean = _bot_lean(i)
+            for card in todo[: rng.randint(2, most)]:
+                row = _bot_answer(i, card, lean)
+                row.player_id = player.id
+                s.add(row)
+            s.commit()
+            return True
+    return False
+
+
+def bot_ids() -> list[tuple[int, str]]:
+    """(number, player id) of every BOT Sym, in order."""
+    with Session(get_engine()) as s:
+        rows = s.exec(select(Player.token_hash, Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX))).all()
+    return sorted((int(h[len(SAMPLE_PREFIX):]), pid) for h, pid in rows)
+
+
+def player_by_id(player_id: str) -> Player | None:
+    with Session(get_engine()) as s:
+        return s.get(Player, player_id)
 
 
 def iso(ts: datetime) -> str:
@@ -244,6 +313,11 @@ def battle_for(player_id: str, gate_id: str) -> Battle | None:
 def battles_for(player_id: str) -> list[Battle]:
     with Session(get_engine()) as s:
         return list(s.exec(select(Battle).where(Battle.player_id == player_id).order_by(Battle.created_at)))
+
+
+def finished_battles() -> list[Battle]:
+    with Session(get_engine()) as s:
+        return list(s.exec(select(Battle).where(Battle.twin_matches != None).order_by(Battle.created_at)))  # noqa: E711
 
 
 def create_battle(
@@ -1147,6 +1221,7 @@ def commons(player_id: str, most: int = 8) -> dict:
 
         stand = set(s.exec(select(Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX) | Player.token_hash.startswith(FREE_PREFIX))))
         people = count(Player) - len(stand)
+        bots = set(s.exec(select(Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX))))
         real = lambda col: col.not_in(stand)  # noqa: E731
         today = utcnow().date().isoformat()
         tally = {}
@@ -1176,20 +1251,30 @@ def commons(player_id: str, most: int = 8) -> dict:
         for f in newest(Fact, Fact.created_at, real(Fact.player_id)):
             seen.append((f.created_at, "person", "A person told their Sym something new.", f.player_id == player_id))
         for c in newest(Campaign, Campaign.created_at):
-            n = c.twins + c.sample_twins
-            seen.append((c.created_at, "agency", f"An agency asked {n} Syms a question.", orgs.get(c.org_id, ("", ""))[1] == player_id))
+            n = c.twins  # every Sym asked; the BOT Syms are part of this count
+            who = "A BOT agency" if orgs.get(c.org_id, ("", ""))[1] in bots else "An agency"
+            seen.append((c.created_at, "agency", f"{who} asked {n} Syms a question.", orgs.get(c.org_id, ("", ""))[1] == player_id))
         for b in newest(Brief, Brief.created_at, Brief.kind.in_(("survey", "test"))):
-            n = b.twins + b.sample_twins
-            seen.append((b.created_at, "creator", f"A creator asked {n} Syms a question.", orgs.get(b.org_id, ("", ""))[1] == player_id))
+            n = b.twins
+            who = "A BOT creator" if orgs.get(b.org_id, ("", ""))[1] in bots else "A creator"
+            seen.append((b.created_at, "creator", f"{who} asked {n} Syms a question.", orgs.get(b.org_id, ("", ""))[1] == player_id))
         for m in newest(MadeStep, MadeStep.created_at):
             seen.append((m.created_at, "creator", "A creator built a new skill step.", orgs.get(m.org_id, ("", ""))[1] == player_id))
         for j in newest(Posting, Posting.created_at):
             seen.append((j.created_at, "agency", "An agency posted a job for Syms.", orgs.get(j.org_id, ("", ""))[1] == player_id))
+        # the newest play by a BOT Sym, once for each bot, said as what it is
+        played: set[str] = set()
+        for r in newest(Response, Response.created_at, Response.player_id.in_(bots)):
+            if r.player_id not in played and len(played) < 2:
+                played.add(r.player_id)
+                seen.append((r.created_at, "sym", "A BOT Sym played a few cards.", False))
         seen.sort(key=lambda row: row[0], reverse=True)
         known = tally["taps"] + tally["checks"] + tally["told"] + tally["lessons"]
         mine = tally["taps_mine"] + tally["checks_mine"] + tally["told_mine"] + tally["lessons_mine"]
         return {
-            "people": people, "stand_ins": len(stand),
+            "people": people, "stand_ins": len(stand), "bots": len(bots),
+            "bot_agencies": sum(1 for kind, owner in orgs.values() if kind == "agency" and owner in bots),
+            "bot_creators": sum(1 for kind, owner in orgs.values() if kind == "creator" and owner in bots),
             "people_today": count(ActiveDay, ActiveDay.day == today, real(ActiveDay.player_id)),
             "agencies": sum(1 for kind, _ in orgs.values() if kind == "agency"),
             "creators": sum(1 for kind, _ in orgs.values() if kind == "creator"),

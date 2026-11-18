@@ -36,7 +36,7 @@ def test_a_survey_and_a_test_return_counts_only_and_every_credit_is_in_the_ledge
     test = out["briefs"][0]
     assert [r["label"] for r in test["split"]] == [label for _, label in market.BANDS]
     assert sum(r["count"] for r in test["split"]) == test["twins"]
-    assert "Sample" not in str(out["briefs"])  # counts, never a twin
+    assert "BOT Sym" not in str(out["briefs"])  # counts, never a twin
     assert db.wallet_balance(None, "platform") == platform + 2 * market.CREW_FEE
     assert db.ledger_total() == 0
 
@@ -58,7 +58,7 @@ def test_one_to_one_shows_a_real_twin_only_after_its_owner_says_yes_and_pays_the
     play_gates(client, other, 2)
     # the owner has not said yes: only made-up sample twins can be met
     first = client.post("/seats/creator/meet", json={"audience": "all"}, headers=auth).json()
-    assert first["met"][0]["sample"] is True and first["met"][0]["nickname"].startswith("Sample")
+    assert first["met"][0]["sample"] is True and first["met"][0]["nickname"].startswith("BOT Sym")
     assert client.get("/jobs", headers=other).json()["one_to_one"] is False
     said = client.post("/me/one-to-one", json={"on": True}, headers=other).json()
     assert said["one_to_one"] is True and said["meet_price"] == market.MEET_PRICE

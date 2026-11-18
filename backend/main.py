@@ -5,6 +5,8 @@ The .env file is looked for in backend/, then the repo folder, then one folder a
 """
 from __future__ import annotations
 
+import asyncio
+import logging
 import math
 from datetime import datetime, timedelta, timezone
 import os
@@ -16,6 +18,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 ROOT = Path(__file__).resolve().parent.parent
 os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
@@ -26,6 +29,7 @@ import agent as agents  # noqa: E402
 import json  # noqa: E402
 
 import db  # noqa: E402
+import life  # noqa: E402
 import market  # noqa: E402
 import mirror as mirror_rules  # noqa: E402
 import rps  # noqa: E402
@@ -155,7 +159,21 @@ async def lifespan(_: FastAPI):
     db.ensure_ledger(market.FUND_START, market.STEP_KIND)
     for posted in db.all_postings():
         register_posting(posted)
+    life.seats()
+    pulse = asyncio.create_task(_life()) if os.getenv("BYT_LIFE", "on") != "off" else None
     yield
+    if pulse:
+        pulse.cancel()
+
+
+async def _life() -> None:
+    """While the server is awake, one BOT Sym does one thing every so often. Plain code, no model."""
+    while True:
+        await asyncio.sleep(LIFE_SECONDS)
+        try:
+            await asyncio.to_thread(life.step)
+        except Exception:  # a bot's move must never take the server down
+            logging.getLogger("byt.life").exception("a BOT move failed")
 
 
 app = FastAPI(title="BYT", lifespan=lifespan)
@@ -173,7 +191,9 @@ app.add_middleware(
 _hits: dict[str, deque[float]] = defaultdict(deque)
 
 
-def rate_limit(request: Request, name: str, limit: int, window: float = 60.0) -> None:
+def rate_limit(request: Request | None, name: str, limit: int, window: float = 60.0) -> None:
+    if request is None:  # a BOT seat, moved by the game's own code (life.py), not by a caller
+        return
     key = f"{name}:{request.client.host if request.client else 'unknown'}"
     now = time.monotonic()
     q = _hits[key]
@@ -734,7 +754,24 @@ def set_consent(body: ConsentIn, player: Player = Depends(current_player)) -> Jo
 
 # ---------- the agency seat ----------
 
+LIFE_SECONDS = 45  # how often one BOT Sym does one thing while the server is awake
+BOT_FACTS_SECONDS = 30
+_bot_facts: dict[str, tuple[float, market.TwinFacts]] = {}
+
+
 def twin_facts(player_id: str, sample: bool) -> market.TwinFacts:
+    # a free Sym changes slowly, and there are many of them: what is known about one is kept for a short while
+    if sample:
+        kept = _bot_facts.get(player_id)
+        if kept and time.monotonic() - kept[0] < BOT_FACTS_SECONDS:
+            return kept[1]
+        facts = _twin_facts(player_id, True)
+        _bot_facts[player_id] = (time.monotonic(), facts)
+        return facts
+    return _twin_facts(player_id, False)
+
+
+def _twin_facts(player_id: str, sample: bool) -> market.TwinFacts:
     picks = [(r.card_id, r.choice) for r in db.responses_for(player_id)]
     counts = db.trait_counts(player_id, include_held_out=True)
     top = mirror_rules.top_styles(mirror_rules.read_styles(picks))
@@ -1751,10 +1788,10 @@ def seat_sphere(seat: str, player: Player = Depends(current_player)) -> Sphere:
         top = sorted(names, key=lambda a: mean[a], reverse=not (seat == "creator"))[:2]
         samples = sum(1 for m in members if m["sample"])
         details = [
-            f"{len(members)} Syms are in this group. {samples} of them are made-up sample Syms.",
+            f"{len(members)} Syms are in this group. {samples} of them are BOT Syms: made up, not people.",
             f"{'Where they need the most help' if seat == 'creator' else 'Where they are strongest'}: {top[0]} and {top[1]}.",
             f"On average they are {round(100 * sum(m['progress'] for m in members) / len(members))} percent of the way through the game.",
-            f"{sum(1 for m in members if m['active'])} of them played in the last {market.ACTIVE_FULL_DAYS} days. Sample Syms count as active.",
+            f"{sum(1 for m in members if m['active'])} of them played in the last {market.ACTIVE_FULL_DAYS} days. BOT Syms count as active.",
         ]
         if seat == "agency":
             times = asked.get(key, 0)
@@ -1877,7 +1914,7 @@ MOVE_LABEL = {
     ("data", True): ("Data income", "From an agency. The agency saw only totals."),
     ("growth", True): ("Skill step bonus", "From the growth fund"),
     ("data", False): ("Paid to Syms", "For one question"),
-    ("samples", False): ("Paid to sample Syms", "Made-up Syms that fill the game while it is small"),
+    ("samples", False): ("Paid to BOT Syms", "Made-up Syms, one for each country, that keep the game moving. No person is behind them."),
     ("fund_in", False): ("To the growth fund", "The extra for asking a group again, and the part held back from owners who were away"),
     ("fee", False): ("Token fee", "What your agents cost to run"),
     ("royalty", True): ("One to one royalty", "A seat paid to meet your Sym. It saw your nickname and your Sym's answers."),
@@ -1941,6 +1978,15 @@ EXPORT_NOTE = (
     "certificates given here, and anything the AI wrote belong to BYT. They are not in this file. You can read "
     "all of them on the My Sym screen, and you can delete them."
 )
+
+
+@app.get("/export/battles.csv", response_class=PlainTextResponse)
+def export_battles(player: Player = Depends(current_player)) -> PlainTextResponse:
+    """For analysts: one row for each finished battle. No nickname and no player id; the battle id is random."""
+    rows = ["battle_id,deck,n,sym_matches,baseline_matches,date"]
+    for b in db.finished_battles():
+        rows.append(f"{b.id},{b.gate_id},{b.n},{b.twin_matches},{b.baseline_matches},{db.iso(b.created_at)[:10]}")
+    return PlainTextResponse("\n".join(rows) + "\n", media_type="text/csv")
 
 
 @app.get("/me/export", response_model=Export)

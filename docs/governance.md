@@ -686,3 +686,45 @@ The idea the student set: this is the Syms' space; money comes in from agencies,
   back end returned. Code writes the line; no model does.
 - The "since you were last here" line now counts only pay that arrived before this visit began, so pay earned by a tap
   in this visit is not reported twice.
+
+## 2026-11-18: analyst export built, and an open privacy decision
+
+- **`GET /export/battles.csv` now exists.** The data records listed it but it had never been built. It needs a
+  signed-in player and returns one row for each finished battle: a random battle id, the gate, the number of picks,
+  the Sym's matches, the crowd guess's matches and the date (day only). No nickname and no player id. A test checks this.
+- **Open decision (the student's): real people only in a crowd of real people.** Today a group may be asked when it
+  holds 5 Syms, and stand-in Syms count toward the 5. Stand-ins answer by a fixed rule, so in a group with fewer
+  than 5 real Syms their answers could be taken away from the total, and what is left could point at one person.
+  The fix is written and tested (`market.safe_group`): real Syms are left out of a group that holds fewer than 5 of
+  them. It is **not switched on**, because it has a cost: until 5 real players have chosen to earn, no real player
+  is paid for answers. Until the student decides, the weaker rule stands and this note is the record of it.
+
+## 2026-11-18: BOT Syms, one for each country
+
+The student's direction: the live game should hold human-like Syms that play in the economy, clearly marked as bots,
+to show the economy and its life, with one for each country so the world is balanced.
+
+- **What they are.** 193 made-up players, one for each member state of the United Nations
+  (`backend/data/countries.json`, short English names). Each is named "BOT Sym" plus its country. No person is behind
+  one, nobody can sign in as one, and no data about a real person is in one.
+- **The country is a label, not a claim.** Every bot's tastes come from the same random spread. Nothing about a bot is
+  drawn from its country, and nothing a bot answers says anything about the people who live there. One bot for each
+  country is a choice for balance on the map; it is not weighted by how many people live in a country.
+- **How they act.** Plain code in `backend/life.py`. No model is called and no tokens are spent. While the server is
+  awake, about every 45 seconds one thing happens: a BOT Sym answers a few more cards, a BOT agency asks a group a
+  fixed question, or a BOT creator asks a group what it needs. Six bots run agencies and four run creator seats.
+- **Same rules as people.** A BOT seat goes through the same routes as a person's seat: the same fixed questions, the
+  same minimum group size, the same prices, and it sees totals only. It cannot type. When a BOT agency asks, real
+  players who chose to earn are paid exactly what a person's agency would pay them.
+- **Where the money comes from.** A BOT seat spends play credits that come from outside the game, like any deposit.
+  Credits are play money. The ledger shows these moves like all others.
+- **Always labelled.** Every screen that counts them says "BOT Syms" and that they are made up and not people. The
+  Everyone feed says "A BOT agency", "A BOT creator" or "A BOT Sym". A bot is never counted as a person, and its
+  cards are never counted as things people know.
+- **Limits, stated plainly.** Bots answer by a fixed leaning, so they are steadier than people. Numbers that include
+  them are an example of how the economy works, not a finding about people. The report must not present bot answers
+  as survey evidence. The open decision above (real people only in a crowd of real people) matters more now: with
+  193 bots, a group can pass the minimum of 5 while holding one real Sym.
+- **Settings changed with the larger crowd.** A new seat starts with 2000 play credits (was 500), since asking every
+  Sym now reaches about 200. A 5000 deposit choice was added.
+- **Fixed on the way.** The Everyone feed counted the made-up Syms twice in "asked N Syms". It now counts each Sym once.

@@ -1351,7 +1351,10 @@ class Commons(Strict):
     nickname: str
     people: int  # real people with a Sym
     people_today: int  # of those, how many played today
-    stand_ins: int  # made-up Syms and Syms left behind, holding places until people come
+    stand_ins: int  # BOT Syms and Syms left behind
+    bots: int = 0  # BOT Syms: made up, one for each country, run by plain code
+    bot_agencies: int = 0  # of the agencies, how many are run by a BOT
+    bot_creators: int = 0  # of the creators, how many are run by a BOT
     agencies: int
     creators: int
     taps: int  # answers real people gave

@@ -16,12 +16,12 @@ from content import KNOWN_TRAITS, ONTOLOGY, TOPICS, Card, Option
 QUESTIONS_PATH = Path(__file__).resolve().parent / "data" / "questions.json"
 MIN_TWINS = 5  # below this an agency gets nothing back and is charged nothing
 MIN_PICKS = 8  # a twin with fewer preference picks than this is not asked
-START_BUDGET = 500  # play credits a new agency starts with
+START_BUDGET = 2000  # play credits a new seat starts with: enough to ask every Sym a few times
 PAY_CHOICES = (1, 2, 5)  # credits per twin per answer
 REPEAT_STEP = 0.5  # each earlier ask of the same group adds this much to the price
 REPEAT_CAP = 3.0  # and the price never passes this many times the first price
 USD_PER_CREDIT = 0.01  # one play credit stands for one cent when a wallet pays a token fee
-DEPOSIT_CHOICES = (100, 500, 1000)  # fixed amounts, so no typed amount
+DEPOSIT_CHOICES = (100, 500, 1000, 5000)  # fixed amounts, so no typed amount
 WALLET_CAP = 100000  # a wallet cannot be filled past this by adding play credits
 CREATOR_PAY = 1  # credits a creator pays each twin its crew asks in a group
 CREW_FEE = 2  # credits a seat pays the game each time its crew goes out for a creator job or a one to one meeting
@@ -102,6 +102,19 @@ def in_tier(twin: "TwinFacts", depth: str) -> bool:
     if depth == "members":
         return not twin.sample
     return not twin.sample and twin.certified
+
+
+def safe_group(asked: list["TwinFacts"]) -> list["TwinFacts"]:
+    """Real people are asked only in a crowd of real people.
+
+    Stand-in Syms answer by a fixed rule, so their answers could be taken away from a total. If a group held
+    fewer than MIN_TWINS real Syms, what is left could point at one person. So in that case the real Syms are
+    left out: they are not asked and nothing about them comes back. The stand-ins alone may still be asked.
+    """
+    real = sum(1 for t in asked if not t.sample)
+    if 0 < real < MIN_TWINS:
+        return [t for t in asked if t.sample]
+    return asked
 
 
 def tier_base(free: int, members: int, pay: int, depth: str) -> float:

@@ -17,7 +17,7 @@ export function groupScript(f: { boss: string; what: string; group: string; twin
   const steps: CrewStep[] = [
     { from: 0, to: 1, say: `Find the Syms in this group: ${f.group}.` },
     { from: 1, to: 4, say: 'Who here said yes to questions?' },
-    { from: 4, to: 1, say: `${n(f.twins, 'Sym', 'Syms')} match. ${f.samples} of them are made-up sample Syms.` },
+    { from: 4, to: 1, say: `${n(f.twins, 'Sym', 'Syms')} match. ${f.samples} of them are BOT Syms, not people.` },
     { from: 0, to: 2, say: f.test ? `Run this: ${f.what}. See where each Sym stands.` : `Ask them this: ${f.what}` },
     { from: 2, to: 4, say: f.test ? 'I am reading your picks in this skill. You do not need to answer.' : 'One question for each of you. Answer as your human would.' },
     { from: 4, to: 2, say: f.test ? `${n(f.twins, 'Sym was', 'Syms were')} read.` : `${n(f.twins, 'answer', 'answers')} came back.` },

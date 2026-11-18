@@ -322,10 +322,14 @@ counts are stored. The agency name is the one typed field besides the nickname.
 `backend/data/ontology.json` maps each gate kind to a bin (preference, games, skills, Sym) and each trait tag to
 the axes, thinking styles and faculties it counts toward. The server refuses to start on a tag the file does not know.
 
-## Sample players (made up)
+## BOT Syms (made up)
 
-Twelve rows in `players` named "Sample 01" to "Sample 12", with picks generated from a fixed seed, exist so the crowd
-guess has data on a fresh copy. They are not people. Their `token_hash` is a marker, not a hash, so nobody can sign in as one.
+193 rows in `players` named "BOT Sym <country>", one for each member state of the United Nations (the list is
+`backend/data/countries.json`). Their picks are generated from a fixed seed, so the crowd guess has data on a fresh
+copy and the economy has someone in it. They are not people, and no data about any person is in them. The country is
+a place label: a bot's tastes are random and are not drawn from, or a claim about, the people of that country.
+Their `token_hash` is a marker, not a hash, so nobody can sign in as one. Ten of them also own a seat in `orgs`
+(six BOT agencies, four BOT creators). Not PII.
 
 Tables added later in the week (friend guesses, wardrobe and outfits, panel questions, answers and royalties) are
 classified here before they are created, with a line in `CHANGELOG.md`.

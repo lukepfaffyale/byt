@@ -174,7 +174,7 @@ export type World = {
   flows: { src: string; dst: string; credits: number; moves: number }[]; balances: Record<string, number>; last_move: string | null
 }
 export type Commons = {
-  nickname: string; people: number; people_today: number; stand_ins: number; agencies: number; creators: number
+  nickname: string; people: number; people_today: number; stand_ins: number; bots: number; bot_agencies: number; bot_creators: number; agencies: number; creators: number
   taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; has_agency: boolean; has_creator: boolean
   happenings: { who: string; text: string; when: string; mine: boolean }[]
 }

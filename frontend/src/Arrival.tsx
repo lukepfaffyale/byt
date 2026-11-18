@@ -299,7 +299,7 @@ export function Arrival(props: {
   const beats = [
     'This is you.',
     'Every tap you make forges a path.',
-    `${people} ${data.stand_ins} stand-ins hold places for those still to come.`,
+    `${people} ${data.bots} BOT Syms, one for each country, keep this world moving. They are made up, not people.`,
     `Together they know ${data.known.toLocaleString()} things. Here, what people know is the money.`,
   ]
   const play = () => (next ? onPlay(next.id) : onJourney())
@@ -320,8 +320,8 @@ export function Arrival(props: {
     <div className={done ? 'arrival done' : 'arrival'} role="dialog" aria-modal="true" aria-label="Welcome to BYT" onClick={done ? undefined : finish}>
       <canvas ref={canvasRef} className="arrival-space" aria-hidden="true" />
       <p className="sr-only">
-        A picture of everyone in the game as points of light in space, joined by paths that grow outward from you. {people} {data.stand_ins} stand-ins hold places.
-        There are {data.agencies} agencies and {data.creators} creators. Together they know {data.known} things, and {data.known_mine} of those came from you.
+        A picture of everyone in the game as points of light in space, joined by paths that grow outward from you. {people} {data.bots} BOT Syms, one for each country, are here too. A BOT Sym is made up and is not a person.
+        There are {data.agencies} agencies ({data.bot_agencies} run by BOT Syms) and {data.creators} creators ({data.bot_creators} run by BOT Syms). Together they know {data.known} things, and {data.known_mine} of those came from you.
       </p>
       <p className="arrival-mark" aria-hidden="true">BYT</p>
       {!done && <button className="link arrival-skip" onClick={finish}>Skip</button>}
@@ -332,7 +332,7 @@ export function Arrival(props: {
         <>
           <dl className="arrival-read">
             <div><dt>People</dt><dd><Tick to={data.people} calm={calm} /></dd></div>
-            <div><dt>Stand-ins</dt><dd><Tick to={data.stand_ins} calm={calm} /></dd></div>
+            <div><dt>BOT Syms</dt><dd><Tick to={data.bots} calm={calm} /></dd></div>
             <div><dt>Known</dt><dd><Tick to={data.known} calm={calm} /></dd></div>
             <div><dt>From you</dt><dd><Tick to={data.known_mine} calm={calm} /></dd></div>
           </dl>

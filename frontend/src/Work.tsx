@@ -202,7 +202,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
           <li><span className="line-top">How it is used</span><span>{r.job.feeds}</span></li>
         </ol>
         <p className="fine">
-          {r.sample_twins} of the {r.twins} Syms are made-up sample Syms. So these numbers are only an example
+          {r.sample_twins} of the {r.twins} Syms are BOT Syms: made up, with no person behind them. So these numbers are only an example
           until more people play. Credits are play money.
         </p>
         <button className="link" onClick={back}>See all jobs</button>

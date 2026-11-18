@@ -35,7 +35,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
   if (!data) return <p className="muted" aria-live="polite">Finding everyone.</p>
 
   const fresh = data.happenings.filter((h) => h.when === 'now' || h.when === 'today').length
-  const said = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here. ${data.stand_ins} stand-ins hold places until more people come. ${data.people_today} played today.`
+  const said = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here. ${data.bots} BOT Syms, one for each country, play here too. They are made up, not people, and they keep the game moving while it is small. ${data.people_today} played today.`
   // what the Sym asks for next: one line and one tap. Counting only, no model.
   const play = () => (next ? onPlay(next.id) : onJourney())
   const first = plan.find((o) => !next || o.id !== `gate:${next.id}`)
@@ -54,9 +54,9 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
   const roles: { id: string; name: string; n: number; what: string; life: string; go: string; act: () => void }[] = [
     { id: 'player', name: 'Players', n: data.people, what: 'A player taps, and a Sym learns them.', life: 'They bring the color. Nothing is known here until a person shows it.',
       go: next ? 'Play' : 'My Journey', act: play },
-    { id: 'agency', name: 'Agencies', n: data.agencies, what: 'An agency asks Syms questions and posts jobs.', life: 'They bring the pay. Every answer they buy pays a person.',
+    { id: 'agency', name: 'Agencies', n: data.agencies, what: `An agency asks Syms questions and posts jobs. ${data.bot_agencies} of these are run by BOT Syms.`, life: 'They bring the pay. Every answer they buy pays a person.',
       go: data.has_agency ? 'My agency' : 'Open one', act: () => onSeat('agency') },
-    { id: 'creator', name: 'Creators', n: data.creators, what: 'A creator builds skill steps.', life: 'They bring the growth. Each step lets Syms do more, and pays its maker.',
+    { id: 'creator', name: 'Creators', n: data.creators, what: `A creator builds skill steps. ${data.bot_creators} of these are run by BOT Syms.`, life: 'They bring the growth. Each step lets Syms do more, and pays its maker.',
       go: data.has_creator ? 'My studio' : 'Open one', act: () => onSeat('creator') },
   ]
   const share = data.known > 0 ? Math.round((data.known_mine / data.known) * 100) : 0
@@ -82,7 +82,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
         label={`Everyone in the game, moving in space around a core of light. ${said} Together they know ${data.known} things, and ${data.known_mine} of those came from you.`} />
       <p className="commons-key" aria-hidden="true">
         <span><i className="key-person" /> a person and their Sym</span>
-        <span><i className="key-hold" /> a stand-in on its track</span>
+        <span><i className="key-hold" /> a BOT Sym on its track (made up, not a person)</span>
         <span><i className="key-agency" /> agency</span>
         <span><i className="key-creator" /> creator</span>
         <span>drag to turn</span>

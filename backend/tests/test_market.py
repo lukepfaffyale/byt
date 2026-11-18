@@ -111,7 +111,7 @@ def test_spheres_keep_their_history_and_seats_have_their_own(client, auth):
         if v["hidden"]:  # a small group shows nothing at all
             assert v["count"] is None and v["dots"] == [] and "Fewer than 5" in v["details"][0]
     text = str(before)
-    assert "Sample 0" not in text and "nickname" not in text  # groups only, never a name
+    assert not __import__("re").search(r"BOT Sym [A-Z]", text) and "nickname" not in text  # groups only, never a name
 
     client.post("/agency", headers=auth, json={"name": "North Star Ads"})
     client.post("/agency/campaigns", headers=auth, json={"question_id": "q-price", "audience": "all", "pay": 1})

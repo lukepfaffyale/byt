@@ -55,7 +55,7 @@ export function MetList({ meets }: { meets: Meets }) {
             <span className="line-top">{new Date(m.at).toLocaleDateString()} · royalty {m.paid} credits</span>
             {m.open ? (
               <>
-                <span><strong>{m.nickname}</strong>{m.sample ? ' (a made-up sample Sym)' : ''}</span>
+                <span><strong>{m.nickname}</strong>{m.sample ? ' (a BOT Sym: made up, not a person)' : ''}</span>
                 <span className="muted">Strongest in: {m.strongest.join(' and ')}</span>
                 <ul className="met-answers">
                   {m.answers.map((a) => (
