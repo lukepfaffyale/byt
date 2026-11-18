@@ -672,3 +672,17 @@ The idea the student set: this is the Syms' space; money comes in from agencies,
 - Creator results: the crew says how many times the studio's steps were passed and what they earned, then offers the next thing to build.
 - All lines are written by code from the caller's own rows. No model, no new data, no new route. The agents report and invite; they do not spend, and they add no urgency that is not a real count.
 - Design rule from the student: little scrolling and little typing, except when talking to the agent. The agent's panel sits at the top of each page so the loop needs no scroll.
+
+## 2026-11-18: two more reward moments, said by my Sym
+
+- **Pay that lands while a person is on a page.** While a player is signed in and the tab is in view, the app looks at
+  that player's own wallet every 20 seconds (`GET /wallets`, the same call the money page uses; no new data is
+  collected). When a new line of income arrives that the player did not just tap for (an answer sold to an agency or
+  creator, or a paid one-to-one meeting), my Sym says so first: how many credits, what kind of pay, and that it is
+  theirs. The amount is the real ledger amount. The line names no one: the buyer is "someone" or "a seat". It is said
+  once and is gone when the person moves to another page. A screen reader hears it through the live region.
+- **After a job check.** When a player approves or corrects a job answer, my Sym says what the check did, what the job
+  paid, what the player now holds, and offers one tap to the next waiting job. All numbers come from the job result the
+  back end returned. Code writes the line; no model does.
+- The "since you were last here" line now counts only pay that arrived before this visit began, so pay earned by a tap
+  in this visit is not reported twice.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { flushSync } from 'react-dom'
 import { AgencyDesk } from './AgencyDesk'
 import { CreatorDesk, type SeatView } from './CreatorDesk'
@@ -138,6 +138,12 @@ export default function App() {
     }
   })
   const [gain, setGain] = useState({ n: 0, sum: 0 })
+  // pay that lands while this person is on a page: income my Sym earns by itself (answers sold, meetings)
+  const [landed, setLanded] = useState({ n: 0, sum: 0, meet: false })
+  // a reward a screen has just handed to my Sym to say, such as what a checked job paid
+  const [flash, setFlash] = useState<{ say: string; go: string; act: () => void } | null>(null)
+  const walletAt = useRef({ start: -1, mark: -1, latest: 0, told: 0 })
+  const lastPlace = useRef('')
   const [pulse, setPulse] = useState(0)
   const [areas, setAreas] = useState<Vertical[]>([])
   const [hubs, setHubs] = useState<Hub[]>([])
@@ -306,16 +312,49 @@ export default function App() {
   useEffect(() => {
     if (!signedIn || purse === undefined) return
     let cancelled = false
-    api.wallets().then((w) => {
-      if (cancelled) return
-      const lines = (w.wallets.find((p) => p.seat === 'player')?.lines ?? [])
-        .filter((l) => l.credits > 0 && l.kind !== 'deposit' && l.kind !== 'release' && new Date(l.at).getTime() > since)
-      setGain({ n: lines.length, sum: lines.reduce((n, l) => n + l.credits, 0) })
-    }).catch(() => undefined)
+    const check = () => {
+      if (document.hidden) return
+      api.wallets().then((w) => {
+        if (cancelled) return
+        const all = (w.wallets.find((p) => p.seat === 'player')?.lines ?? []).map((l) => ({ ...l, t: new Date(l.at).getTime() }))
+        const at = walletAt.current
+        at.latest = all.reduce((n, l) => Math.max(n, l.t), 0)
+        // the first look sets the line between "since you were last here" and "just now"
+        if (at.start < 0) at.start = at.mark = at.latest
+        const before = all.filter((l) => l.credits > 0 && l.kind !== 'deposit' && l.kind !== 'release' && l.t > since && l.t <= at.start)
+        setGain({ n: before.length, sum: before.reduce((n, l) => n + l.credits, 0) })
+        // only income the person did not just tap for: an answer sold, or a paid meeting
+        const fresh = all.filter((l) => l.credits > 0 && (l.kind === 'data' || l.kind === 'royalty') && l.t > at.mark)
+        const sum = fresh.reduce((n, l) => n + l.credits, 0)
+        setLanded({ n: fresh.length, sum, meet: fresh.some((l) => l.kind === 'royalty') })
+        if (fresh.length > at.told) {
+          at.told = fresh.length
+          setLive(`My Sym was just paid ${credits(sum)} credits.`)
+          refresh()
+        }
+      }).catch(() => undefined)
+    }
+    check()
+    const timer = window.setInterval(check, 20000)
     return () => {
       cancelled = true
+      window.clearInterval(timer)
     }
-  }, [signedIn, purse, since])
+  }, [signedIn, purse, since, refresh])
+
+  // a reward line is said once: when the person moves on from a page that showed it, it is done
+  const place = screen.name
+  useEffect(() => {
+    const was = lastPlace.current
+    lastPlace.current = place
+    if (place !== 'work') setFlash(null)
+    if (was && was !== 'gate' && was !== 'about' && was !== 'commons' && was !== 'agency' && was !== 'creator') {
+      const at = walletAt.current
+      at.mark = at.latest
+      at.told = 0
+      setLanded({ n: 0, sum: 0, meet: false })
+    }
+  }, [place])
 
   if (!signedIn) {
     return (
@@ -364,7 +403,10 @@ export default function App() {
             ? { say: `We finished every gate together. ${top.why}`, go: top.title, act: () => go(top.id) }
             : { say: 'We finished every gate together. Come and play me: I have been studying how you throw.', go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
-  const told = cue && gain.n > 0
+  const told = flash ? flash
+    : cue && landed.n > 0
+    ? { ...cue, say: `Just now, pay landed: ${credits(landed.sum)} credits${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} I earned it while you were here, and it is yours. ${cue.say}` }
+    : cue && gain.n > 0
     ? { ...cue, say: `Since you were last here, ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'} came in: ${credits(gain.sum)} credits. Others paid, I did the work, and it is yours. ${cue.say}` }
     : cue
   const cueMore = me ? [
@@ -672,7 +714,7 @@ export default function App() {
         />
       )}
 
-      {screen.name === 'work' && <Work announce={setLive} onChange={refresh} />}
+      {screen.name === 'work' && <Work announce={setLive} onChange={refresh} onReward={setFlash} />}
 
       {screen.name === 'agency' && (
         <AgencyDesk key={screen.ask ?? 'desk'} announce={setLive} view={screen.view} ask={screen.ask} onView={(view) => setScreen({ name: 'agency', view })} />

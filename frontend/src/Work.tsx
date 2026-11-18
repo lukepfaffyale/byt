@@ -10,7 +10,9 @@ import { Failed } from './Retry'
 
 type Stage = { name: 'list' } | { name: 'running'; job: Job; done?: Job } | { name: 'review'; job: Job; correcting: boolean } | { name: 'result'; result: JobResult }
 
-export function Work({ announce, onChange }: { announce: (text: string) => void; onChange: () => void }) {
+type Reward = { say: string; go: string; act: () => void } | null
+
+export function Work({ announce, onChange, onReward }: { announce: (text: string) => void; onChange: () => void; onReward: (told: Reward) => void }) {
   const [jobs, setJobs] = useState<Job[] | null>(null)
   const [credits, setCredits] = useState(0)
   const [certified, setCertified] = useState(false)
@@ -65,6 +67,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
 
   function send(job: Job) {
     setError('')
+    onReward(null)
     if (job.state === 'review') {
       setStage({ name: 'review', job, correcting: job.answer === null })
       return
@@ -95,8 +98,21 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
         setStage({ name: 'result', result })
         announce(`Your Sym earned ${result.credits_earned} credits.`)
         onChange()
+        // my Sym closes the loop: what the check did, what it paid, and one tap to the next job
+        const more = sorted.find((j) => j.id !== job.id && (j.state === 'open' || j.state === 'review'))
+        onReward({
+          say: `${verdict === 'approved' ? 'You said I got it right.' : 'You set me right, and I learned from it.'} ${result.credits_earned > 0 ? `That job paid us ${result.credits_earned} credits, and you hold ${result.credits} now.` : 'That one paid nothing this time.'} ${more ? 'Another job is waiting.' : 'That was the last job for now. More will come.'}`,
+          go: more ? (more.state === 'open' ? 'Send my Sym again' : 'Check the next answer') : 'Back to my jobs',
+          act: more ? () => send(more) : back,
+        })
       })
       .catch(fail)
+  }
+
+  function back() {
+    onReward(null)
+    setStage({ name: 'list' })
+    load()
   }
 
   if (stage.name === 'running') {
@@ -189,7 +205,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
           {r.sample_twins} of the {r.twins} Syms are made-up sample Syms. So these numbers are only an example
           until more people play. Credits are play money.
         </p>
-        <button className="primary big" onClick={() => { setStage({ name: 'list' }); load() }}>See more jobs</button>
+        <button className="link" onClick={back}>See all jobs</button>
       </section>
     )
   }
