@@ -39,8 +39,8 @@ def test_bot_syms_are_one_per_country_labelled_and_alive(client):
     before = client.get("/commons", headers=who).json()
     assert before["bots"] == 193 and before["bot_agencies"] == life.BOT_AGENCIES and before["bot_creators"] == life.BOT_CREATORS
     rng = random.Random(7)
-    done = [life.step(rng) for _ in range(30)]
-    assert {"play", "ask", "survey"} <= set(done)
+    done = [life.step(rng) for _ in range(120)]
+    assert {"play", "ask", "survey", "job", "claim", "build"} <= set(done), set(done)
     after = client.get("/commons", headers=who).json()
     said = " ".join(h["text"] for h in after["happenings"])
     assert "BOT" in said and after["people"] == before["people"]  # a bot is never counted as a person

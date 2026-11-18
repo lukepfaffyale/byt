@@ -14,7 +14,7 @@ import { SymCue } from './SymCue'
 import { still } from './motion'
 import { credits } from './words'
 
-const brief = (words: string) => (words.length > 44 ? `${words.slice(0, 42).trimEnd()}...` : words)
+const brief = (words: string) => (words.length > 30 ? `${words.slice(0, 28).trimEnd()}...` : words)
 
 export function AgencyDesk(props: { announce: (text: string) => void; view: SeatView; onView: (view: SeatView) => void; ask?: string }) {
   const { announce, view, onView, ask } = props

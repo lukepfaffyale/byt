@@ -183,7 +183,8 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     task === 'make' && pack
       ? cards.length === seat.step_cards
         ? { say: `That is all ${seat.step_cards} cards. Send us, and we build ${pack.step}.`, go: 'Build it', act: build }
-        : { say: `${cards.length} of ${seat.step_cards} cards picked for ${pack.step}. Tap ${seat.step_cards - cards.length} more, and we build.` }
+        : { say: `${pack.step} needs ${seat.step_cards} cards, and you have picked ${cards.length}. Tap ${seat.step_cards - cards.length} more in the list below, or let us pick them. You can change our picks.`,
+            go: 'Pick them for me', act: () => setCards([...cards, ...pack.cards.map((c) => c.id).filter((id) => !cards.includes(id))].slice(0, seat.step_cards)) }
       : task === 'skill' && picked && picked.waiting.length > 0
         ? { say: `${picked.waiting[0]} is free to claim. ${seat.claim_fee} credits, and it is yours to build.`, go: 'Send my crew', act: send }
         : seat.packs.length > 0

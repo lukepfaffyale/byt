@@ -728,3 +728,16 @@ to show the economy and its life, with one for each country so the world is bala
 - **Settings changed with the larger crowd.** A new seat starts with 2000 play credits (was 500), since asking every
   Sym now reaches about 200. A 5000 deposit choice was added.
 - **Fixed on the way.** The Everyone feed counted the made-up Syms twice in "asked N Syms". It now counts each Sym once.
+
+## 2026-11-18 (later): what the BOT seats do, and what the game earns today
+
+- The number of BOT seats stays at ten (six agencies, four creators), so the logs stay small.
+- A BOT agency now also keeps one job open for Syms to take (5 places) and backs one skill with the smallest amount.
+  A BOT creator claims one waiting skill step and builds it by picking 4 cards from the pack we wrote, then stops:
+  one step each, so the waiting steps stay open for people. All of it goes through the same routes as a person's seat.
+- A BOT creator's card picks are chance, not judgment. "Good" games are not claimed for them.
+- **What the game (the company) earns today**, from the ledger rules: the crew fee (2 credits each time a seat sends
+  its crew for a creator job or a one-to-one meeting), the claim fee (25 credits for a skill step), and the token fee
+  for agent runs. It takes **no share** of what an agency pays for a question, a job or a skill it backs, and no share
+  of a royalty. The student's business model says it should. That change is a money rule and waits for the
+  student's number.

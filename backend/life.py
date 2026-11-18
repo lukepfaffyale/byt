@@ -1,8 +1,8 @@
 """The life of the BOT Syms. Plain code, no model, no tokens.
 
 The game ships with one BOT Sym for each United Nations country. They exist to show a working economy while few
-people play: some BOT Syms keep playing cards, a few run BOT agencies that ask questions and pay for the answers,
-and a few run BOT creator seats that ask groups what they need. Every move goes through the same routes and the
+people play: some BOT Syms keep playing cards, a few run BOT agencies that ask questions, keep a job open and back
+a skill, and a few run BOT creator seats that ask groups what they need and build one skill step each. Every move goes through the same routes and the
 same rules as a person's move, so the books stay honest: a BOT agency pays real players exactly what a person's
 agency would. The credits a BOT seat spends are play credits from outside the game, like any deposit.
 
@@ -17,7 +17,8 @@ from fastapi import HTTPException
 
 import db
 import market
-from models import BriefIn, CampaignIn
+from content import PACKS
+from models import BriefIn, CampaignIn, PostIn, SponsorIn, StepIn
 
 BOT_AGENCIES = 6  # how many BOT Syms also run an agency
 BOT_CREATORS = 4  # how many also run a creator seat
@@ -55,15 +56,36 @@ def step(rng: random.Random | None = None) -> str:
             pid = rng.choice(agencies)
             if db.wallet_balance(pid, "agency") < LOW:
                 db.deposit(pid, "agency", max(market.DEPOSIT_CHOICES))
+            me = db.player_by_id(pid)
+            seat = main.agency_out(me)
+            # a good agency does more than ask: it keeps one job open for Syms to take, and backs one skill
+            if roll < 0.62 and not any(p.open for p in seat.postings):
+                main.post_job(PostIn(question_id=rng.choice(market.QUESTIONS).id, pay=rng.choice(market.JOB_PAY_CHOICES),
+                                     seats=min(market.JOB_SEATS)), None, me)
+                return "job"
+            if roll < 0.68 and not seat.sponsorships:
+                main.sponsor_skill(SponsorIn(skill=rng.choice(sorted({p.deck for p in PACKS})), budget=min(market.SPONSOR_BUDGETS)), None, me)
+                return "sponsor"
             body = CampaignIn(question_id=rng.choice(market.QUESTIONS).id,
                               audience=rng.choice(["all", "all", "all"] + [a for a, _ in market.AUDIENCES]),
                               pay=rng.choice(market.PAY_CHOICES))
-            main.run_campaign(body, None, db.player_by_id(pid))
+            main.run_campaign(body, None, me)
             return "ask"
         pid = rng.choice(creators)
         if db.wallet_balance(pid, "creator") < LOW:
             db.deposit(pid, "creator", max(market.DEPOSIT_CHOICES))
-        main.run_brief(BriefIn(kind="survey", topic=rng.choice(market.QUESTIONS).id, audience="all"), None, db.player_by_id(pid))
+        me = db.player_by_id(pid)
+        studio = main.creator_out(me)
+        # a BOT creator builds one skill step and no more, so the steps that wait stay open for people
+        if studio.packs:
+            pack = studio.packs[0]
+            main.build_step(StepIn(pack=pack.id, cards=[c.id for c in rng.sample(pack.cards, market.STEP_CARDS)]), None, me)
+            return "build"
+        waiting = [sk for sk in studio.skills if sk.waiting]
+        if not studio.made and waiting and roll < 0.93:
+            main.run_brief(BriefIn(kind="skill", topic=rng.choice(waiting).id), None, me)
+            return "claim"
+        main.run_brief(BriefIn(kind="survey", topic=rng.choice(market.QUESTIONS).id, audience="all"), None, me)
         return "survey"
     except HTTPException:
         return "rest"  # the group was too small, or the seat was short: nothing happened and nothing was charged

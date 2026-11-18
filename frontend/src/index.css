@@ -1240,7 +1240,7 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 .sym-cue-say .line-top { color: var(--amber); display: flex; align-items: center; gap: 8px; }
 .sym-cue-say .line-top::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: live 1.8s ease-in-out infinite; }
 .sym-cue-say p { margin: 0; font-weight: 200; font-size: 1.08rem; line-height: 1.35; min-height: 2.7em; text-shadow: 0 0 14px #02050a, 0 0 4px #02050a; }
-:root .sym-cue .sym-cue-go { position: relative; flex: 0 0 auto; margin-left: auto; }
+:root .sym-cue .sym-cue-go { position: relative; flex: 0 1 auto; margin-left: auto; max-width: min(100%, 21rem); white-space: normal; overflow-wrap: anywhere; line-height: 1.35; text-align: center; }
 @media (max-width: 560px) {
   .sym-cue { padding-left: 18px; padding-top: 92px; }
   :root .sym-cue .sym-cue-go { margin-left: 0; width: 100%; }
