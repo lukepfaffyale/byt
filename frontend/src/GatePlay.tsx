@@ -5,6 +5,8 @@ import { still } from './motion'
 import { Rows } from './Rows'
 import { Failed } from './Retry'
 import { SymLive } from './SymLive'
+import { SymCue } from './SymCue'
+import { credits, stop } from './words'
 
 // what my Sym says after a tap that has no right answer: short, and true of every tap
 const KEPT = ['Kept.', 'Got it.', 'That tells me something.', 'Noted.']
@@ -18,9 +20,12 @@ type Props = {
   announce: (text: string) => void
   onProgress: () => void
   onExit: () => void
+  /** the gate my Sym wants after this one, so one tap goes straight on */
+  nextUp?: { id: string; title: string }
+  onNext?: (gateId: string) => void
 }
 
-export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Props) {
+export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextUp, onNext }: Props) {
   const isBattle = gateKind === 'battle'
   const [gate, setGate] = useState<Gate | null>(null)
   const [cards, setCards] = useState<Card[]>([])
@@ -48,7 +53,14 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
   const leave = useCallback(() => {
     void Promise.allSettled(pending.current).then(onExit)
   }, [onExit])
+  const goNext = useCallback(() => {
+    if (nextUp && onNext) void Promise.allSettled(pending.current).then(() => onNext(nextUp.id))
+  }, [nextUp, onNext])
   const promptRef = useRef<HTMLHeadingElement>(null)
+  // when a gate ends my Sym says what it was worth and offers the next one: one tap and the loop goes on
+  const onward = nextUp && onNext ? goNext : leave
+  const onwardGo = nextUp && onNext ? `Next: ${nextUp.title}` : 'Back to my Journey'
+  const onwardSay = nextUp && onNext ? ` Next up: ${stop(nextUp.title)}` : ''
   const nextRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -217,15 +229,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
         {!battle && !error && <p aria-live="polite">Counting the results.</p>}
         {battle && (
           <>
-            <div className="twin-line">
-              <span className="line-top">My Sym{battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}</span>
-              <p>
-                I guessed {battle.twin_matches} of your {battle.n} picks before you made them. The crowd's guess got {battle.baseline_matches}.{' '}
-                {!learned ? 'I am studying what I got wrong.'
-                  : learned.misses === 0 ? 'I got every one right, so my beliefs held.'
-                    : `I studied my ${learned.misses} wrong ${learned.misses === 1 ? 'guess' : 'guesses'} and made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'} to what I believe about you.`}
-              </p>
-            </div>
+            <SymCue who={`My Sym${battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}`} calm={still()} formed={1} go={onwardGo} act={onward}
+              say={`I guessed ${battle.twin_matches} of your ${battle.n} picks before you made them. The crowd's guess got ${battle.baseline_matches}. ${!learned ? 'I am studying what I got wrong.'
+                : learned.misses === 0 ? 'I got every one right, so my beliefs held.'
+                  : `I studied my ${learned.misses} wrong ${learned.misses === 1 ? 'guess' : 'guesses'} and made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'} to what I believe about you.`}${battle.cert ? ' We earned a certificate.' : ''}${onwardSay}`} />
             <Tabs label="After the battle" value={after} onChange={setAfter}
               tabs={[
                 { id: 'learned', label: 'What I learned', n: learned ? learned.lessons.length : '...' },
@@ -282,7 +289,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
           </>
         )}
         {error && <p className="error" role="alert">{error}</p>}
-        <button className="primary big" onClick={leave} autoFocus>Go back to Journey</button>
+        {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
       </section>
     )
   }
@@ -291,8 +298,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
     return (
       <section aria-labelledby="done-h" className="gate-done">
         <h1 id="done-h" tabIndex={-1}>Gate finished: {gate.title}</h1>
-        <p className="score">+{earned}</p>
-        <p className="lead">points</p>
+        <SymCue calm={still()} formed={1} go={onwardGo} act={onward}
+          say={`That gate is mine to keep: ${cards.length} ${cards.length === 1 ? 'tap' : 'taps'}, and ${earned} points for you.${bonus > 0 ? ` You passed a skill step, so the growth fund paid us ${credits(bonus)} credits.` : ''}${sponsored > 0 ? ` An agency backs this skill, and paid us ${credits(sponsored)} more.` : ''}${cert ? ' And you earned a certificate.' : ''}${onwardSay}`} />
         {cert && (
           <p className="cert">
             <span className="cert-kind">Certificate</span>
@@ -328,9 +335,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
             </dl>
           </>
         )}
-        {bonus > 0 && <p className="fine">You passed a skill step. The growth fund paid your Sym {bonus} credits.</p>}
-        {sponsored > 0 && <p className="fine">An agency backs this skill. It paid your Sym {sponsored} more credits.</p>}
-        <button className="primary big" onClick={leave} autoFocus>Go back to Journey</button>
+        {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
       </section>
     )
   }

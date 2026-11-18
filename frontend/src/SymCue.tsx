@@ -9,8 +9,8 @@ import { TAU, along, body, clamp, ease, seeded, shoot, trace, wander, type V } f
  *
  * Every line is written by code from counts. No model writes them. The path is a drawing, not a record.
  */
-export function SymCue(props: { say: string; more?: string[]; go: string; act: () => void; calm: boolean; formed: number }) {
-  const { say, more = [], go, act, calm, formed } = props
+export function SymCue(props: { say: string; more?: string[]; go?: string; act?: () => void; calm: boolean; formed: number; who?: string; rgb?: string; crew?: boolean }) {
+  const { say, more = [], go = '', act, calm, formed, who = 'My Sym', rgb = '255, 205, 150', crew = false } = props
   const boxRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const goRef = useRef<HTMLButtonElement>(null)
@@ -55,13 +55,13 @@ export function SymCue(props: { say: string; more?: string[]; go: string; act: (
       const b = goRef.current
       const frame = box.getBoundingClientRect()
       const r = b?.getBoundingClientRect()
-      const to: V = r ? [r.left - frame.left - 4, r.top - frame.top + r.height / 2, 0] : [w - 60, h / 2, 0]
+      const to: V = r ? [r.left - frame.left - 4, r.top - frame.top + r.height / 2, 0] : [w - 24, h - 20, 0]
       const grow = ease(clamp((age - 0.5) / 1.5))
       const lit = clamp((now - flare.current) / 700)
       const burst = flare.current > 0 ? 1 - lit : 0
 
       ctx.globalCompositeOperation = 'lighter'
-      trace(ctx, see, path, from, to, grow, 0.5 + 0.4 * burst, '255, 205, 150', t, 1 - clamp(age - 2.4))
+      trace(ctx, see, path, from, to, grow, 0.5 + 0.4 * burst, rgb, t, 1 - clamp(age - 2.4))
       if (grow >= 1 && !calm) {
         // signals run to the button, and faster when a hand is near it
         const pace = eager.current ? 0.9 : 0.34
@@ -75,7 +75,12 @@ export function SymCue(props: { say: string; more?: string[]; go: string; act: (
         }
       }
       const breath = calm ? 1 : 0.88 + 0.12 * Math.sin(t * 1.6)
-      body(ctx, see, from, 6 + 5 * formed + 5 * burst, '255, 205, 150', Math.min(1.3, breath + 0.5 * burst), arms, 1)
+      // a crew is more than one: two smaller bodies keep close to the first
+      if (crew) {
+        body(ctx, see, [from[0] - 20, from[1] - 20, 0], 4.5, rgb, 0.8 * breath, [], 1)
+        body(ctx, see, [from[0] - 16, from[1] + 22, 0], 4, rgb, 0.7 * breath, [], 1)
+      }
+      body(ctx, see, from, 6 + 5 * formed + 5 * burst, rgb, Math.min(1.3, breath + 0.5 * burst), arms, 1)
       ctx.globalCompositeOperation = 'source-over'
       if (!calm) raf = requestAnimationFrame(draw)
     }
@@ -88,23 +93,25 @@ export function SymCue(props: { say: string; more?: string[]; go: string; act: (
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', again)
     }
-  }, [say, go, calm, formed])
+  }, [say, go, calm, formed, rgb, crew])
 
   const near = (on: boolean) => () => {
     eager.current = on
   }
   return (
-    <div ref={boxRef} className="sym-cue" role="region" aria-label="My Sym asks">
+    <div ref={boxRef} className="sym-cue" role="region" aria-label={`${who} asks`}>
       <canvas ref={canvasRef} className="sym-cue-life" aria-hidden="true" />
       <div className="sym-cue-say">
-        <span className="line-top">My Sym</span>
+        <span className="line-top">{who}</span>
         <p><Typed key={line} text={line} calm={calm} /></p>
       </div>
-      <button ref={goRef} className="primary sym-cue-go" onMouseEnter={near(true)} onMouseLeave={near(false)} onFocus={near(true)} onBlur={near(false)}
-        onClick={() => {
-          flare.current = performance.now()
-          act()
-        }}>{go}</button>
+      {go && act && (
+        <button ref={goRef} className="primary sym-cue-go" onMouseEnter={near(true)} onMouseLeave={near(false)} onFocus={near(true)} onBlur={near(false)}
+          onClick={() => {
+            flare.current = performance.now()
+            act()
+          }}>{go}</button>
+      )}
     </div>
   )
 }

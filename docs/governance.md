@@ -653,3 +653,22 @@ While a gate is played, a panel at the top stays in sight and shows the Sym answ
 - The lines are written by code in `GatePlay.tsx` from what just happened: the tap count, whether the answer was right, the Sym's sealed guess or bet and how sure it was. After a tap with no right answer the Sym only says it kept it; it never claims to have expected or guessed a tap it did not guess.
 - The path is the progress: taps made out of taps in this sitting, one light for each. That count is real; the shape of the path is drawn.
 - It still reports progress to a screen reader as a progress bar, and the existing spoken results are unchanged.
+
+## The crew speaks on the agency and creator desks (2026-11-17)
+
+Each desk opens with a "My crew" panel: three small bodies, one line, and one button, using the same component as the player's Sym (`SymCue.tsx`).
+
+- The lines are written by code in `AgencyDesk.tsx` and `CreatorDesk.tsx` from that seat's own counts: credits left, questions asked, jobs posted, Syms that can answer, steps waiting or claimed, passes and credits earned. No model writes them.
+- The button only does what the desk already allowed: pick a question, open a tab, send the crew, or go to the wallet. It adds no new power and shows no new data. The rule that a seat sees totals over at least the minimum number of Syms is unchanged.
+- The crew encourages; it does not pressure. It states prices before any spend, and never spends without the tap that already existed.
+
+## The reward loop is led by the agent (2026-11-17)
+
+The idea the student set: this is the Syms' space; money comes in from agencies, and the agents and the people behind them get value from it. Each role now hears that from its agent, with the next tap attached.
+
+- Player: on the player's pages the Sym first says what came in since the person was last here (count and credits of real wallet lines: pay for answers, jobs, meetings and skill steps; deposits and returned holds are left out), then asks for the next tap. "Last here" is a time kept in this browser's local storage only; it is not sent anywhere and holds no personal data. On a first visit nothing is reported.
+- End of a gate: the Sym says what the gate was worth (taps, points, any credits from the growth fund or a backing agency, a certificate) and its button goes straight to the next gate. These are the same numbers the page showed before as plain lines.
+- Agency results: the crew says how many Syms the last question reached, how many credits went to them and the people behind them, and how many went to the growth fund, then offers the next question.
+- Creator results: the crew says how many times the studio's steps were passed and what they earned, then offers the next thing to build.
+- All lines are written by code from the caller's own rows. No model, no new data, no new route. The agents report and invite; they do not spend, and they add no urgency that is not a real count.
+- Design rule from the student: little scrolling and little typing, except when talking to the agent. The agent's panel sits at the top of each page so the loop needs no scroll.

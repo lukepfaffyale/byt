@@ -1212,7 +1212,7 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 }
 
 /* the name in the corner is the way back to the welcome */
-:root .brand-home { background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit; color: inherit; }
+:root .brand-home { background: var(--light); -webkit-background-clip: text; background-clip: text; border: none; padding: 0; cursor: pointer; font: inherit; font-weight: inherit; letter-spacing: inherit; color: inherit; }
 :root .brand-home:hover, :root .brand-home:focus-visible { text-shadow: 0 0 16px rgba(255, 191, 122, 0.7); }
 
 /* ==========================================================================================================
@@ -1252,3 +1252,8 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 @media (max-width: 560px) { .sym-live { padding-left: 88px; } .sym-live .sym-cue-say p { font-size: 1rem; } }
 /* it stays in sight while the page moves under it, so the Sym is never out of the game */
 .sym-live { position: sticky; top: 8px; z-index: 5; background: linear-gradient(180deg, rgba(14, 12, 12, 0.94), rgba(5, 8, 13, 0.94)); backdrop-filter: blur(6px); }
+
+/* the crew on a seat's desk speaks in that seat's color */
+.sym-cue[aria-label^='My crew'] { margin-top: 4px; }
+/* when a gate ends, the name of the gate is a small label: the Sym's words and the next tap come first */
+:root body.future .gate-done h1 { font-size: 0.78rem; letter-spacing: 0.3em; font-weight: 400; color: var(--teal); margin: 0 0 6px; background: none; -webkit-text-fill-color: currentColor; }

@@ -10,6 +10,9 @@ import { Rows } from './Rows'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
+import { SymCue } from './SymCue'
+import { still } from './motion'
+import { credits } from './words'
 
 export type SeatView = 'desk' | 'results' | 'money'
 type Task = 'survey' | 'test' | 'skill' | 'make' | 'meet'
@@ -163,9 +166,55 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
       .catch(fail)
   }
 
+  // what the crew asks for: one line and one tap. Code writes it from this studio's own counts; no model does.
+  const start = (to: Task, what: string | null) => {
+    onView('desk')
+    setTask(to)
+    setTopic(what)
+    setCards([])
+    setError('')
+  }
+  const open = seat.skills.find((s) => s.waiting.length > 0)
+  const paid = seat.needs.find((n) => !n.built && (seat.skills.find((s) => s.id === n.skill)?.waiting.length ?? 0) > 0)
+  const waiting = seat.skills.reduce((n, s) => n + s.waiting.length, 0)
+  const passes = seat.made.reduce((n, m) => n + m.passes, 0)
+  const earned = seat.made.reduce((n, m) => n + m.earned, 0)
+  const cue: { say: string; go?: string; act?: () => void } =
+    task === 'make' && pack
+      ? cards.length === seat.step_cards
+        ? { say: `That is all ${seat.step_cards} cards. Send us, and we build ${pack.step}.`, go: 'Build it', act: build }
+        : { say: `${cards.length} of ${seat.step_cards} cards picked for ${pack.step}. Tap ${seat.step_cards - cards.length} more, and we build.` }
+      : task === 'skill' && picked && picked.waiting.length > 0
+        ? { say: `${picked.waiting[0]} is free to claim. ${seat.claim_fee} credits, and it is yours to build.`, go: 'Send my crew', act: send }
+        : seat.packs.length > 0
+          ? { say: `You claimed ${seat.packs[0].step}. Tap ${seat.step_cards} cards, and we build it. Each pass pays you ${seat.step_royalty} credits.`, go: 'Build my step', act: () => start('make', seat.packs[0].id) }
+          : seat.budget < seat.claim_fee
+            ? { say: `Your wallet holds ${seat.budget} credits, and a claim costs ${seat.claim_fee}. Add play credits, and we start.`, go: 'My money', act: () => onView('money') }
+            : paid
+              ? { say: `Agencies have put ${paid.left} credits behind ${paid.name}, and no step is built. Claim one, and that pay is yours to earn.`, go: `Claim: ${paid.name}`, act: () => start('skill', paid.skill) }
+              : open
+                ? { say: `${waiting} ${waiting === 1 ? 'step is' : 'steps are'} waiting for a creator. Claim ${open.waiting[0]} in ${open.name}, and we start.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
+                : seat.made.length > 0
+                  ? { say: `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned ${earned} credits. Ask a group what they need next.`, go: 'Ask a group', act: () => start('survey', null) }
+                  : { say: 'Send us out with one question, and we find what Syms need.', go: 'Ask a group', act: () => start('survey', null) }
+
+  // on the results page the crew says what the studio's work has paid, then asks for the next thing to build
+  const paidOut = {
+    say: `${seat.made.length > 0 ? `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned you ${credits(earned)} credits. Each pass paid the player too.` : `We have run ${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} for you. Nothing you built has been passed yet.`} What do we build next?`,
+    go: seat.packs.length > 0 ? 'Build my step' : open ? `Claim: ${open.waiting[0]}` : 'Ask a group',
+    act: () => (seat.packs.length > 0 ? start('make', seat.packs[0].id) : open ? start('skill', open.id) : start('survey', null)),
+  }
+
   return (
     <section aria-labelledby="creator-h" className="mine">
       <h1 id="creator-h" className="sr-only">Creator studio</h1>
+      {view === 'results' && got === 'briefs' && (
+        <SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} />
+      )}
+      {view === 'desk' && (
+        <SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
+          more={['Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`]} />
+      )}
       <Readout value={seat.budget} label={<>credits in my wallet · {seat.name}</>} />
       {error && <p className="error" role="alert">{error}</p>}
 

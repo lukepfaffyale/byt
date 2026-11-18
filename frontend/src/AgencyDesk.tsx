@@ -10,6 +10,11 @@ import { usePager } from './pager'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
+import { SymCue } from './SymCue'
+import { still } from './motion'
+import { credits } from './words'
+
+const brief = (words: string) => (words.length > 44 ? `${words.slice(0, 42).trimEnd()}...` : words)
 
 export function AgencyDesk(props: { announce: (text: string) => void; view: SeatView; onView: (view: SeatView) => void; ask?: string }) {
   const { announce, view, onView, ask } = props
@@ -141,9 +146,46 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   const tier = agency.tiers.find((t) => t.id === depth)
   const again = agency.price_times[audience] ?? 1
   const cost = reach && tier ? Math.ceil((reach[0] * pay * agency.free_share + reach[1] * pay * tier.times) * again) : 0
+  // what the crew asks for: one line and one tap. Code writes it from this agency's own counts; no model does.
+  const everyone = agency.reach.all?.blend ?? null
+  const ready = everyone ? everyone[0] + everyone[1] : 0
+  const fresh = agency.questions.find((q) => !agency.campaigns.some((c) => c.question === q.question)) ?? agency.questions[0]
+  const pickFresh = () => {
+    onView('desk')
+    setMode('ask')
+    if (fresh) setQuestion(fresh.id)
+  }
+  const cue: { say: string; go?: string; act?: () => void } =
+    mode === 'ask' && picked
+      ? reach
+        ? { say: `Good one. ${reach[0] + reach[1]} Syms can answer it, for ${cost} credits. Say the word and we go.`, go: 'Ask the Syms', act: run }
+        : { say: `Too few Syms match that group. Widen it, and we can go.`, go: 'Ask every Sym', act: () => { setAudience('all'); setDepth('blend') } }
+      : mode !== 'ask' ? { say: mode === 'job' ? 'A job goes deeper than a question. Pick one, and each owner checks what their Sym says.' : mode === 'skill' ? 'Back a skill, and players who pass it are paid from your credits.' : 'One Sym, one meeting. Its person said yes to this, and is paid for it.' }
+        : agency.budget <= 0
+          ? { say: 'We are out of credits. Add play credits, and we go again.', go: 'My money', act: () => onView('money') }
+          : agency.campaigns.length === 0
+            ? { say: `We are ready. ${ready} Syms can answer today. Pick a question, and we carry it to them.`, go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
+            : agency.postings.length === 0
+              ? { say: `${agency.campaigns[0].twins} Syms answered your last question. A job goes deeper: each owner checks the answer. Shall we post one?`, go: 'Post a job', act: () => { onView('desk'); setMode('job') } }
+              : { say: `You have asked ${agency.campaigns.length} ${agency.campaigns.length === 1 ? 'question' : 'questions'} and posted ${agency.postings.length} ${agency.postings.length === 1 ? 'job' : 'jobs'}. ${ready} Syms are still here. What do we ask next?`, go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
+
+  // when the crew is back it says where the money went, then asks for the next question
+  const last = agency.campaigns[0]
+  const cameBack = last
+    ? { say: `Your last question reached ${last.twins} Syms. ${credits(last.spent - last.extra)} credits went to them and the people behind them${last.extra > 0 ? `, and ${credits(last.extra)} to the growth fund` : ''}. That is the money this place runs on. What do we ask next?`,
+        go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
+    : { say: 'Nothing has come back yet. Send us out with one question.', go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
+
   return (
     <section aria-labelledby="agency-h" className="mine">
       <h1 id="agency-h" className="sr-only">Agency desk</h1>
+      {view === 'results' && got === 'asks' && (
+        <SymCue who="My crew" crew rgb="255, 191, 122" say={cameBack.say} go={cameBack.go} act={cameBack.act} calm={still()} formed={0.6} />
+      )}
+      {view === 'desk' && (
+        <SymCue who="My crew" crew rgb="255, 191, 122" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
+          more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.']} />
+      )}
       {view !== 'money' && !(view === 'results' && got === 'met') && <Readout value={agency.budget} label={<>credits left · {agency.name}</>} />}
       {error && <p className="error" role="alert">{error}</p>}
 
@@ -195,7 +237,6 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                       <span>Fewer than {agency.min_twins} Syms match here, so no one can be asked. Pick a wider group or a wider tier. One Sym alone costs {agency.meet_price} credits.</span>
                     )}
                   </p>
-                  <button className="primary big" disabled={busy || !reach} onClick={run}>Ask the Syms</button>
                 </>
               )}
             </>
