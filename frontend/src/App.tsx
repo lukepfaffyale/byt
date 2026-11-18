@@ -7,6 +7,7 @@ import { GatePlay } from './GatePlay'
 import { Signal } from './Signal'
 import { TwinTalk } from './TwinTalk'
 import { Backdrop } from './Future'
+import { Failed, RetryZone } from './Retry'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
 import { MoneyView } from './MoneyView'
@@ -502,7 +503,7 @@ export default function App() {
           onLearned={() => { setPulse((n) => n + 1); refresh() }}
           onMove={go} />
       )}
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && <Failed error={error} again={refresh} />}
 
       {screen.name === 'journey' && (
         <section aria-labelledby="journey-h">
@@ -701,7 +702,7 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         </div>
       </div>
       )}
-      <main className={props.alone ? 'solo wide' : dock === 'mini' ? 'solo' : undefined} inert={wall}>{props.children}</main>
+      <main className={props.alone ? 'solo wide' : dock === 'mini' ? 'solo' : undefined} inert={wall}><RetryZone>{props.children}</RetryZone></main>
       <p className="sr-only" aria-live="polite">{props.live}</p>
       <footer inert={wall}>
         <p className="muted">BYT by Symbolon. This is a class project. It uses play money only. It is for adults only.</p>

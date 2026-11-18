@@ -1147,3 +1147,15 @@ main.solo.wide .world-field { aspect-ratio: 16 / 9; max-height: 56vh; }
 .future .pager-at { color: var(--teal); }
 body.future.calm *, body.future.calm *::after, body.future.calm *::before { animation: none !important; }
 :root body.future .stage-foot { background: none; }
+
+/* a line from the Sym with a long button beside it: the button drops under the words instead of crushing them */
+.twin-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.twin-line .line-top { flex: 1 0 100%; }
+.twin-line p { flex: 1 1 15rem; min-width: 0; }
+.twin-line .secondary { flex: 0 1 auto; max-width: 100%; white-space: normal; text-align: center; }
+:root[data-look] body.future .stage-foot { background: transparent !important; border-top-color: rgba(134, 211, 230, 0.18); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* a screen that could not load: the reason, then one button to ask again */
+.failed { display: grid; gap: 12px; justify-items: start; }
+/* when the whole page could not load, say it once: the first message stays, the ones after it are hidden */
+.failed ~ .failed, .failed ~ * .failed { display: none; }

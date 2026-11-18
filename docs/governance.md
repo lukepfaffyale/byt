@@ -617,3 +617,13 @@ Nothing is official, licensed or for sale. The same statement is on the About sc
   there is one hub. The sign-up page still shows the small version of the map.
 - Not yet redrawn in the new way: the brain, the seat spheres, the stand-ins in the Everyone scene and the
   My effect picture.
+
+## The brain, redrawn as forged paths (the student's direction, 2026-11-16)
+
+- The links between the points of the brain are drawn as bowed fibres, not ruled lines, and signals follow them.
+- At the edge of what a Sym has formed, paths reach from a formed point toward one that is not formed yet,
+  search with fine feelers, and draw back. This shows the Sym looking for its next connection. It is drawn from
+  the real state (which points are formed), but the reaching itself is made up by the drawing: no path is added
+  to the Sym until its person taps.
+- The frame with four directions around the brain is much fainter, so it reads as space. Its four names still
+  work as controls.

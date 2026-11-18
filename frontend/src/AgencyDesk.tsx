@@ -9,6 +9,7 @@ import { More } from './More'
 import { usePager } from './pager'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
+import { Failed } from './Retry'
 
 export function AgencyDesk(props: { announce: (text: string) => void; view: SeatView; onView: (view: SeatView) => void; ask?: string }) {
   const { announce, view, onView, ask } = props
@@ -109,7 +110,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     api.closeJob(id).then((a) => done(a, 'The job is closed. Unused credits came back.')).catch(fail)
   }
 
-  if (!agency) return error ? <p className="error" role="alert">{error}</p> : <p className="muted" aria-live="polite">Loading.</p>
+  if (!agency) return error ? <Failed error={error} /> : <p className="muted" aria-live="polite">Loading.</p>
 
   if (!agency.exists) {
     return (

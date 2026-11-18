@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type Axis, type Mirror, type SkillRef, type Told } from './api'
 import { Tabs } from './Deck'
 import { More } from './More'
+import { Failed } from './Retry'
 
 const SIGNS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
 const ANIMALS = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig']
@@ -97,7 +98,7 @@ export function MirrorView({ view, onSkill, open }: { view: 'type' | 'mind' | 'b
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'There was a problem. Please try again.'))
   }
 
-  if (error) return <p className="error" role="alert">{error}</p>
+  if (error) return <Failed error={error} />
   if (!mirror) return <p className="muted" aria-live="polite">Loading.</p>
 
   const told = mirror.told

@@ -5,6 +5,7 @@ import { MirrorView } from './MirrorView'
 import { More } from './More'
 import { Rows, type Row } from './Rows'
 import { SkillsView } from './SkillsView'
+import { Failed } from './Retry'
 
 type TabId = 'type' | 'mind' | 'brain' | 'skills' | 'judgment' | 'beliefs' | 'proof' | 'data'
 const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Think so', 1: 'A guess' }
@@ -127,7 +128,7 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
           { id: 'proof', label: 'Proof', n: data ? data.certs.length : undefined },
           { id: 'data', label: 'Data', n: data ? data.responses.length : undefined },
         ]} />
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && <Failed error={error} />}
 
       <div className="panel">
         {mirrorTab && <MirrorView view={tab} onSkill={toSkill} open={area} />}

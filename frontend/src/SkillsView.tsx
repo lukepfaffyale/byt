@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type SkillTree } from './api'
 import { More } from './More'
+import { Failed } from './Retry'
 
 const STATE_LABEL = { done: 'Done', open: 'Open', locked: 'Locked', soon: 'Coming later' } as const
 
@@ -24,7 +25,7 @@ export function SkillsView({ focus, onPlay }: { focus: string | null; onPlay: (g
     }
   }, [])
 
-  if (error) return <p className="error" role="alert">{error}</p>
+  if (error) return <Failed error={error} />
   if (!trees) return <p className="muted" aria-live="polite">Loading.</p>
 
   return (

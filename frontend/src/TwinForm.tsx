@@ -422,13 +422,13 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         ctx.lineTo(fx[b], fy[b])
       }
       // the frame stays in the background: thin, and a little brighter as the twin forms
-      ctx.strokeStyle = `rgba(223, 230, 242, ${0.09 + 0.09 * c})`
-      ctx.lineWidth = 0.7
+      ctx.strokeStyle = `rgba(223, 230, 242, ${0.035 + 0.03 * c})`
+      ctx.lineWidth = 0.6
       ctx.stroke()
       for (let i = 0; i < 16; i++) {
         ctx.beginPath()
         ctx.arc(fx[i], fy[i], 1 * size, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(223, 230, 242, 0.45)'
+        ctx.fillStyle = 'rgba(223, 230, 242, 0.16)'
         ctx.fill()
       }
       const names = target.current.axes
@@ -439,8 +439,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           ctx.moveTo(fx[0], fy[0])
           ctx.lineTo(fx[1 << d], fy[1 << d])
         }
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)'
-        ctx.lineWidth = 1
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
+        ctx.lineWidth = 0.8
         ctx.stroke()
         ctx.font = `600 ${Math.round(Math.max(9, Math.min(13, radius / 22)))}px system-ui, sans-serif`
         ctx.textAlign = 'center'
@@ -620,6 +620,18 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
       const focusKey = target.current.focus
       const active = hover >= 0 && slice[hover] >= 0 ? slice[hover] : map && focusKey ? map.findIndex((a) => a.key === focusKey) : -1
 
+      // a link is a fibre with a slight bow, never a ruled line. `on` finds the point a share of the way along it,
+      // and leaves the point the fibre bends toward in the last two places
+      const hit = [0, 0, 0, 0]
+      const on = (l: Link, f: number) => {
+        const bow = (((l.a * 31 + l.b * 17) % 13) - 6) / 24
+        const g = 1 - f
+        hit[2] = (px[l.a] + px[l.b]) / 2 - (py[l.b] - py[l.a]) * bow
+        hit[3] = (py[l.a] + py[l.b]) / 2 + (px[l.b] - px[l.a]) * bow
+        hit[0] = g * g * px[l.a] + 2 * g * f * hit[2] + f * f * px[l.b]
+        hit[1] = g * g * py[l.a] + 2 * g * f * hit[3] + f * f * py[l.b]
+      }
+
       // the links: inside one area they carry its color; between two areas they are pale, the cross connections
       ctx.lineWidth = Math.max(0.6, 0.55 * size)
       for (const l of links) {
@@ -630,12 +642,56 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const hot = Math.max(lit[l.a], lit[l.b])
         const col = map && same ? tone[l.a] : CROSS
         const shade = active < 0 ? 1 : slice[l.a] === active || slice[l.b] === active ? 1.5 : 0.2
+        on(l, 0.5)
         ctx.beginPath()
         ctx.moveTo(px[l.a], py[l.a])
-        ctx.lineTo(px[l.b], py[l.b])
+        ctx.quadraticCurveTo(hit[2], hit[3], px[l.b], py[l.b])
         // links inside one area carry the picture; the pale links between areas stay faint so the areas read
         ctx.strokeStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(0.9, (0.1 + 0.5 * near * near) * (0.55 + 0.45 * c) * hot * (map && !same ? 0.45 : 1) * shade)})`
         ctx.stroke()
+      }
+
+      // the edge of what is known: from a point the Sym has formed, a path reaches for one it has not yet,
+      // searches with fine feelers, and draws back. This is the Sym forging its next connection
+      if (!still && map && !clusters) {
+        let seekers = 0
+        for (let k = 0; k < links.length && seekers < 18; k += 3) {
+          const l = links[k]
+          const fromA = lit[l.a] >= 1 && lit[l.b] > 0 && lit[l.b] < 1
+          const fromB = lit[l.b] >= 1 && lit[l.a] > 0 && lit[l.a] < 1
+          if (!fromA && !fromB) continue
+          seekers += 1
+          const beat = (t * 0.2 + k * 0.137) % 1
+          const grow = beat < 0.6 ? beat / 0.6 : beat < 0.78 ? 1 : 1 - (beat - 0.78) / 0.22
+          const reach = 0.94 * grow * grow * (3 - 2 * grow)
+          ctx.beginPath()
+          for (let j = 0; j <= 8; j++) {
+            const f = (reach * j) / 8
+            on(l, fromA ? f : 1 - f)
+            if (j === 0) {
+              ctx.moveTo(hit[0], hit[1])
+            } else {
+              ctx.lineTo(hit[0], hit[1])
+            }
+          }
+          ctx.strokeStyle = 'rgba(255, 226, 170, 0.85)'
+          ctx.lineWidth = Math.max(0.9, 0.9 * size)
+          ctx.stroke()
+          ctx.beginPath()
+          ctx.arc(hit[0], hit[1], 1.7 * size, 0, Math.PI * 2)
+          ctx.fillStyle = 'rgba(255, 246, 224, 0.95)'
+          ctx.fill()
+          ctx.beginPath()
+          for (let j = 0; j < 3; j++) {
+            const turn = j * 2.1 + Math.sin(t * 7 + k + j * 2.3) * 0.9
+            const far = (4 + 3 * Math.sin(t * 11 + j + k)) * size
+            ctx.moveTo(hit[0], hit[1])
+            ctx.lineTo(hit[0] + Math.cos(turn) * far, hit[1] + Math.sin(turn) * far)
+          }
+          ctx.strokeStyle = 'rgba(255, 246, 224, 0.6)'
+          ctx.lineWidth = 0.6
+          ctx.stroke()
+        }
       }
 
       // signals wander the links: each one runs to the next point, lights it, and takes a new way on from there.
@@ -672,12 +728,14 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           if (active >= 0 && slice[a] !== active && slice[b] !== active) continue
           const g = Math.max(0, f - 0.35)
           ctx.beginPath()
-          ctx.moveTo(px[a] + (px[b] - px[a]) * g, py[a] + (py[b] - py[a]) * g)
-          ctx.lineTo(px[a] + (px[b] - px[a]) * f, py[a] + (py[b] - py[a]) * f)
+          on(l, a === l.a ? g : 1 - g)
+          ctx.moveTo(hit[0], hit[1])
+          on(l, a === l.a ? f : 1 - f)
+          ctx.lineTo(hit[0], hit[1])
           ctx.strokeStyle = 'rgba(255, 244, 214, 0.5)'
           ctx.stroke()
           ctx.beginPath()
-          ctx.arc(px[a] + (px[b] - px[a]) * f, py[a] + (py[b] - py[a]) * f, 1.4 * size, 0, Math.PI * 2)
+          ctx.arc(hit[0], hit[1], 1.4 * size, 0, Math.PI * 2)
           ctx.fillStyle = 'rgba(255, 244, 214, 0.95)'
           ctx.fill()
         }

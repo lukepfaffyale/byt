@@ -3,6 +3,7 @@ import { api, type BattleResult, type Board, type Card, type Cert, type Gate, ty
 import { Tabs } from './Deck'
 import { still } from './motion'
 import { Rows } from './Rows'
+import { Failed } from './Retry'
 
 const SURE: [number, string][] = [[3, 'Sure'], [2, 'Think so'], [1, 'A guess']]
 const LESSON: Record<string, string> = { changed: 'Rewrote', new: 'New', dropped: 'Dropped', count: 'Counted', held: 'Held' }
@@ -182,8 +183,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
   if (error && !gate) {
     return (
       <section>
-        <p className="error" role="alert">{error}</p>
-        <button className="primary" onClick={onExit}>Go back to Journey</button>
+        <Failed error={error} />
+        <button className="link" onClick={onExit}>Go back to Journey</button>
       </section>
     )
   }

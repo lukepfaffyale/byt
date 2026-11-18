@@ -3,6 +3,7 @@ import { api, type RpsOut } from './api'
 import { Tabs } from './Deck'
 import { More } from './More'
 import { Rows } from './Rows'
+import { Failed } from './Retry'
 
 const NAME: Record<string, string> = { r: 'Rock', p: 'Paper', s: 'Scissors' }
 const SAID = { you: 'You win this round.', twin: 'My Sym wins this round.', draw: 'A draw.' }
@@ -31,7 +32,7 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
 
   useEffect(() => {
     let cancelled = false
-    api.rps().then((s) => { if (!cancelled) setState(s) })
+    api.rps().then((s) => { if (!cancelled) { setState(s); setError('') } })
       .catch((e: unknown) => { if (!cancelled) setError(e instanceof Error ? e.message : 'There was a problem. Please try again.') })
     return () => {
       cancelled = true
@@ -51,7 +52,9 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
       .finally(() => setBusy(false))
   }
 
-  if (!state) return error ? <p className="error" role="alert">{error}</p> : <p className="muted" aria-live="polite">Loading.</p>
+  if (!state) {
+    return error ? <Failed error={error} /> : <p className="muted" aria-live="polite">Loading.</p>
+  }
   const round = state.round
   const called = state.rounds > 0 ? Math.round((state.twin / state.rounds) * 100) : 0
 

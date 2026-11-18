@@ -6,6 +6,7 @@ import { usePager } from './pager'
 import { CrewStage } from './CrewStage'
 import { jobScript } from './crewScripts'
 import { More } from './More'
+import { Failed } from './Retry'
 
 type Stage = { name: 'list' } | { name: 'running'; job: Job; done?: Job } | { name: 'review'; job: Job; correcting: boolean } | { name: 'result'; result: JobResult }
 
@@ -197,7 +198,7 @@ export function Work({ announce, onChange }: { announce: (text: string) => void;
     <section aria-labelledby="work-h" className="mine">
       <h1 id="work-h" className="sr-only">Work</h1>
       {tab === 'jobs' && <Readout value={credits} label={<>credits your Sym holds{certified ? ' · it has a certificate, so it earns double' : ''}</>} />}
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && (jobs ? <p className="error" role="alert">{error}</p> : <Failed error={error} />)}
       {!jobs && !error && <p className="muted" aria-live="polite">Loading.</p>}
       <Tabs label="Work" value={tab} onChange={setTab}
         tabs={[

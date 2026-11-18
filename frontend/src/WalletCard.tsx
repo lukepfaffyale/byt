@@ -4,6 +4,7 @@ import { Tabs, type Tab } from './Deck'
 import { ago, usePager } from './pager'
 import { More } from './More'
 import { Readout } from './Readout'
+import { Failed } from './Retry'
 
 const SEAT_NAME = { player: 'my wallet', agency: 'my agency wallet', creator: 'my creator wallet' }
 
@@ -84,7 +85,7 @@ export function WalletCard(props: { seat: 'player' | 'agency' | 'creator'; onCha
       .map((m, i) => ({ id: `${m.at}${m.kind}${i}`, top: ago(m.at), label: m.label, n: signed(m.credits), detail: m.detail }))
   const { rows: page, pager } = usePager(rows, 5, `${seat}|${shown}`)
 
-  if (error && !all) return <p className="error" role="alert">{error}</p>
+  if (error && !all) return <Failed error={error} />
   if (!all) return <p className="muted" aria-live="polite">Loading.</p>
   if (!wallet) return null
   const moved = wallet.came_in + wallet.went_out

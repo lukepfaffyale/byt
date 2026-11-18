@@ -9,6 +9,7 @@ import { usePager } from './pager'
 import { Rows } from './Rows'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
+import { Failed } from './Retry'
 
 export type SeatView = 'desk' | 'results' | 'money'
 type Task = 'survey' | 'test' | 'skill' | 'make' | 'meet'
@@ -75,7 +76,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     }
   }, [])
 
-  if (!seat) return error ? <p className="error" role="alert">{error}</p> : <p className="muted" aria-live="polite">Loading.</p>
+  if (!seat) return error ? <Failed error={error} /> : <p className="muted" aria-live="polite">Loading.</p>
 
   if (!seat.exists) {
     return (

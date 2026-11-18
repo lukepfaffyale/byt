@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type Money, type PlanOption } from './api'
 import { Tabs } from './Deck'
 import { WalletCard, type Extra } from './WalletCard'
+import { Failed } from './Retry'
 
 type Seat = 'player' | 'agency' | 'creator'
 const SEAT_TAB: Record<Seat, string> = { player: 'My Sym', agency: 'My agency', creator: 'My studio' }
@@ -34,7 +35,7 @@ export function MoneyView(props: { onChange?: () => void; onMove?: (id: string) 
     }
   }, [])
 
-  if (error) return <p className="error" role="alert">{error}</p>
+  if (error) return <Failed error={error} />
   if (!money) return <p className="muted" aria-live="polite">Loading.</p>
 
   const streams: [string, number][] = [['work', money.work_credits], ['questions from agencies', money.data_credits], ['skill steps', money.growth_credits]]
