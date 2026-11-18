@@ -31,13 +31,15 @@ def test_a_survey_and_a_test_return_counts_only_and_every_credit_is_in_the_ledge
     survey = out["briefs"][0]
     assert survey["twins"] >= market.MIN_TWINS and sum(r["count"] for r in survey["split"]) == survey["twins"]
     assert survey["spent"] == survey["twins"] * market.CREATOR_PAY + market.CREW_FEE
-    assert out["budget"] == 1000 - survey["spent"]
+    assert out["budget"] == 1000 - survey["spent"] - db.share_of(survey["spent"] - market.CREW_FEE)
     out = client.post("/creator/briefs", json={"kind": "test", "topic": "logic", "audience": "all"}, headers=auth).json()
     test = out["briefs"][0]
     assert [r["label"] for r in test["split"]] == [label for _, label in market.BANDS]
     assert sum(r["count"] for r in test["split"]) == test["twins"]
     assert "BOT Sym" not in str(out["briefs"])  # counts, never a twin
-    assert db.wallet_balance(None, "platform") == platform + 2 * market.CREW_FEE
+    # the game earned its two crew fees, and its share on what the two jobs paid out
+    shares = db.share_of(survey["spent"] - market.CREW_FEE) + db.share_of(test["spent"] - market.CREW_FEE)
+    assert db.wallet_balance(None, "platform") == round(platform + 2 * market.CREW_FEE + shares, 2)
     assert db.ledger_total() == 0
 
 

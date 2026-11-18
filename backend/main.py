@@ -38,6 +38,9 @@ import work as work_rules  # noqa: E402
 from content import (CARDS, GATE_BY_ID, GATES, ONTOLOGY, PACK_BY_STEP, PACKS, RIGHT_KINDS, SKILL_BY_ID, TOPICS,  # noqa: E402
                      TOPIC_AREA, TOPIC_NAME, Card, Gate, score, topic_id)
 from models import (  # noqa: E402
+    FeedbackIn,
+    FeedbackOut,
+    FeedbackRow,
     Activity,
     ActivityItem,
     Agency,
@@ -802,7 +805,7 @@ def campaign_out(c) -> CampaignOut:
 
 def agency_out(player: Player) -> Agency:
     org = db.org_for(player.id, "agency")
-    base = Agency(exists=org is not None, min_twins=market.MIN_TWINS, pay_choices=list(market.PAY_CHOICES))
+    base = Agency(exists=org is not None, platform_share=db.PLATFORM_SHARE, min_twins=market.MIN_TWINS, pay_choices=list(market.PAY_CHOICES))
     if org is None:
         return base
     base.name, base.budget = org.name, db.wallet_balance(player.id, "agency")
@@ -952,7 +955,7 @@ def creator_out(player: Player) -> CreatorSeat:
                                          cards=[PackCard(id=cid, prompt=CARDS[cid].prompt, options=[o.label for o in CARDS[cid].options])
                                                 for cid in pack.card_ids]))
     return CreatorSeat(
-        exists=True, name=org.name, budget=db.wallet_balance(player.id, "creator"), min_twins=market.MIN_TWINS,
+        exists=True, name=org.name, budget=db.wallet_balance(player.id, "creator"), min_twins=market.MIN_TWINS, platform_share=db.PLATFORM_SHARE,
         pay=market.CREATOR_PAY, crew_fee=market.CREW_FEE, claim_fee=market.CLAIM_FEE,
         step_cards=market.STEP_CARDS, step_royalty=market.STEP_ROYALTY, packs=packs_out, made=made_out,
         needs=needs_out(made), wanted=demand(made)[0], emerging=demand(made)[1], reach_earned=db.came_in(player.id, "creator", "reach"),
@@ -1917,6 +1920,8 @@ MOVE_LABEL = {
     ("samples", False): ("Paid to BOT Syms", "Made-up Syms, one for each country, that keep the game moving. No person is behind them."),
     ("fund_in", False): ("To the growth fund", "The extra for asking a group again, and the part held back from owners who were away"),
     ("fee", False): ("Token fee", "What your agents cost to run"),
+    ("share", False): ("Platform share", "10 percent on top of what you spent. This is how the game earns."),
+    ("share_back", True): ("Platform share returned", "Held credits came back unused, so their share came back too"),
     ("royalty", True): ("One to one royalty", "A seat paid to meet your Sym. It saw your nickname and your Sym's answers."),
     ("royalty", False): ("Royalty to a Sym's owner", "To meet one Sym one to one"),
     ("crew", False): ("Crew fee", "What your crew costs to send out. It goes to the game."),
@@ -1978,6 +1983,25 @@ EXPORT_NOTE = (
     "certificates given here, and anything the AI wrote belong to BYT. They are not in this file. You can read "
     "all of them on the My Sym screen, and you can delete them."
 )
+
+
+@app.post("/feedback", response_model=FeedbackOut)
+def give_feedback(body: FeedbackIn, request: Request, player: Player = Depends(current_player)) -> FeedbackOut:
+    """One tap: was this moment worth it. The caller must be signed in, but who they are is not written down."""
+    rate_limit(request, "feedback", 30)
+    db.add_feedback(body.seat, body.moment, body.answer)
+    return feedback_out()
+
+
+@app.get("/feedback", response_model=FeedbackOut)
+def read_feedback(player: Player = Depends(current_player)) -> FeedbackOut:
+    """What people said, as counts for each seat and moment."""
+    return feedback_out()
+
+
+def feedback_out() -> FeedbackOut:
+    rows = [FeedbackRow(seat=seat, moment=moment, **counts) for (seat, moment), counts in sorted(db.feedback_counts().items())]
+    return FeedbackOut(rows=rows, total=sum(r.yes + r.unsure + r.no for r in rows))
 
 
 @app.get("/export/battles.csv", response_class=PlainTextResponse)

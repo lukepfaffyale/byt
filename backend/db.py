@@ -20,7 +20,7 @@ from sqlalchemy import Engine, func, inspect, text
 from sqlmodel import Session, SQLModel, create_engine, delete, select, update
 
 from content import CARDS
-from models import (ActiveDay, Battle, Brief, Campaign, Cert, Consent, AutoWork, Earning, Fact, Lesson, Throw, MadeStep, Meet, OneToOne, Posting, Sponsorship, Org, Player, Prediction,
+from models import (ActiveDay, Battle, Feedback, Brief, Campaign, Cert, Consent, AutoWork, Earning, Fact, Lesson, Throw, MadeStep, Meet, OneToOne, Posting, Sponsorship, Org, Player, Prediction,
                     Response, SelfReport, Tendency, Transfer, Usage, Wallet, Work, utcnow)
 
 LOCAL_DB = Path(__file__).resolve().parent / "data" / "local.db"
@@ -30,6 +30,9 @@ SAMPLE_PREFIX = "sample-"  # sample players carry this in place of a token hash,
 # tastes are random and are not drawn from, or a claim about, the people of that country.
 COUNTRIES: list[str] = json.loads((Path(__file__).resolve().parent / "data" / "countries.json").read_text(encoding="utf-8"))["countries"]
 SAMPLE_COUNT = len(COUNTRIES)
+# The game's own income: on top of everything a seat spends (a question, a job, a meeting, a skill it backs), the
+# seat pays this share to the game. Credits held for a job or a skill and later returned get their share back.
+PLATFORM_SHARE = 0.10
 BOT_FULL = 12  # the first bots have answered every card: the steady crowd that a battle is scored against
 _engine: Engine | None = None
 
@@ -315,6 +318,22 @@ def battles_for(player_id: str) -> list[Battle]:
         return list(s.exec(select(Battle).where(Battle.player_id == player_id).order_by(Battle.created_at)))
 
 
+def add_feedback(seat: str, moment: str, answer: str) -> None:
+    """One tap of product feedback. No player id is written."""
+    with Session(get_engine()) as s:
+        s.add(Feedback(seat=seat, moment=moment, answer=answer, day=utcnow().date().isoformat()))
+        s.commit()
+
+
+def feedback_counts() -> dict[tuple[str, str], dict[str, int]]:
+    with Session(get_engine()) as s:
+        out: dict[tuple[str, str], dict[str, int]] = {}
+        for seat, moment, answer, n in s.exec(select(Feedback.seat, Feedback.moment, Feedback.answer, func.count())
+                                              .group_by(Feedback.seat, Feedback.moment, Feedback.answer)).all():
+            out.setdefault((seat, moment), {})[answer] = int(n)
+        return out
+
+
 def finished_battles() -> list[Battle]:
     with Session(get_engine()) as s:
         return list(s.exec(select(Battle).where(Battle.twin_matches != None).order_by(Battle.created_at)))  # noqa: E711
@@ -538,7 +557,9 @@ def review_work(player_id: str, job_id: str, verdict: str, final_choice: str, cr
             each = reach_milli // len(makers) if makers else 0
             for maker_id in makers:
                 _move(s, held, _wallet(s, maker_id, "creator"), each, "reach", job_id)
-            _move(s, held, _wallet(s, payer_id, "agency"), (hold - credits) * MILLI - each * len(makers), "release", job_id)
+            back = (hold - credits) * MILLI - each * len(makers)
+            _move(s, held, _wallet(s, payer_id, "agency"), back, "release", job_id)
+            _share_back(s, _wallet(s, payer_id, "agency"), back, job_id)
         s.commit()
         s.refresh(row)
         return row
@@ -581,11 +602,12 @@ def post_job(org_id: str, question_id: str, pay: int, seats: int, hold: int) -> 
         if org is None:
             return None
         purse = _wallet(s, org.owner_id, org.kind)
-        if _balance(s, purse.id) < hold * seats * MILLI:
+        if _balance(s, purse.id) < hold * seats * MILLI * (1 + PLATFORM_SHARE):
             return None
         row = Posting(id=f"post-{secrets.token_hex(8)}", org_id=org_id, question_id=question_id, pay=pay, seats=seats, hold=hold)
         s.add(row)
         _move(s, purse, _wallet(s, None, "escrow"), hold * seats * MILLI, "hold", row.id)
+        _share(s, purse, hold * seats * MILLI, row.id)
         s.commit()
         s.refresh(row)
         return row
@@ -602,7 +624,9 @@ def close_posting(org_id: str, job_id: str) -> bool:
         taken = int(s.exec(select(func.count()).select_from(Work).where(Work.job_id == job_id)).one())
         row.closed = True
         s.add(row)
-        _move(s, _wallet(s, None, "escrow"), _wallet(s, org.owner_id, org.kind), max(0, row.seats - taken) * row.hold * MILLI, "release", job_id)
+        back = max(0, row.seats - taken) * row.hold * MILLI
+        _move(s, _wallet(s, None, "escrow"), _wallet(s, org.owner_id, org.kind), back, "release", job_id)
+        _share_back(s, _wallet(s, org.owner_id, org.kind), back, job_id)
         s.commit()
         return True
 
@@ -819,7 +843,7 @@ def run_campaign(org_id: str, question_id: str, kind: str, audience: str, pay: i
         if org is None:
             return None
         purse = _wallet(s, org.owner_id, org.kind)
-        if _balance(s, purse.id) < spent * MILLI:
+        if _balance(s, purse.id) < spent * MILLI * (1 + PLATFORM_SHARE):
             return None
         camp = Campaign(org_id=org_id, question_id=question_id, audience=audience, pay=pay, twins=twins,
                         sample_twins=sample_twins, spent=spent, counts=counts_json, depth=depth)
@@ -834,6 +858,7 @@ def run_campaign(org_id: str, question_id: str, kind: str, audience: str, pay: i
         free_milli = round((sample_twins * pay if to_samples is None else to_samples) * MILLI)
         _move(s, purse, _wallet(s, None, "samples"), free_milli, "samples", camp.id)
         _move(s, purse, _wallet(s, None, "fund"), spent * MILLI - free_milli - sum(c for _, c in paid) * MILLI, "fund_in", camp.id)
+        _share(s, purse, round(spent * MILLI), camp.id)
         s.commit()
         s.refresh(camp)
         return camp
@@ -856,7 +881,7 @@ def run_brief(org_id: str, kind: str, topic: str, audience: str, twins: int, sam
         if org is None:
             return None
         purse = _wallet(s, org.owner_id, org.kind)
-        if _balance(s, purse.id) < spent * MILLI:
+        if _balance(s, purse.id) < spent * MILLI + round((spent - fee) * MILLI * PLATFORM_SHARE):
             return None
         row = Brief(org_id=org_id, kind=kind, topic=topic, audience=audience, twins=twins, sample_twins=sample_twins,
                     spent=spent, counts=counts_json)
@@ -867,6 +892,7 @@ def run_brief(org_id: str, kind: str, topic: str, audience: str, twins: int, sam
             _move(s, purse, _wallet(s, pid, "player"), credits * MILLI, "data", row.id)
         _move(s, purse, _wallet(s, None, "samples"), to_samples * MILLI, "samples", row.id)
         _move(s, purse, _wallet(s, None, "platform"), fee * MILLI, fee_kind, row.id)
+        _share(s, purse, (spent - fee) * MILLI, row.id)  # the fee is already the game's; the share is on the rest
         s.commit()
         s.refresh(row)
         return row
@@ -914,7 +940,7 @@ def meet_twin(org_id: str, player_id: str, sample: bool, price: int, fee: int) -
         if org is None:
             return None
         purse = _wallet(s, org.owner_id, org.kind)
-        if _balance(s, purse.id) < (price + fee) * MILLI:
+        if _balance(s, purse.id) < (price + fee) * MILLI + round(price * MILLI * PLATFORM_SHARE):
             return None
         row = Meet(org_id=org_id, player_id=player_id, paid=price)
         s.add(row)
@@ -925,6 +951,7 @@ def meet_twin(org_id: str, player_id: str, sample: bool, price: int, fee: int) -
             s.add(Earning(player_id=player_id, campaign_id=row.id, kind="One to one", credits=price))
             _move(s, purse, _wallet(s, player_id, "player"), price * MILLI, "royalty", row.id)
         _move(s, purse, _wallet(s, None, "platform"), fee * MILLI, "crew", row.id)
+        _share(s, purse, price * MILLI, row.id)
         s.commit()
         s.refresh(row)
         return row
@@ -967,6 +994,21 @@ def _wallet(s: Session, owner_id: str | None, kind: str) -> Wallet:
 def _move(s: Session, src: Wallet, dst: Wallet, amount: int, kind: str, ref: str | None) -> None:
     if amount > 0:
         s.add(Transfer(from_wallet=src.id, to_wallet=dst.id, amount=amount, kind=kind, ref=ref))
+
+
+def share_of(credits: float) -> float:
+    """The platform share on a spend, in credits."""
+    return round(credits * MILLI * PLATFORM_SHARE) / MILLI
+
+
+def _share(s: Session, purse: Wallet, milli: int, ref: str | None) -> None:
+    """The seat pays the game its share of a spend."""
+    _move(s, purse, _wallet(s, None, "platform"), round(milli * PLATFORM_SHARE), "share", ref)
+
+
+def _share_back(s: Session, purse: Wallet, milli: int, ref: str | None) -> None:
+    """Held credits came back unused, so the share paid on them comes back too."""
+    _move(s, _wallet(s, None, "platform"), purse, round(milli * PLATFORM_SHARE), "share_back", ref)
 
 
 def _balance(s: Session, wallet_id: str) -> int:
@@ -1105,12 +1147,13 @@ def sponsor(org_id: str, skill: str, budget: int) -> Sponsorship | None:
         if org is None:
             return None
         purse = _wallet(s, org.owner_id, org.kind)
-        if _balance(s, purse.id) < budget * MILLI:
+        if _balance(s, purse.id) < budget * MILLI * (1 + PLATFORM_SHARE):
             return None
         row = Sponsorship(org_id=org_id, skill=skill, budget=budget)
         s.add(row)
         s.flush()
         _move(s, purse, _wallet(s, None, "escrow"), budget * MILLI, "hold", row.id)
+        _share(s, purse, budget * MILLI, row.id)
         s.commit()
         s.refresh(row)
         return row
@@ -1148,6 +1191,7 @@ def pay_sponsor(skill: str, player_id: str, maker_id: str | None, to_player: int
             if row.budget - row.spent < to_player + to_maker:
                 row.closed = True
                 _move(s, held, _wallet(s, org.owner_id, org.kind), (row.budget - row.spent) * MILLI, "release", row.id)
+                _share_back(s, _wallet(s, org.owner_id, org.kind), (row.budget - row.spent) * MILLI, row.id)
             s.add(row)
             s.commit()
             return to_player

@@ -109,6 +109,16 @@ class Throw(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
 
 
+class Feedback(SQLModel, table=True):
+    """One tap of product feedback: was a moment worth it. It holds no player id, so it cannot be tied to a person."""
+    __tablename__ = "feedback"
+    id: str = Field(default_factory=new_id, primary_key=True)
+    seat: str  # player, agency or creator
+    moment: str  # gate, job, question or studio
+    answer: str  # yes, unsure or no
+    day: str  # the date only, so a tap cannot be matched to a moment in someone's history
+
+
 class Lesson(SQLModel, table=True):
     """One thing a Sym changed after a battle: a belief it rewrote, added or dropped, or a pick it now counts.
     This is the record that the Sym learned from being wrong."""
@@ -1013,6 +1023,26 @@ class Meets(Strict):
     met: list[MetTwin] = []
 
 
+class FeedbackIn(Strict):
+    seat: Literal["player", "agency", "creator"]
+    moment: Literal["gate", "job", "question", "studio"]
+    answer: Literal["yes", "unsure", "no"]
+
+
+class FeedbackRow(Strict):
+    seat: str
+    moment: str
+    yes: int = 0
+    unsure: int = 0
+    no: int = 0
+
+
+class FeedbackOut(Strict):
+    """What people said about the game, as counts. No one's answer can be read from it."""
+    rows: list[FeedbackRow] = []
+    total: int = 0
+
+
 class OrgCreate(Strict):
     name: str = PField(min_length=2, max_length=30, pattern=r"^[A-Za-z0-9][A-Za-z0-9 _\-&]*$")
 
@@ -1022,6 +1052,7 @@ class CreatorSeat(Strict):
     name: str = ""
     budget: float = 0
     min_twins: int = 0
+    platform_share: float = 0  # the game adds this share on top of what the seat spends
     pay: int = 0
     crew_fee: int = 0
     claim_fee: int = 0
@@ -1085,6 +1116,7 @@ class Agency(Strict):
     name: str = ""
     budget: float = 0
     min_twins: int
+    platform_share: float = 0  # the game adds this share on top of what the seat spends
     pay_choices: list[int]
     price_times: dict[str, float] = {}  # for each group: how many times the first price the next ask costs
     tiers: list[TierOut] = []

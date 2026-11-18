@@ -116,5 +116,7 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | DELETE /me | | Deleted | all player tables |
 | GET /usage/summary | | UsageSummary (tokens and cost per run, per agent) | usage |
 | GET /export/battles.csv | | CSV, no PII | battles |
+| POST /feedback | FeedbackIn (seat, moment, answer; all from fixed lists) | FeedbackOut (counts) | feedback |
+| GET /feedback | | FeedbackOut (counts for each seat and moment) | feedback |
 
 The player token travels in the `Authorization` header, never in a URL.

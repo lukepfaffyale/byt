@@ -11,6 +11,7 @@ import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
 import { SymCue } from './SymCue'
+import { Worth } from './Worth'
 import { still } from './motion'
 import { credits } from './words'
 
@@ -210,11 +211,14 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     <section aria-labelledby="creator-h" className="mine">
       <h1 id="creator-h" className="sr-only">Creator studio</h1>
       {view === 'results' && got === 'briefs' && (
-        <SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} />
+        <>
+          <SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} />
+          {seat.briefs.length > 0 && <Worth seat="creator" moment="studio" who="My crew" />}
+        </>
       )}
       {view === 'desk' && (
         <SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
-          more={['Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`]} />
+          more={['Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} />
       )}
       <Readout value={seat.budget} label={<>credits in my wallet · {seat.name}</>} />
       {error && <p className="error" role="alert">{error}</p>}

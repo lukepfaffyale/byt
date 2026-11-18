@@ -18,7 +18,7 @@ def test_an_agency_posts_a_job_and_a_checked_answer_is_paid_from_its_wallet(clie
     hold = round(20 * work.CERT_MULTIPLIER * (1 + market.REACH_SHARE))  # double pay, plus the share for creators
     seat = client.post("/agency/jobs", json=good, headers=auth).json()
     post = seat["postings"][0]
-    assert seat["budget"] == market.START_BUDGET - 5 * hold and post["held"] == 5 * hold and post["taken"] == 0 and post["open"]
+    assert seat["budget"] == market.START_BUDGET - 5 * hold - db.share_of(5 * hold) and post["held"] == 5 * hold and post["taken"] == 0 and post["open"]
 
     # the agency's own twin does not see the job and cannot take it
     play_gates(client, auth, 1)
@@ -42,14 +42,14 @@ def test_an_agency_posts_a_job_and_a_checked_answer_is_paid_from_its_wallet(clie
 
     # the agency paid, and the part of that seat's hold that was not needed came back
     seat = client.get("/agency", headers=auth).json()
-    assert seat["budget"] == market.START_BUDGET - 5 * hold + (hold - earned)
+    assert seat["budget"] == market.START_BUDGET - 4 * hold - earned - db.share_of(4 * hold + earned)  # the share on what came back, came back
     post = seat["postings"][0]
     assert post["taken"] == 1 and post["checked"] == 1 and sum(r["count"] for r in post["split"]) == 1 + post["sample_twins"]
     assert "Worker Bee" not in str(seat)  # counts, never who
 
     # closing gives back the four places no twin took, and the job leaves the list
     seat = client.post(f"/agency/jobs/{post['id']}/close", headers=auth).json()
-    assert seat["budget"] == market.START_BUDGET - earned and seat["postings"][0]["open"] is False
+    assert seat["budget"] == market.START_BUDGET - earned - db.share_of(earned) and seat["postings"][0]["open"] is False
     assert client.post(f"/agency/jobs/{post['id']}/close", headers=auth).status_code == 404
     late = signup(client, "Late One")
     play_gates(client, late, 1)

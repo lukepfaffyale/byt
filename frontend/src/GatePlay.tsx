@@ -6,6 +6,7 @@ import { Rows } from './Rows'
 import { Failed } from './Retry'
 import { SymLive } from './SymLive'
 import { SymCue } from './SymCue'
+import { Worth } from './Worth'
 import { credits, stop } from './words'
 
 // what my Sym says after a tap that has no right answer: short, and true of every tap
@@ -289,6 +290,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           </>
         )}
         {error && <p className="error" role="alert">{error}</p>}
+        <Worth seat="player" moment="gate" />
         {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
       </section>
     )
@@ -335,6 +337,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
             </dl>
           </>
         )}
+        <Worth seat="player" moment="gate" />
         {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
       </section>
     )

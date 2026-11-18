@@ -36,7 +36,7 @@ def test_members_only_reaches_no_free_twin_and_pays_each_member_double(client, a
     out = client.post("/agency/campaigns", headers=auth, json=body).json()
     camp = out["campaigns"][0]
     assert camp["sample_twins"] == 0 and camp["twins"] == member_n and camp["depth"] == "Members only"
-    assert camp["spent"] == member_n * 4 and out["budget"] == market.START_BUDGET - member_n * 4
+    assert camp["spent"] == member_n * 4 and out["budget"] == market.START_BUDGET - member_n * 4 - db.share_of(member_n * 4)
     assert client.get("/jobs", headers=members[0]).json()["data_credits"] == before + 4
     assert db.ledger_total() == 0
 

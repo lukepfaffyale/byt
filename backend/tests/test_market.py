@@ -47,7 +47,7 @@ def test_campaign_pays_only_opted_in_twins_and_returns_counts_only(client, auth)
     camp = agency["campaigns"][0]
     free = len(db.free_twin_ids())  # the made-up twins, and the twins of players who left in other tests
     assert camp["sample_twins"] == free and camp["twins"] == free + 1  # the opted-in player, not the quiet one
-    assert camp["spent"] == free + 2 and agency["budget"] == market.START_BUDGET - free - 2  # a free twin costs half
+    assert camp["spent"] == free + 2 and agency["budget"] == market.START_BUDGET - free - 2 - db.share_of(free + 2)  # the game takes its share on top; a free twin costs half
     assert sum(r["count"] for r in camp["split"]) == free + 1
     assert set(camp) == {"kind", "question", "audience", "depth", "pay", "twins", "sample_twins", "spent", "extra", "split", "created_at"}
 
@@ -86,7 +86,7 @@ def test_money_shows_where_credits_came_from_and_the_agency_spend(client, auth):
     assert {line["source"] for line in m["lines"]} == {"Work", "Data"}
     spent = m["agency"]["spent"]  # other tests leave opted-in players behind, so the crowd is 13 or more
     free = len(db.free_twin_ids())  # a free twin costs half the price; a member costs the price
-    assert spent == free + (m["agency"]["twins_asked"] - free) * 2 >= 14 and m["agency"]["left"] == market.START_BUDGET - spent
+    assert spent == free + (m["agency"]["twins_asked"] - free) * 2 >= 14 and m["agency"]["left"] == market.START_BUDGET - spent - db.share_of(spent)
     assert m["agency"]["lines"][0]["credits"] == -spent
     other = signup(client, "Stranger")
     fresh = client.get("/me/money", headers=other).json()

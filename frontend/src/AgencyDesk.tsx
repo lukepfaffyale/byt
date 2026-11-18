@@ -11,6 +11,7 @@ import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
 import { SymCue } from './SymCue'
+import { Worth } from './Worth'
 import { still } from './motion'
 import { credits } from './words'
 
@@ -158,7 +159,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   const cue: { say: string; go?: string; act?: () => void } =
     mode === 'ask' && picked
       ? reach
-        ? { say: `Good one. ${reach[0] + reach[1]} Syms can answer it, for ${cost} credits. Say the word and we go.`, go: 'Ask the Syms', act: run }
+        ? { say: `Good one. ${reach[0] + reach[1]} Syms can answer it, for ${cost} credits, plus ${Math.round(cost * agency.platform_share * 100) / 100} for the game. Say the word and we go.`, go: 'Ask the Syms', act: run }
         : { say: `Too few Syms match that group. Widen it, and we can go.`, go: 'Ask every Sym', act: () => { setAudience('all'); setDepth('blend') } }
       : mode !== 'ask' ? { say: mode === 'job' ? 'A job goes deeper than a question. Pick one, and each owner checks what their Sym says.' : mode === 'skill' ? 'Back a skill, and players who pass it are paid from your credits.' : 'One Sym, one meeting. Its person said yes to this, and is paid for it.' }
         : agency.budget <= 0
@@ -180,11 +181,14 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     <section aria-labelledby="agency-h" className="mine">
       <h1 id="agency-h" className="sr-only">Agency desk</h1>
       {view === 'results' && got === 'asks' && (
-        <SymCue who="My crew" crew rgb="255, 191, 122" say={cameBack.say} go={cameBack.go} act={cameBack.act} calm={still()} formed={0.6} />
+        <>
+          <SymCue who="My crew" crew rgb="255, 191, 122" say={cameBack.say} go={cameBack.go} act={cameBack.act} calm={still()} formed={0.6} />
+          {last && <Worth seat="agency" moment="question" who="My crew" />}
+        </>
       )}
       {view === 'desk' && (
         <SymCue who="My crew" crew rgb="255, 191, 122" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
-          more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.']} />
+          more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.', 'The game adds 10 percent on top of what you spend. That is how it earns.']} />
       )}
       {view !== 'money' && !(view === 'results' && got === 'met') && <Readout value={agency.budget} label={<>credits left · {agency.name}</>} />}
       {error && <p className="error" role="alert">{error}</p>}

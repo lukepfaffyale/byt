@@ -1257,3 +1257,6 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 .sym-cue[aria-label^='My crew'] { margin-top: 4px; }
 /* when a gate ends, the name of the gate is a small label: the Sym's words and the next tap come first */
 :root body.future .gate-done h1 { font-size: 0.78rem; letter-spacing: 0.3em; font-weight: 400; color: var(--teal); margin: 0 0 6px; background: none; -webkit-text-fill-color: currentColor; }
+
+/* one tap of product feedback, asked by the Sym or the crew after a moment */
+.worth { margin: 10px 0 4px; }

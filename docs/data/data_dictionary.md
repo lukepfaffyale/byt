@@ -381,3 +381,16 @@ The usage row for the run holds token counts only.
 |---|---|---|---|---|---|
 | tendencies.scope | text (trait or topic) | Profiler agent | no | Whether a belief holds for the person anywhere or inside its topic only, so a reaction to one situation is not read as a trait | With the player |
 
+## feedback (one tap of product feedback; added 2026-11-18)
+
+| Column | Type | Source | PII | Purpose | Retention |
+|---|---|---|---|---|---|
+| id | text, random | server | no | Row key | Life of the project |
+| seat | text: player, agency or creator | the tap | no | Which seat the person was in | Same |
+| moment | text: gate, job, question or studio | the screen | no | Which moment was judged | Same |
+| answer | text: yes, unsure or no | the tap | no | Was the moment worth it | Same |
+| day | text, date only | server | no | To see change over days; no time of day, so a tap cannot be matched to one person's history | Same |
+
+There is no player id, token, nickname or free text in this table, by design. A person must be signed in to tap (so
+only players answer and the rate limit works), but who tapped is not written. Because no row belongs to a person,
+there is nothing of theirs to show back or delete; the totals are shown to everyone on the About page.

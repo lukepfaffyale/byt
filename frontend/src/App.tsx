@@ -9,6 +9,7 @@ import { TwinTalk } from './TwinTalk'
 import { Backdrop } from './Future'
 import { Arrival } from './Arrival'
 import { SymCue } from './SymCue'
+import { WorthTotals } from './Worth'
 import { credits, stop } from './words'
 import { Failed, RetryZone } from './Retry'
 import { CommonsView } from './Commons'
@@ -752,6 +753,7 @@ export default function App() {
           <h1 id="about-h">About BYT</h1>
           <p>Beat your Sym. Benefit from your Sym. Be everywhere.</p>
           <p>Color comes from other people. A Sym on its own is black and white.</p>
+          <WorthTotals />
           <p>
             BYT is the game. Symbolon is the name for who makes it. Long ago in Greece, two people who made a promise
             broke a small token in two, and each kept a half. Later, one half proved who you were by fitting the

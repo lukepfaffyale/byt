@@ -28,8 +28,9 @@ def test_a_seat_has_its_own_wallet_and_a_question_moves_credits_out_of_it(client
     assert asked.status_code == 200
     spent = asked.json()["campaigns"][0]["spent"]
     after = {w["seat"]: w for w in client.get("/wallets", headers=auth).json()["wallets"]}
-    assert after["agency"]["balance"] == market.START_BUDGET - spent
-    assert after["agency"]["went_out"] == spent
+    assert after["agency"]["balance"] == market.START_BUDGET - spent - db.share_of(spent)
+    assert after["agency"]["went_out"] == spent + db.share_of(spent)
+    assert any(line["label"] == "Platform share" for line in after["agency"]["lines"])
     assert asked.json()["budget"] == after["agency"]["balance"]
     # the lines say what the other side is, never who: no nickname, no wallet id, no player id
     text = str(after)

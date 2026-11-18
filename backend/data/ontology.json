@@ -64,6 +64,7 @@
     {"id": "cert_max_luck", "value": 0.02, "where": "verifier.MAX_LUCK", "why": "A skill certificate needs a score that guessing would reach at most 2 times in 100. A certificate is earned by play only: no payment, seat or sponsor can issue one"},
     {"id": "agency_min_twins", "value": 5, "where": "market.MIN_TWINS", "why": "Below this a total could point to one person"},
     {"id": "agency_min_picks", "value": 8, "where": "market.MIN_PICKS", "why": "A Sym that knows too little is not asked"},
+    {"id": "platform_share", "value": 0.1, "where": "db.PLATFORM_SHARE", "why": "The game earns 10 percent on top of everything a seat spends"},
     {"id": "agency_start_credits", "value": 2000, "where": "market.START_BUDGET", "why": "Play money to try the seat"},
     {"id": "usd_per_credit", "value": 0.01, "where": "market.USD_PER_CREDIT", "why": "One play credit stands for one cent when a wallet pays a token fee"},
     {"id": "deposit_choices", "value": [100, 500, 1000, 5000], "where": "market.DEPOSIT_CHOICES", "why": "Fixed amounts, so no typed amount"},

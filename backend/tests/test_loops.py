@@ -23,7 +23,7 @@ def test_an_agency_backs_a_skill_a_creator_builds_it_and_both_loops_pay(client, 
     for bad in ({"skill": "reading-people", "budget": 7}, {"skill": "voice", "budget": 50}, {"skill": "reading-people", "budget": 50, "note": "typed"}):
         assert client.post("/agency/sponsor", json=bad, headers=boss).status_code == 422
     seat = client.post("/agency/sponsor", json={"skill": "reading-people", "budget": 50}, headers=boss).json()
-    assert seat["budget"] == market.START_BUDGET - 50 and seat["sponsorships"][0]["open"]
+    assert seat["budget"] == market.START_BUDGET - 50 - db.share_of(50) and seat["sponsorships"][0]["open"]
     need = next(n for n in client.get("/creator", headers=auth).json()["needs"] if n["skill"] == "reading-people")
     assert need["left"] == 50 and need["built"] is True and "People First" not in str(client.get("/creator", headers=auth).json())
 
@@ -50,7 +50,8 @@ def test_an_agency_backs_a_skill_a_creator_builds_it_and_both_loops_pay(client, 
     # the creator earns a royalty because the agency reached a player who passed its step
     assert client.get("/creator", headers=auth).json()["reach_earned"] == round(earned * market.REACH_SHARE, 2)
     after = client.get("/agency", headers=boss).json()
-    assert after["budget"] == round(market.START_BUDGET - 50 - 5 * hold + hold - earned - earned * market.REACH_SHARE, 2)
+    assert after["budget"] == round(market.START_BUDGET - 50 - 5 * hold + hold - earned - earned * market.REACH_SHARE
+                                    - db.share_of(50) - db.share_of(4 * hold + earned + earned * market.REACH_SHARE), 2)
     # the twin was wrong and its human taught it: that is an insight certificate
     assert result["insight"]["kind"] == "insight" and result["insight"]["level"] == "My Sym learned this from me"
     assert client.post(f"/agency/jobs/{post['id']}/close", headers=boss).status_code == 200  # leave no open job behind

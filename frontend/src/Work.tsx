@@ -7,6 +7,7 @@ import { CrewStage } from './CrewStage'
 import { jobScript } from './crewScripts'
 import { More } from './More'
 import { Failed } from './Retry'
+import { Worth } from './Worth'
 
 type Stage = { name: 'list' } | { name: 'running'; job: Job; done?: Job } | { name: 'review'; job: Job; correcting: boolean } | { name: 'result'; result: JobResult }
 
@@ -205,6 +206,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
           {r.sample_twins} of the {r.twins} Syms are BOT Syms: made up, with no person behind them. So these numbers are only an example
           until more people play. Credits are play money.
         </p>
+        <Worth seat="player" moment="job" />
         <button className="link" onClick={back}>See all jobs</button>
       </section>
     )

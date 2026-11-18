@@ -741,3 +741,26 @@ to show the economy and its life, with one for each country so the world is bala
   for agent runs. It takes **no share** of what an agency pays for a question, a job or a skill it backs, and no share
   of a royalty. The student's business model says it should. That change is a money rule and waits for the
   student's number.
+
+## 2026-11-18: the platform share, and product feedback by one tap
+
+**The platform share (the student's number: 10 percent).** This is how the company behind the game earns.
+- On top of everything a seat spends, the seat pays the game 10 percent: a question to a group, a creator's crew job
+  (on what it pays out, not on the crew fee, which is already the game's), a one-to-one meeting, the credits held
+  for a posted job, and the credits put behind a skill.
+- Credits held for a job or a skill that come back unused bring their share back with them. So the game keeps
+  10 percent of what was really paid out, including the royalties an agency pays to creators through a job.
+- What a player or a creator receives does not change. The share is paid by the seat that buys, not taken from people.
+- It is its own line in My Money ("Platform share", "Platform share returned") and its own move in the ledger
+  (`share`, `share_back`). The crew says the share before a question is sent. The rule number is in the ontology
+  (`platform_share`) and a test keeps it equal to the code.
+- Not covered: royalties paid from the growth fund (no seat is spending). Credits are play money.
+
+**Product feedback.** So that we can learn what to build for players, agencies and creators.
+- After four moments (a gate finished, a job checked, an agency's question answered, a creator's studio job) the Sym
+  or the crew asks one thing: "Was that worth it?" with three taps: yes, not sure, no. Nothing is typed.
+- The row holds the seat, the moment, the answer and the day. It holds no player id, token, nickname or text, so it
+  is not personal data and cannot be tied to a person. The cost of that choice: one person can answer more than once
+  (a rate limit slows this), and a person cannot see or delete "their" taps, because none are theirs.
+- The totals are shown to every signed-in person on the About page. BOT Syms never answer.
+- Limits: it is a small, self-chosen sample and says nothing about why. It is a signal for where to look, not proof.

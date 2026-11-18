@@ -138,7 +138,7 @@ export type Brief = {
   split: { label: string; count: number; share: number }[]; note: string; created_at: string
 }
 export type Creator = {
-  exists: boolean; name: string; budget: number; min_twins: number; pay: number; crew_fee: number; claim_fee: number
+  exists: boolean; name: string; budget: number; min_twins: number; platform_share: number; pay: number; crew_fee: number; claim_fee: number
   questions: { id: string; kind: string; question: string; options: Option[] }[]
   audiences: { id: string; name: string }[]
   skills: { id: string; name: string; about: string; waiting: string[]; claimed: string[]; later: string[] }[]
@@ -190,7 +190,7 @@ export type Agency = {
   exists: boolean
   name: string
   budget: number
-  min_twins: number
+  min_twins: number; platform_share: number
   pay_choices: number[]
   price_times: Record<string, number>
   tiers: { id: string; name: string; times: number }[]
@@ -218,6 +218,7 @@ export type Money = {
   agency: { name: string; started_with: number; spent: number; left: number; twins_asked: number; lines: MoneyLine[] } | null
 }
 export type Vertical = { key: string; name: string; color: string; level: number; earned: number; picks: number; steps_done: number; steps_total: number; count: number | null; hidden: boolean; dots: number[]; details: string[]; next_gate?: string | null; next_title?: string | null }
+export type FeedbackOut = { rows: { seat: string; moment: string; yes: number; unsure: number; no: number }[]; total: number }
 export type WalletLine = { at: string; kind: string; label: string; detail: string; credits: number }
 export type WalletOut = { seat: 'player' | 'agency' | 'creator'; balance: number; came_in: number; went_out: number; lines: WalletLine[] }
 export type Wallets = { wallets: WalletOut[]; deposit_choices: number[]; note: string }
@@ -379,6 +380,9 @@ export const api = {
   jobs: () => call<JobsOut>('GET', '/jobs'),
   money: () => call<Money>('GET', '/me/money'),
   wallets: () => call<Wallets>('GET', '/wallets'),
+  feedback: (seat: 'player' | 'agency' | 'creator', moment: 'gate' | 'job' | 'question' | 'studio', answer: 'yes' | 'unsure' | 'no') =>
+    call<FeedbackOut>('POST', '/feedback', { seat, moment, answer }),
+  feedbackTotals: () => call<FeedbackOut>('GET', '/feedback'),
   deposit: (seat: 'player' | 'agency' | 'creator', credits: number) => call<Wallets>('POST', '/wallets/deposit', { seat, credits }),
   sphere: () => call<Sphere>('GET', '/me/sphere'),
   seatSphere: (seat: 'agency' | 'creator') => call<Sphere>('GET', `/seats/${seat}/sphere`),
