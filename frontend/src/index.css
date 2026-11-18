@@ -1245,3 +1245,10 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
   .sym-cue { padding-left: 18px; padding-top: 92px; }
   :root .sym-cue .sym-cue-go { margin-left: 0; width: 100%; }
 }
+
+/* My Sym inside a gate: the same living body, with the progress through the gate drawn as its path */
+.sym-live { position: relative; padding: 12px 18px 44px 96px; min-height: 112px; margin-bottom: 10px; background: linear-gradient(180deg, rgba(255, 191, 122, 0.05), rgba(134, 211, 230, 0.012)); box-shadow: inset 0 0 44px rgba(255, 191, 122, 0.04); }
+.sym-live .sym-cue-say p { min-height: 1.4em; font-size: 1.15rem; }
+@media (max-width: 560px) { .sym-live { padding-left: 88px; } .sym-live .sym-cue-say p { font-size: 1rem; } }
+/* it stays in sight while the page moves under it, so the Sym is never out of the game */
+.sym-live { position: sticky; top: 8px; z-index: 5; background: linear-gradient(180deg, rgba(14, 12, 12, 0.94), rgba(5, 8, 13, 0.94)); backdrop-filter: blur(6px); }

@@ -4,6 +4,10 @@ import { Tabs } from './Deck'
 import { still } from './motion'
 import { Rows } from './Rows'
 import { Failed } from './Retry'
+import { SymLive } from './SymLive'
+
+// what my Sym says after a tap that has no right answer: short, and true of every tap
+const KEPT = ['Kept.', 'Got it.', 'That tells me something.', 'Noted.']
 
 const SURE: [number, string][] = [[3, 'Sure'], [2, 'Think so'], [1, 'A guess']]
 const LESSON: Record<string, string> = { changed: 'Rewrote', new: 'New', dropped: 'Dropped', count: 'Counted', held: 'Held' }
@@ -37,6 +41,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
   const [record, setRecord] = useState<ResponseOut['sure_record']>([])
   const [after, setAfter] = useState<'learned' | 'areas' | 'score'>('learned')
   const [busy, setBusy] = useState(false)
+  const [streak, setStreak] = useState(0)
   const [error, setError] = useState('')
   const shownAt = useRef(0)
   const pending = useRef<Promise<void>[]>([])
@@ -144,6 +149,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
           setCalls((c) => ({ right: c.right + (called ? 1 : 0), total: c.total + 1 }))
         }
         if (out.sure_record.length > 0) setRecord(out.sure_record)
+        if (!isBattle) setStreak((n) => (out.is_correct ? n + 1 : 0))
         if (out.cert) setCert(out.cert)
         if (out.cert_right !== null) setMark({ need: out.cert_need, right: out.cert_right })
         if (out.bonus > 0) setBonus(out.bonus)
@@ -329,26 +335,34 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
     )
   }
 
+  // my Sym answers each tap in its own voice. Code writes the line from what just happened; no model does.
+  const left = cards.length - index
+  const bet = (yes: boolean) => (yes ? 'get it' : 'miss it')
+  const symSay = result && isBattle
+    ? (result.twin_match ? 'I guessed that. I know you here.' : 'I was wrong about you. I will study this one after the battle.')
+    : result
+      ? result.twin_bet !== null
+        ? `I bet you would ${bet(result.twin_bet)}, ${result.twin_bet_sure} percent sure. ${result.twin_bet === result.is_correct ? 'I called it.' : 'I was wrong about you.'}`
+        : result.is_correct ? (streak >= 3 ? `That is ${streak} right in a row. Keep going.` : 'That was right. Keep going.') : 'Not that one. The next one is yours.'
+      : isBattle
+        ? `My guess is sealed. ${sure[card.id] === undefined ? 'Tap, and we see if I know you.' : sure[card.id] >= 75 ? `I am ${sure[card.id]} percent sure. I think I know you here.`
+          : sure[card.id] >= 45 ? `I am ${sure[card.id]} percent sure.` : `I am only ${sure[card.id]} percent sure. This one is hard for me.`}`
+        : card.board?.game === 'pattern' && card.bet_sure !== null
+          ? `I have bet on whether you get this one. I am ${card.bet_sure} percent sure of my bet.`
+          : index === 0 ? 'I am watching. Tap, and I learn.'
+            : left === 1 ? 'One more tap, and this gate is mine to keep.'
+              : index === Math.ceil(cards.length / 2) ? `Half way. ${left} more and I know you better.`
+                : `${KEPT[index % KEPT.length]} ${left} to go.`
+
   return (
     <section aria-labelledby="card-h" className="play">
-      <p className="muted">
-        {gate.title} · card {index + 1} of {cards.length}
-        {isBattle && twinKind === 'offline' ? ' · practice Sym' : ''}
-      </p>
-      <div className="progress" role="progressbar" aria-label="Your progress in this gate" aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={index}>
-        <span style={{ width: `${(index / cards.length) * 100}%` }} />
-      </div>
+      <SymLive say={symSay} done={index + (result ? 1 : 0)} total={cards.length} pulse={index * 2 + (result ? 1 : 0)} calm={still()}
+        label={`My Sym · ${gate.title} · ${index + 1} of ${cards.length}${isBattle && twinKind === 'offline' ? ' · practice Sym, no AI' : ''}`} />
       {isBattle && (
         <p className="duel" aria-label={`So far: your Sym ${tally.twin}, the crowd's guess ${tally.crowd}, of ${tally.done} cards.`}>
           <span><strong>{tally.twin}</strong> my Sym</span>
           <span><strong>{tally.crowd}</strong> the crowd</span>
           <span><strong>{tally.done}</strong> played</span>
-        </p>
-      )}
-      {isBattle && !result && (
-        <p className="twin-says">
-          My guess is sealed. {sure[card.id] === undefined ? '' : sure[card.id] >= 75 ? `I am ${sure[card.id]} percent sure. I think I know you here.`
-            : sure[card.id] >= 45 ? `I am ${sure[card.id]} percent sure.` : `I am only ${sure[card.id]} percent sure. This one is hard for me.`}
         </p>
       )}
       <h1 id="card-h" ref={promptRef} tabIndex={-1} className="prompt">{card.prompt}</h1>
@@ -382,9 +396,6 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
           <button ref={nextRef} className="primary" onClick={advance}>Next</button>
         </div>
       )}
-      {card.board?.game === 'pattern' && !result && card.bet_sure !== null && (
-        <p className="twin-says">My Sym has bet on whether you get this one. It is {card.bet_sure} percent sure of its bet.</p>
-      )}
       {card.board && chosen && !result && (
         <div className="chips sure" role="group" aria-label="How sure are you?">
           <span className="chips-label">
@@ -401,12 +412,6 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit }: Pro
             <strong>{card.board?.game === 'reflex' ? (result.is_correct ? '✓ In time.' : '✗ Not this time.') : card.board?.game === 'pattern' ? (result.is_correct ? '✓ You saw the pattern.' : '✗ The dot went somewhere else.') : card.board ? (result.is_correct ? '✓ That move wins.' : '✗ That move does not win.') : result.is_correct ? '✓ That is right.' : '✗ That is not right.'}</strong> +{result.points_earned} points
             {result.others_total !== null && result.others_total > 0 && `. ${result.others_right} of ${result.others_total} other players got this one.`}
           </p>
-          {result.twin_bet !== null && (
-            <p className="leaned">
-              <span className="line-top">My Sym's bet</span>
-              I bet you would {result.twin_bet ? 'get it' : 'miss it'}, {result.twin_bet_sure} percent sure. {result.twin_bet === result.is_correct ? 'I called it.' : 'I was wrong about you.'}
-            </p>
-          )}
           <button ref={nextRef} className="primary" onClick={advance}>Next</button>
         </div>
       )}

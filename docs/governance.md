@@ -645,3 +645,11 @@ On the player's pages a panel shows the Sym as a living body that speaks in the 
 - The Sym encourages; it does not pressure. No countdowns, no loss warnings, no made-up urgency, and no claim that is not a real count.
 - The path from the body to the button, and the signals on it, are drawn. They record nothing.
 - With motion off the panel is still and the full line shows at once. A screen reader gets the whole line as text.
+
+## My Sym inside a gate (2026-11-17)
+
+While a gate is played, a panel at the top stays in sight and shows the Sym answering each tap (`frontend/src/SymLive.tsx`). It replaces the plain progress bar.
+
+- The lines are written by code in `GatePlay.tsx` from what just happened: the tap count, whether the answer was right, the Sym's sealed guess or bet and how sure it was. After a tap with no right answer the Sym only says it kept it; it never claims to have expected or guessed a tap it did not guess.
+- The path is the progress: taps made out of taps in this sitting, one light for each. That count is real; the shape of the path is drawn.
+- It still reports progress to a screen reader as a progress bar, and the existing spoken results are unchanged.
