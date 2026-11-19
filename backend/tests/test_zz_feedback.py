@@ -26,3 +26,18 @@ def test_a_creator_sees_where_syms_stand_on_each_skill_as_counts(client):
     assert all({"strong", "partway", "new"} <= set(s) for s in seat["skills"])
     assert any(s["strong"] + s["partway"] + s["new"] >= 5 for s in seat["skills"])
     assert "BOT Sym " not in str(seat["skills"])  # counts, never a Sym
+
+
+def test_the_price_a_creator_is_told_is_the_price_charged(client):
+    import db
+    import market
+
+    who = signup(client, "PriceChecker")
+    client.post("/creator", json={"name": "Price Studio"}, headers=who)
+    client.post("/wallets/deposit", json={"seat": "creator", "credits": 1000}, headers=who)
+    seat = client.get("/creator", headers=who).json()
+    n = seat["reach"]["all"]
+    assert n >= market.MIN_TWINS and all(v == 0 or v >= market.MIN_TWINS for v in seat["reach"].values())
+    told = n * seat["pay"] + db.share_of(n * seat["pay"]) + seat["crew_fee"]
+    after = client.post("/creator/briefs", json={"kind": "survey", "topic": market.QUESTIONS[0].id, "audience": "all"}, headers=who).json()
+    assert round(seat["budget"] - after["budget"], 2) == round(told, 2)

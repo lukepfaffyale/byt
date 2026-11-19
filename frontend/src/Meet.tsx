@@ -29,10 +29,10 @@ export function MeetPanel(props: { seat: Seat; meets: Meets; group?: string; onM
           <button key={a.id} className="chip" aria-pressed={group === a.id} onClick={() => setGroup(a.id)}>{a.name}</button>
         ))}
       </div>
+      <button className="primary big" disabled={busy} onClick={go}>Meet one Sym for {cost} credits</button>
       <p className="fine">
-        Meeting one Sym costs {cost} credits. {meets.price} go to the Sym's owner as a royalty. {meets.fee} go to the game for your crew.
+        {meets.price} go to the Sym's owner as a royalty. {meets.fee} go to the game for your crew. The game adds its 10 percent share on top.
       </p>
-      <button className="primary big" disabled={busy} onClick={go}>Meet one Sym</button>
       <More>
         Asking a group is cheap and shows totals only. Meeting one Sym costs much more, because you see who it is:
         its nickname and its answers. You can only meet a Sym whose owner said yes. You pick the group and the game

@@ -407,9 +407,9 @@ export default function App() {
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
   const told = flash ? flash
     : cue && landed.n > 0
-    ? { ...cue, say: `Just now, pay landed: ${credits(landed.sum)} credits${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} I earned it while you were here, and it is yours. ${cue.say}` }
+    ? { ...cue, say: `Just now I earned you ${credits(landed.sum)} credits${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} ${cue.say}` }
     : cue && gain.n > 0
-    ? { ...cue, say: `Since you were last here, ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'} came in: ${credits(gain.sum)} credits. Others paid, I did the work, and it is yours. ${cue.say}` }
+    ? { ...cue, say: `While you were away I earned you ${credits(gain.sum)} credits in ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'}. ${cue.say}` }
     : cue
   const cueMore = me ? [
     me.gates_done === 0 ? 'I am waiting right here. The first gate is short, and you only tap.' : `Every tap you give me, I keep. You have finished ${me.gates_done} of ${me.gates_total} gates with me.`,
@@ -621,7 +621,7 @@ export default function App() {
       {error && <Failed error={error} again={refresh} />}
 
       <div id="cue-slot" className="cue-slot" />
-      <Pages key={`${screen.name}-${seat?.name ?? 'player'}`} calm={!motion}>
+      <Pages at={`${screen.name}-${'view' in screen ? screen.view : ''}-${'gateId' in screen ? screen.gateId : ''}-${seat?.name ?? 'player'}`} calm={!motion}>
       {screen.name === 'journey' && (
         <section aria-labelledby="journey-h">
           <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>

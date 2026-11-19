@@ -10,9 +10,24 @@ type Moment = 'gate' | 'job' | 'question' | 'studio'
  */
 export function Worth({ seat, moment, who = 'My Sym' }: { seat: Seat; moment: Moment; who?: string }) {
   const [said, setSaid] = useState(false)
+  // asked once in a visit for each seat and moment, so it never nags
+  const mark = `byt.worth.${seat}.${moment}`
+  const [asked] = useState(() => {
+    try {
+      return window.sessionStorage.getItem(mark) === '1'
+    } catch {
+      return false
+    }
+  })
+  if (asked && !said) return null
   if (said) return <p className="worth fine" role="status">{who}: Thank you. That goes to the people who make BYT, with no name on it.</p>
   const tap = (answer: 'yes' | 'unsure' | 'no') => () => {
     setSaid(true)
+    try {
+      window.sessionStorage.setItem(mark, '1')
+    } catch {
+      // private mode: it will simply be asked again
+    }
     api.feedback(seat, moment, answer).catch(() => undefined)
   }
   return (

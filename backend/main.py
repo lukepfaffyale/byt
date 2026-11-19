@@ -944,7 +944,9 @@ def creator_out(player: Player) -> CreatorSeat:
     made = made_cards()
     income = db.maker_income(player.id)
     skills_out, packs_out, made_out = [], [], []
-    crowd = [t for t in market_twins() if market.matches(t, "all")]
+    everyone = market_twins()
+    crowd = [t for t in everyone if market.matches(t, "all")]
+    sizes = {a: sum(1 for t in everyone if market.matches(t, a)) for a, _ in market.AUDIENCES}
     for skill in ONTOLOGY["skills"]:
         names = [st["name"] for st in skill["steps"] if not st.get("gate")]
         skills_out.append(SkillPick(
@@ -971,6 +973,7 @@ def creator_out(player: Player) -> CreatorSeat:
         step_cards=market.STEP_CARDS, step_royalty=market.STEP_ROYALTY, packs=packs_out, made=made_out,
         needs=needs_out(made), wanted=demand(made)[0], emerging=demand(made)[1], reach_earned=db.came_in(player.id, "creator", "reach"),
         sponsor_earned=db.came_in(player.id, "creator", "sponsor"),
+        reach={a: n if n >= market.MIN_TWINS else 0 for a, n in sizes.items()},
         questions=[QuestionOut(id=q.id, kind=q.kind, question=q.question,
                                options=[OptionOut(id=o.id, label=o.label) for o in q.card.options]) for q in market.QUESTIONS],
         audiences=[AudienceOut(id=a, name=n) for a, n in market.AUDIENCES], skills=skills_out,

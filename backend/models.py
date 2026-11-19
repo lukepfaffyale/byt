@@ -1069,6 +1069,7 @@ class CreatorSeat(Strict):
     emerging: list[PairOut] = []
     reach_earned: float = 0  # from agencies whose jobs were answered by twins whose owners passed this creator's steps
     sponsor_earned: float = 0  # from agencies that sponsor a skill this creator built a step for
+    reach: dict[str, int] = {}  # how many Syms each group holds now, so the price is said before a send; 0 when the group is too small
     questions: list["QuestionOut"] = []
     audiences: list["AudienceOut"] = []
     skills: list[SkillPick] = []

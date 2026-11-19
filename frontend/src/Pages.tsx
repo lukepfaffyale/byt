@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * The pages are made by the browser's own column layout, so every screen gets them without being rewritten.
  * Moving by keyboard into something on a later page turns to that page by itself.
  */
-export function Pages({ children, calm }: { children: React.ReactNode; calm: boolean }) {
+export function Pages({ children, calm, at }: { children: React.ReactNode; calm: boolean; at: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState(0)
   const [count, setCount] = useState(1)
@@ -16,7 +16,7 @@ export function Pages({ children, calm }: { children: React.ReactNode; calm: boo
   const measure = useCallback(() => {
     const el = ref.current
     if (!el) return
-    const step = el.clientWidth + GAP
+    const step = el.clientWidth - PAD + GAP
     const paged = getComputedStyle(el).overflowX === 'hidden'
     // count the pages that hold something a person can see: a hidden label must not add an empty page
     let far = 0
@@ -58,10 +58,15 @@ export function Pages({ children, calm }: { children: React.ReactNode; calm: boo
     }
   }, [measure])
 
+  // a new screen or view starts on its first page. The screen itself is not rebuilt, so what a person picked stays.
+  useEffect(() => {
+    ref.current?.scrollTo({ left: 0 })
+  }, [at])
+
   const turn = (to: number) => {
     const el = ref.current
     if (!el) return
-    el.scrollTo({ left: to * (el.clientWidth + GAP), behavior: calm ? 'auto' : 'smooth' })
+    el.scrollTo({ left: to * (el.clientWidth - PAD + GAP), behavior: calm ? 'auto' : 'smooth' })
   }
 
   return (
@@ -79,3 +84,4 @@ export function Pages({ children, calm }: { children: React.ReactNode; calm: boo
 }
 
 const GAP = 48 // the space between two pages, the same number as in the style sheet
+const PAD = 8 // the flow's own side padding (4 px each side), which is not part of a page's width

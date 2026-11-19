@@ -1279,13 +1279,23 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
   :root main { align-self: stretch; display: flex; flex-direction: column; min-height: 0; padding: 8px 0; overflow: hidden; }
   :root main > * { flex: none; }
   :root main > .pages { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  .pages-flow { flex: 1 1 auto; min-height: 0; columns: 1; column-gap: 48px; column-fill: auto; overflow: hidden; }
+  .pages-flow { flex: 1 1 auto; min-height: 0; columns: 1; column-gap: 48px; column-fill: auto; overflow: hidden; padding: 0 4px; margin: 0 -4px; }
   .pages-flow :is(li, p, h1, h2, h3, button, canvas, table, figure, dl, .sym-cue, .sym-live, .readout, .cert, .said, .seg, .bins, .worth, .twin-line, .flow, .card, .board, .option) { break-inside: avoid; }
   .pages-flow :is(h1, h2, h3, .chips-label, .section-label) { break-after: avoid; }
+  .pages-flow li:has(.bars, .split-bars) { break-inside: auto; }
   .pages-nav { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 0; border-top: 1px solid var(--hair); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
   :root .pages-nav button { min-width: 7rem; padding: 8px 14px; }
+  :root .pages-nav button:disabled { background: none; color: var(--muted); border-color: var(--hair); box-shadow: none; opacity: 0.45; }
   /* less chrome above a screen, so more of the screen fits on its first page */
-  :root .sym-cue-say p { min-height: 0; font-size: 1rem; }
+  /* my Sym's panel keeps one height whatever it says, so the pages under it do not jump */
+  :root main > .sym-cue .sym-cue-say p, :root .cue-slot .sym-cue-say p { min-height: 0; height: 5.4em; font-size: 1rem; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+  :root .cue-slot .sym-cue { margin: 0 0 6px; padding-top: 12px; padding-bottom: 12px; }
+  /* a player's credits are in the bar at the top already */
+  :root main:has(#cue-slot:empty) .pages-flow .readout { display: none; }
+  /* Everyone is one picture with its read-outs beside it: it fits the page as a whole */
+  :root .pages-flow .commons-top { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  :root .pages-flow .commons-grid .world-field { max-height: calc(100dvh - 21rem); }
+  :root .pages-flow .commons { margin: 0; }
   :root main > .talk { margin: 0; }
   /* the menu already says which screen this is, and my Sym says the rest: the page title and the line under it
      stay for a screen reader and leave the room to what a person can tap */
@@ -1293,11 +1303,26 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0; border: 0;
   }
   :root .pages-flow h2 { margin-top: 0; }
+  /* while a person is answering one thing (checking a job), the page is given to that one thing */
+  :root main:has(.pages-flow > section.play) > :is(.talk, .signal, .sym-cue) { display: none; }
+  :root .pages-flow .said { padding-top: 10px; padding-bottom: 10px; margin-bottom: 10px; }
+  :root .pages-flow section.play .primary.big { min-height: 48px; padding-top: 10px; padding-bottom: 10px; }
+  /* a row with a button: the words on the left, the button on the right, so three rows fit where one did */
+  :root .pages-flow .lines li:has(> .gate-go) { grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; row-gap: 2px; padding-top: 8px; padding-bottom: 8px; }
+  :root .pages-flow .lines li:has(> .gate-go) > * { grid-column: 1; }
+  :root .pages-flow .lines li:has(> .gate-go) > .gate-go { grid-column: 2; grid-row: 1 / span 4; align-self: center; margin: 0; }
+  /* a small note or a pager never sits alone on a page of its own */
+  :root .pages-flow :is(.more, .pager) { break-before: avoid; }
+  :root .pages-flow .seg { margin-top: 0; }
   /* the big number takes less of the page, and a long list of choices may run on to the next page */
   :root .pages-flow .readout { zoom: 0.7; margin-top: 0; margin-bottom: 6px; }
   :root .pages-flow .chips { margin-bottom: 10px; }
+  :root .pages-flow .chip { min-height: 38px; padding-left: 10px; padding-right: 10px; font-size: 0.8rem; }
+  :root .pages-flow .primary.big { min-height: 48px; padding-top: 10px; padding-bottom: 10px; margin-top: 4px; }
   /* the talk box is one row: the three quick asks sit beside the place to type */
-  :root main > .talk { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+  :root main > .talk { display: grid; grid-template-columns: minmax(15rem, 1fr) minmax(0, auto); column-gap: 12px; align-items: center; }
+  :root main > .talk .talk-bar .chips { flex-wrap: nowrap; overflow: hidden; }
+  :root main > .talk .talk-bar .chip { flex: none; }
   :root main > .talk > :not(form):not(.talk-bar) { grid-column: 1 / -1; }
   :root main > .talk .talk-bar { margin: 0; }
   :root main > .talk .talk-bar .more { display: none; }
@@ -1315,3 +1340,4 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
   :root .pages-flow .sym-live { margin-bottom: 6px; }
   :root footer { padding: 6px 0 8px; }
 }
+.more-text { margin: 0; font-weight: 300; line-height: 1.5; font-size: 1rem; }

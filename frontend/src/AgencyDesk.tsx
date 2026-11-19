@@ -157,10 +157,19 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     if (fresh) setQuestion(fresh.id)
   }
   const cue: { say: string; go?: string; act?: () => void } =
-    mode === 'ask' && picked
+    // when something did not work, the crew says so first, with the way out
+    error
+      ? /credit/i.test(error)
+        ? { say: `We could not go. ${error}`, go: 'Add play credits', act: () => { setError(''); onView('money') } }
+        : { say: `We could not go. ${error}` }
+    : mode === 'ask' && picked
       ? reach
         ? { say: `Good one. ${reach[0] + reach[1]} Syms can answer it, for ${cost} credits, plus ${Math.round(cost * agency.platform_share * 100) / 100} for the game. Say the word and we go.`, go: 'Ask the Syms', act: run }
         : { say: `Too few Syms match that group. Widen it, and we can go.`, go: 'Ask every Sym', act: () => { setAudience('all'); setDepth('blend') } }
+      : mode === 'job' && jobQ
+        ? { say: `That job holds ${Math.round(jobPay * agency.hold_times * jobSeats)} credits now, plus the game's share. What is not used comes back to you.`, go: 'Post this job', act: post }
+      : mode === 'skill' && skill
+        ? { say: `We put ${stake} credits behind that skill, plus the game's share. Players who pass it are paid from it.`, go: 'Back this skill', act: back }
       : mode !== 'ask' ? { say: mode === 'job' ? 'A job goes deeper than a question. Pick one, and each owner checks what their Sym says.' : mode === 'skill' ? 'Back a skill, and players who pass it are paid from your credits.' : 'One Sym, one meeting. Its person said yes to this, and is paid for it.' }
         : agency.budget <= 0
           ? { say: 'We are out of credits. Add play credits, and we go again.', go: 'My money', act: () => onView('money') }
@@ -173,7 +182,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   // when the crew is back it says where the money went, then asks for the next question
   const last = agency.campaigns[0]
   const cameBack = last
-    ? { say: `Your last question reached ${last.twins} Syms. ${credits(last.spent - last.extra)} credits went to them and the people behind them${last.extra > 0 ? `, and ${credits(last.extra)} to the growth fund` : ''}. That is the money this place runs on. Want to act on it? We can bring you the Sym in that group that knows its person best, one to one, for ${agency.meet_price} credits. Its person agreed to be met, and is paid.`,
+    ? { say: `${last.twins} Syms answered. ${credits(last.spent - last.extra)} credits went to them${last.extra > 0 ? `, and ${credits(last.extra)} to the growth fund` : ''}. Want to act on it? Meet the Sym in that group that knows its person best: ${agency.meet_price} credits, and its person is paid.`,
         go: 'Meet the best fit', act: () => { onView('desk'); setMode('one'); setAudience(last.group || 'all') } }
     : { say: 'Nothing has come back yet. Send us out with one question.', go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
 
@@ -190,7 +199,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
         <CueSlot><SymCue who="My crew" crew rgb="255, 191, 122" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
           more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.', 'The game adds 10 percent on top of what you spend. That is how it earns.']} /></CueSlot>
       )}
-      {view !== 'money' && !(view === 'results' && got === 'met') && <Readout value={agency.budget} label={<>credits left · {agency.name}</>} />}
+      {view === 'desk' && <Readout value={agency.budget} label={<>credits left · {agency.name}</>} />}
       {error && <p className="error" role="alert">{error}</p>}
 
       {view === 'desk' && (

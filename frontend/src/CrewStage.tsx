@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import type { CrewScript } from './crewScripts'
 import { still } from './motion'
@@ -262,7 +263,8 @@ export function CrewStage(props: { script: CrewScript; doneLabel: string; onDone
   const now = over ? null : script.steps[at]
   const line = now ?? script.steps[script.steps.length - 1]
 
-  return (
+  // the scene is the whole window, so it is drawn on the page itself, outside the paged area of a screen
+  return createPortal(
     <section className={calm ? 'crew calm' : 'crew'} aria-labelledby="crew-h">
       <canvas ref={canvasRef} className="crew-scene" role="img"
         aria-label={`${script.cast[0]} sends ${script.cast[1]}, ${script.cast[2]} and ${script.cast[3]} to ${script.cast[4]}. Each line they say is listed after this picture.`} />
@@ -307,6 +309,7 @@ export function CrewStage(props: { script: CrewScript; doneLabel: string; onDone
         </ol>
         <p className="fine">{script.note}</p>
       </div>
-    </section>
+    </section>,
+    document.body,
   )
 }

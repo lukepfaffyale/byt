@@ -145,7 +145,7 @@ export type Creator = {
   step_cards: number; step_royalty: number
   needs: { skill: string; name: string; left: number; built: boolean }[]
   wanted: { skill: string; name: string; agencies: number; built: boolean; waiting: number }[]
-  emerging: { a: string; b: string; agencies: number }[]; reach_earned: number; sponsor_earned: number
+  emerging: { a: string; b: string; agencies: number }[]; reach_earned: number; sponsor_earned: number; reach: Record<string, number>
   packs: { id: string; skill: string; step: string; cards: { id: string; prompt: string; options: string[] }[] }[]
   made: { skill: string; step: string; cards: number; passes: number; earned: number }[]
   briefs: Brief[]
