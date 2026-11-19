@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Typed } from './Future'
 import { TAU, along, body, clamp, ease, seeded, shoot, trace, wander, type V } from './neural'
 
@@ -9,8 +10,8 @@ import { TAU, along, body, clamp, ease, seeded, shoot, trace, wander, type V } f
  *
  * Every line is written by code from counts. No model writes them. The path is a drawing, not a record.
  */
-export function SymCue(props: { say: string; more?: string[]; go?: string; act?: () => void; calm: boolean; formed: number; who?: string; rgb?: string; crew?: boolean }) {
-  const { say, more = [], go = '', act, calm, formed, who = 'My Sym', rgb = '255, 205, 150', crew = false } = props
+export function SymCue(props: { say: string; more?: string[]; go?: string; act?: () => void; calm: boolean; formed: number; who?: string; rgb?: string; crew?: boolean; alt?: string; altAct?: () => void }) {
+  const { say, more = [], go = '', act, calm, formed, who = 'My Sym', rgb = '255, 205, 150', crew = false, alt, altAct } = props
   const boxRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const goRef = useRef<HTMLButtonElement>(null)
@@ -112,6 +113,19 @@ export function SymCue(props: { say: string; more?: string[]; go?: string; act?:
             act()
           }}>{go}</button>
       )}
+      {alt && altAct && <button className="secondary sym-cue-alt" onClick={altAct}>{alt}</button>}
     </div>
   )
+}
+
+/**
+ * A desk's crew panel belongs above the pages of the screen, not on one of them, so its button is there on
+ * every page. The shell keeps one place for it (`#cue-slot`); a desk puts its panel there with this.
+ */
+export function CueSlot({ children }: { children: React.ReactNode }) {
+  const [slot, setSlot] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setSlot(document.getElementById('cue-slot'))
+  }, [])
+  return slot ? createPortal(children, slot) : null
 }

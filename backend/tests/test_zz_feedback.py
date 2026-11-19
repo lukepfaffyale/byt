@@ -17,3 +17,12 @@ def test_feedback_is_counted_and_holds_no_player(client):
     row = next(r for r in out["rows"] if r["seat"] == "player" and r["moment"] == "gate")
     assert row["yes"] >= 1
     assert "player_id" not in SQLModel.metadata.tables["feedback"].columns
+
+
+def test_a_creator_sees_where_syms_stand_on_each_skill_as_counts(client):
+    who = signup(client, "StandWatcher")
+    client.post("/creator", json={"name": "Stand Studio"}, headers=who)
+    seat = client.get("/creator", headers=who).json()
+    assert all({"strong", "partway", "new"} <= set(s) for s in seat["skills"])
+    assert any(s["strong"] + s["partway"] + s["new"] >= 5 for s in seat["skills"])
+    assert "BOT Sym " not in str(seat["skills"])  # counts, never a Sym

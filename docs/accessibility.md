@@ -71,3 +71,15 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
 - Keyboard-only pass done on:
 - Screen reader pass (NVDA) done on:
 - Contrast checks (tool and results):
+
+## 2026-11-18: no scrolling on a wide window
+
+- On a window at least 1000 px wide and 600 px tall, the page does not scroll. Each screen's content is laid out in
+  pages as tall as the space left, and Back and More buttons turn the page (`frontend/src/Pages.tsx`). The page
+  count is announced ("Page 2 of 3") through a polite live region.
+- Keyboard: Tab moves through everything in reading order. Moving focus into something on a later page turns to
+  that page by itself, so nothing is unreachable. Back and More are ordinary buttons.
+- Motion: with Motion off, a page turn is instant, not a slide.
+- A narrow window (a phone) keeps the ordinary page that flows downward; nothing changes there.
+- Zoom: at 200 percent on a small laptop the window falls under the size above and the ordinary page returns.
+- Not yet checked: a screen reader pass over the paged screens, and the pop-outs with a keyboard only.

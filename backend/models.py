@@ -965,6 +965,10 @@ class SkillPick(Strict):
     waiting: list[str]  # steps with a card pack that no creator has claimed
     claimed: list[str]  # steps this creator claimed
     later: list[str] = []  # steps with no card pack yet
+    # where every Sym a group question may reach stands on this skill. Counts only, and only for a big enough crowd.
+    strong: int = 0
+    partway: int = 0
+    new: int = 0
 
 
 class StepIn(Strict):
@@ -1101,6 +1105,7 @@ class CampaignOut(Strict):
     kind: str
     question: str
     audience: str
+    group: str = ""  # the id of that group, so the next step can go to the same one
     depth: str = ""
     pay: int
     twins: int

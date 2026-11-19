@@ -764,3 +764,38 @@ to show the economy and its life, with one for each country so the world is bala
   (a rate limit slows this), and a person cannot see or delete "their" taps, because none are theirs.
 - The totals are shown to every signed-in person on the About page. BOT Syms never answer.
 - Limits: it is a small, self-chosen sample and says nothing about why. It is a signal for where to look, not proof.
+
+## 2026-11-18 (night): the seats can act on what they see
+
+- **Creators see where Syms stand.** For each skill the studio now shows how many Syms are strong in it, partway
+  through it, or new to it. These are counts over every Sym a group question may reach (BOT Syms included), shown
+  only when that crowd is at least 5. No Sym and no person can be read from them. The crew leads with the skill most
+  Syms are new to that still has a step to claim, and names the skill most are strong in. The counts come from plain
+  counting of picks (`market.band`); no model is used.
+- **Agencies can act on an answer.** After a question comes back, the crew offers "Meet the best fit": the paid,
+  opt-in one-to-one meeting that already existed, opened on the same group. The rules of that meeting are unchanged:
+  only a Sym whose person turned one-to-one on (or a BOT Sym) can be met, the person is paid, and the agency sees a
+  nickname, two strongest areas and the Sym's answers, never the taps. "Best fit" means the real Sym in that group
+  with the most picks, as before. Reaching a person outside the game is not built: it would need real identity,
+  which this build does not collect.
+- A campaign row sent to its agency now carries the id of the group that was asked (`group`), so the meeting opens
+  on the same group. It is a name from the fixed list of groups, not data about anyone.
+- The welcome screen's lines now stay up long enough to read (about 15 seconds the first time, 11 after). A tap
+  still skips it.
+
+## 2026-11-18 (night): taps, not scrolling
+
+The student's rule: a grader has ten minutes, so nothing should need a scroll. Scrolling is treated as a defect.
+- On a wide window the page is locked to the window and each screen is pages that a tap turns
+  (`frontend/src/Pages.tsx`). No content was removed to do this.
+- Choices open in place: on the creator desk the crew offers "You pick" (the crew picks the cards and builds) or
+  "I pick" (a pop-out with the cards to tap). The price is said before either.
+- This is a change to layout only. No data, rule or price changed.
+
+## 2026-11-18 (night): the welcome screen does not name the BOT Syms
+
+The student's decision: the welcome screen is the customer-facing front door, and the BOT Syms are disclosed in the
+report and inside the game, not there. What the welcome screen says stays true: "People" counts real people only,
+and "Syms" counts every Sym, people's and BOT. It never calls a BOT Sym a person. The BOT Syms are still named and
+marked on the Everyone screen and its feed, in group counts, on job results, in My Money and in one-to-one meetings,
+and the report must state them plainly.

@@ -795,7 +795,7 @@ def campaign_out(c) -> CampaignOut:
     counts = json.loads(c.counts)
     total = sum(counts.values()) or 1
     first = math.ceil(market.tier_base(c.sample_twins, c.twins - c.sample_twins, c.pay, c.depth))
-    return CampaignOut(kind=q.kind, question=q.question, audience=market.AUDIENCE_NAME.get(c.audience, c.audience),
+    return CampaignOut(kind=q.kind, question=q.question, audience=market.AUDIENCE_NAME.get(c.audience, c.audience), group=c.audience,
                        depth=market.TIER_NAME.get(c.depth, c.depth),
                        pay=c.pay, twins=c.twins, sample_twins=c.sample_twins, spent=c.spent, extra=max(0, c.spent - first),
                        split=[SplitRow(label=o.label, count=counts.get(o.id, 0), share=round(counts.get(o.id, 0) / total, 3))
@@ -925,6 +925,15 @@ def demand(made: dict[str, list[str]]) -> tuple[list[WantedOut], list[PairOut]]:
     return sorted(wanted, key=lambda w: -w.agencies), emerging
 
 
+def stand_on(skill_id: str, crowd: list[market.TwinFacts]) -> dict[str, int]:
+    """How many Syms are strong in, partway through or new to one skill. Counts only; nothing for a small crowd."""
+    if len(crowd) < market.MIN_TWINS:
+        return {}
+    traits = market.skill_traits(skill_id)
+    bands = [market.band(t, traits) for t in crowd]
+    return {key: sum(1 for b in bands if b == key) for key, _ in market.BANDS}
+
+
 def creator_out(player: Player) -> CreatorSeat:
     org = db.org_for(player.id, "creator")
     if org is None:
@@ -935,13 +944,15 @@ def creator_out(player: Player) -> CreatorSeat:
     made = made_cards()
     income = db.maker_income(player.id)
     skills_out, packs_out, made_out = [], [], []
+    crowd = [t for t in market_twins() if market.matches(t, "all")]
     for skill in ONTOLOGY["skills"]:
         names = [st["name"] for st in skill["steps"] if not st.get("gate")]
         skills_out.append(SkillPick(
             id=skill["id"], name=skill["name"], about=skill["about"],
             claimed=[n for n in names if (skill["id"], n) in mine],
             waiting=[n for n in names if (skill["id"], n) in PACK_BY_STEP and (skill["id"], n) not in taken],
-            later=[n for n in names if (skill["id"], n) not in PACK_BY_STEP]))
+            later=[n for n in names if (skill["id"], n) not in PACK_BY_STEP],
+            **stand_on(skill["id"], crowd)))
         for n in names:
             pack = PACK_BY_STEP.get((skill["id"], n))
             if pack is None or (skill["id"], n) not in mine:

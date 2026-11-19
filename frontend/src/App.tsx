@@ -12,6 +12,7 @@ import { SymCue } from './SymCue'
 import { WorthTotals } from './Worth'
 import { credits, stop } from './words'
 import { Failed, RetryZone } from './Retry'
+import { Pages } from './Pages'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
 import { MoneyView } from './MoneyView'
@@ -619,6 +620,8 @@ export default function App() {
       )}
       {error && <Failed error={error} again={refresh} />}
 
+      <div id="cue-slot" className="cue-slot" />
+      <Pages key={`${screen.name}-${seat?.name ?? 'player'}`} calm={!motion}>
       {screen.name === 'journey' && (
         <section aria-labelledby="journey-h">
           <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>
@@ -770,6 +773,7 @@ export default function App() {
           </p>
         </section>
       )}
+      </Pages>
     </Shell>
   )
 }

@@ -10,7 +10,7 @@ import { Rows } from './Rows'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
-import { SymCue } from './SymCue'
+import { CueSlot, SymCue } from './SymCue'
 import { Worth } from './Worth'
 import { still } from './motion'
 import { credits } from './words'
@@ -56,6 +56,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const [got, setGot] = useState<'briefs' | 'met'>('briefs')
   const back = usePager(seat?.briefs ?? [], 2, 'briefs')
   const [cards, setCards] = useState<string[]>([])
+  const [picking, setPicking] = useState(false)  // the pop-out where the creator taps the cards
   const [replay, setReplay] = useState<CrewScript | null>(null)
 
   function fail(e: unknown) {
@@ -156,14 +157,14 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const picked = seat.skills.find((s) => s.id === topic)
   const pack = task === 'make' ? seat.packs.find((p) => p.id === topic) : undefined
 
-  function build() {
-    if (!seat || !pack || cards.length !== seat.step_cards) return
+  function build(picks: string[] = cards) {
+    if (!seat || !pack || picks.length !== seat.step_cards) return
     setBusy(true)
     const boss = seat.name
     const step = pack.step
     const royalty = seat.step_royalty
-    api.buildStep(pack.id, cards)
-      .then((out) => sent(out, (b) => buildScript({ boss, step, cards: cards.length, fee: b.spent, royalty })))
+    api.buildStep(pack.id, picks)
+      .then((out) => sent(out, (b) => buildScript({ boss, step, cards: picks.length, fee: b.spent, royalty })))
       .catch(fail)
   }
 
@@ -177,15 +178,19 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   }
   const open = seat.skills.find((s) => s.waiting.length > 0)
   const paid = seat.needs.find((n) => !n.built && (seat.skills.find((s) => s.id === n.skill)?.waiting.length ?? 0) > 0)
+  // what to build, from where Syms stand: the skill most Syms are new to that still has a step to claim,
+  // and the skill most are already strong in. Counts of Syms only.
+  const weak = [...seat.skills].filter((s) => s.waiting.length > 0).sort((a, b) => b.new - a.new)[0]
+  const best = [...seat.skills].sort((a, b) => b.strong - a.strong)[0]
   const waiting = seat.skills.reduce((n, s) => n + s.waiting.length, 0)
   const passes = seat.made.reduce((n, m) => n + m.passes, 0)
   const earned = seat.made.reduce((n, m) => n + m.earned, 0)
-  const cue: { say: string; go?: string; act?: () => void } =
+  const cue: { say: string; go?: string; act?: () => void; alt?: string; altAct?: () => void } =
     task === 'make' && pack
       ? cards.length === seat.step_cards
-        ? { say: `That is all ${seat.step_cards} cards. Send us, and we build ${pack.step}.`, go: 'Build it', act: build }
-        : { say: `${pack.step} needs ${seat.step_cards} cards, and you have picked ${cards.length}. Tap ${seat.step_cards - cards.length} more in the list below, or let us pick them. You can change our picks.`,
-            go: 'Pick them for me', act: () => setCards([...cards, ...pack.cards.map((c) => c.id).filter((id) => !cards.includes(id))].slice(0, seat.step_cards)) }
+        ? { say: `That is all ${seat.step_cards} cards. Send us, and we build ${pack.step}.`, go: 'Build it', act: () => build(), alt: 'Change my picks', altAct: () => setPicking(true) }
+        : { say: `${pack.step} needs ${seat.step_cards} cards. Who picks them? If we pick, we build it right away. Building costs ${seat.crew_fee} credits.`,
+            go: 'You pick', act: () => build(pack.cards.map((c) => c.id).slice(0, seat.step_cards)), alt: 'I pick', altAct: () => setPicking(true) }
       : task === 'skill' && picked && picked.waiting.length > 0
         ? { say: `${picked.waiting[0]} is free to claim. ${seat.claim_fee} credits, and it is yours to build.`, go: 'Send my crew', act: send }
         : seat.packs.length > 0
@@ -194,6 +199,8 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
             ? { say: `Your wallet holds ${seat.budget} credits, and a claim costs ${seat.claim_fee}. Add play credits, and we start.`, go: 'My money', act: () => onView('money') }
             : paid
               ? { say: `Agencies have put ${paid.left} credits behind ${paid.name}, and no step is built. Claim one, and that pay is yours to earn.`, go: `Claim: ${paid.name}`, act: () => start('skill', paid.skill) }
+              : weak && weak.new > 0
+                ? { say: `${weak.new} of ${weak.new + weak.partway + weak.strong} Syms are new to ${weak.name}, and its next step is not built. Build it, and they have a way to grow. Each pass pays you ${seat.step_royalty} credits.`, go: `Build for: ${weak.name}`, act: () => start('skill', weak.id) }
               : open
                 ? { say: `${waiting} ${waiting === 1 ? 'step is' : 'steps are'} waiting for a creator. Claim ${open.waiting[0]} in ${open.name}, and we start.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
                 : seat.made.length > 0
@@ -212,13 +219,13 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
       <h1 id="creator-h" className="sr-only">Creator studio</h1>
       {view === 'results' && got === 'briefs' && (
         <>
-          <SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} />
+          <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} /></CueSlot>
           {seat.briefs.length > 0 && <Worth seat="creator" moment="studio" who="My crew" />}
         </>
       )}
       {view === 'desk' && (
-        <SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
-          more={['Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} />
+        <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} alt={busy ? undefined : cue.alt} altAct={cue.altAct} calm={still()} formed={0.6}
+          more={[...(best && best.strong > 0 ? [`${best.strong} Syms are already strong in ${best.name}. A harder step there keeps them growing.`] : []), 'Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} /></CueSlot>
       )}
       <Readout value={seat.budget} label={<>credits in my wallet · {seat.name}</>} />
       {error && <p className="error" role="alert">{error}</p>}
@@ -304,23 +311,29 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                   ))}
                 </div>
               )}
-              {pack && (
-                <>
-                  <div className="chips" role="group" aria-label={`Tap ${seat.step_cards} cards for this step`}>
-                    <span className="chips-label" aria-live="polite">Tap {seat.step_cards} cards · {cards.length} picked</span>
-                    {pack.cards.map((c) => {
-                      const on = cards.includes(c.id)
-                      return (
-                        <button key={c.id} className="chip wide" aria-pressed={on} disabled={!on && cards.length >= seat.step_cards}
-                          onClick={() => setCards(on ? cards.filter((x) => x !== c.id) : [...cards, c.id])}>
-                          {c.prompt} <span className="muted">{c.options.join(' / ')}</span>
-                        </button>
-                      )
-                    })}
+              {pack && <p className="fine">Building costs {seat.crew_fee} credits. You earn {seat.step_royalty} credits each time another player passes your step. Tell the crew above who picks the cards.</p>}
+              {pack && picking && (
+                <div className="pick-pop" role="dialog" aria-modal="true" aria-label={`Pick ${seat.step_cards} cards for ${pack.step}`}
+                  onKeyDown={(e) => { if (e.key === 'Escape') setPicking(false) }} onClick={(e) => { if (e.target === e.currentTarget) setPicking(false) }}>
+                  <div className="pick-pop-box">
+                    <span className="line-top" aria-live="polite">{pack.step} · tap {seat.step_cards} cards · {cards.length} picked</span>
+                    <div className="chips pick-pop-cards" role="group" aria-label="The cards to pick from">
+                      {pack.cards.map((c, i) => {
+                        const on = cards.includes(c.id)
+                        return (
+                          <button key={c.id} className="chip wide" aria-pressed={on} autoFocus={i === 0} disabled={!on && cards.length >= seat.step_cards}
+                            onClick={() => setCards(on ? cards.filter((x) => x !== c.id) : [...cards, c.id])}>
+                            {c.prompt} <span className="muted">{c.options.join(' / ')}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <div className="pick-pop-foot">
+                      <button className="link" onClick={() => setPicking(false)}>Close</button>
+                      <button className="primary" disabled={busy || cards.length !== seat.step_cards} onClick={() => { setPicking(false); build() }}>Build it</button>
+                    </div>
                   </div>
-                  <p className="fine">Building costs {seat.crew_fee} credits. You earn {seat.step_royalty} credits each time another player passes your step.</p>
-                  <button className="primary big" disabled={busy || cards.length !== seat.step_cards} onClick={build}>Send my crew to build it</button>
-                </>
+                </div>
               )}
             </>
           )}

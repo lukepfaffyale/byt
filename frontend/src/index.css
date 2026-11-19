@@ -1260,3 +1260,58 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 
 /* one tap of product feedback, asked by the Sym or the crew after a moment */
 .worth { margin: 10px 0 4px; }
+
+/* a second, quieter choice beside the crew's main button */
+:root .sym-cue .sym-cue-alt { position: relative; flex: 0 1 auto; white-space: normal; }
+@media (max-width: 640px) { :root .sym-cue .sym-cue-alt { width: 100%; } }
+/* the pop-out where a creator taps the cards for a step: nothing to scroll to */
+.pick-pop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(2, 5, 10, 0.82); backdrop-filter: blur(6px); }
+.pick-pop-box { width: min(100%, 44rem); max-height: calc(100vh - 32px); display: grid; gap: 14px; padding: 22px; background: #060b14; border: 1px solid rgba(134, 211, 230, 0.4); box-shadow: 0 0 60px rgba(134, 211, 230, 0.16); }
+.pick-pop-cards { overflow: auto; max-height: 60vh; }
+.pick-pop-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+/* ---------- no scrolling on a wide window: a screen is pages that a tap turns ---------- */
+.pages-nav { display: none; }
+@media (min-width: 1000px) and (min-height: 600px) {
+  html, body { height: 100%; overflow: hidden; }
+  :root #root { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; grid-template-rows: auto minmax(0, 1fr) auto; }
+  :root .stage { position: relative; top: auto; align-self: stretch; height: auto; min-height: 0; }
+  :root main { align-self: stretch; display: flex; flex-direction: column; min-height: 0; padding: 8px 0; overflow: hidden; }
+  :root main > * { flex: none; }
+  :root main > .pages { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .pages-flow { flex: 1 1 auto; min-height: 0; columns: 1; column-gap: 48px; column-fill: auto; overflow: hidden; }
+  .pages-flow :is(li, p, h1, h2, h3, button, canvas, table, figure, dl, .sym-cue, .sym-live, .readout, .cert, .said, .seg, .bins, .worth, .twin-line, .flow, .card, .board, .option) { break-inside: avoid; }
+  .pages-flow :is(h1, h2, h3, .chips-label, .section-label) { break-after: avoid; }
+  .pages-nav { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 0; border-top: 1px solid var(--hair); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
+  :root .pages-nav button { min-width: 7rem; padding: 8px 14px; }
+  /* less chrome above a screen, so more of the screen fits on its first page */
+  :root .sym-cue-say p { min-height: 0; font-size: 1rem; }
+  :root main > .talk { margin: 0; }
+  /* the menu already says which screen this is, and my Sym says the rest: the page title and the line under it
+     stay for a screen reader and leave the room to what a person can tap */
+  :root .pages-flow > section > h1:not(.prompt), :root .pages-flow > section > p.muted, :root .pages-flow > section > p.notice {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0; border: 0;
+  }
+  :root .pages-flow h2 { margin-top: 0; }
+  /* the big number takes less of the page, and a long list of choices may run on to the next page */
+  :root .pages-flow .readout { zoom: 0.7; margin-top: 0; margin-bottom: 6px; }
+  :root .pages-flow .chips { margin-bottom: 10px; }
+  /* the talk box is one row: the three quick asks sit beside the place to type */
+  :root main > .talk { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+  :root main > .talk > :not(form):not(.talk-bar) { grid-column: 1 / -1; }
+  :root main > .talk .talk-bar { margin: 0; }
+  :root main > .talk .talk-bar .more { display: none; }
+  :root main > .signal { margin-bottom: 6px; }
+  :root main > .signal .signal-ask { display: none; }  /* my Sym already asks in its own panel just below */
+  :root main > .talk input { min-height: 38px; }
+  :root main > .talk .talk-bar { margin-top: 4px; }
+  :root main > .talk .talk-reply { max-height: 30vh; overflow: hidden; }
+  :root main > .sym-cue { margin: 0 0 6px; padding-top: 12px; padding-bottom: 12px; }
+  :root .pages-flow > section { animation: none; }
+  /* a card in a gate fits on one page: the question is smaller, and the answers sit close */
+  :root .pages-flow h1.prompt { font-size: clamp(1.3rem, 2vw, 1.8rem); line-height: 1.15; margin: 10px 0 12px; }
+  :root .pages-flow .options { gap: 8px; }
+  :root .pages-flow .option { min-height: 46px; padding-top: 8px; padding-bottom: 8px; }
+  :root .pages-flow .sym-live { margin-bottom: 6px; }
+  :root footer { padding: 6px 0 8px; }
+}

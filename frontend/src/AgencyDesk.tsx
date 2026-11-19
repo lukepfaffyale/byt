@@ -10,7 +10,7 @@ import { usePager } from './pager'
 import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
-import { SymCue } from './SymCue'
+import { CueSlot, SymCue } from './SymCue'
 import { Worth } from './Worth'
 import { still } from './motion'
 import { credits } from './words'
@@ -173,8 +173,8 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   // when the crew is back it says where the money went, then asks for the next question
   const last = agency.campaigns[0]
   const cameBack = last
-    ? { say: `Your last question reached ${last.twins} Syms. ${credits(last.spent - last.extra)} credits went to them and the people behind them${last.extra > 0 ? `, and ${credits(last.extra)} to the growth fund` : ''}. That is the money this place runs on. What do we ask next?`,
-        go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
+    ? { say: `Your last question reached ${last.twins} Syms. ${credits(last.spent - last.extra)} credits went to them and the people behind them${last.extra > 0 ? `, and ${credits(last.extra)} to the growth fund` : ''}. That is the money this place runs on. Want to act on it? We can bring you the Sym in that group that knows its person best, one to one, for ${agency.meet_price} credits. Its person agreed to be met, and is paid.`,
+        go: 'Meet the best fit', act: () => { onView('desk'); setMode('one'); setAudience(last.group || 'all') } }
     : { say: 'Nothing has come back yet. Send us out with one question.', go: fresh ? `Ask: ${brief(fresh.question)}` : undefined, act: pickFresh }
 
   return (
@@ -182,13 +182,13 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       <h1 id="agency-h" className="sr-only">Agency desk</h1>
       {view === 'results' && got === 'asks' && (
         <>
-          <SymCue who="My crew" crew rgb="255, 191, 122" say={cameBack.say} go={cameBack.go} act={cameBack.act} calm={still()} formed={0.6} />
+          <CueSlot><SymCue who="My crew" crew rgb="255, 191, 122" say={cameBack.say} go={cameBack.go} act={cameBack.act} calm={still()} formed={0.6} /></CueSlot>
           {last && <Worth seat="agency" moment="question" who="My crew" />}
         </>
       )}
       {view === 'desk' && (
-        <SymCue who="My crew" crew rgb="255, 191, 122" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
-          more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.', 'The game adds 10 percent on top of what you spend. That is how it earns.']} />
+        <CueSlot><SymCue who="My crew" crew rgb="255, 191, 122" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} calm={still()} formed={0.6}
+          more={[`You have ${agency.budget} credits. Every answer you buy pays a real person.`, 'You only ever see totals, never one person. That is the deal that keeps people here.', 'The game adds 10 percent on top of what you spend. That is how it earns.']} /></CueSlot>
       )}
       {view !== 'money' && !(view === 'results' && got === 'met') && <Readout value={agency.budget} label={<>credits left · {agency.name}</>} />}
       {error && <p className="error" role="alert">{error}</p>}

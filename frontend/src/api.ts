@@ -141,7 +141,7 @@ export type Creator = {
   exists: boolean; name: string; budget: number; min_twins: number; platform_share: number; pay: number; crew_fee: number; claim_fee: number
   questions: { id: string; kind: string; question: string; options: Option[] }[]
   audiences: { id: string; name: string }[]
-  skills: { id: string; name: string; about: string; waiting: string[]; claimed: string[]; later: string[] }[]
+  skills: { id: string; name: string; about: string; waiting: string[]; claimed: string[]; later: string[]; strong: number; partway: number; new: number }[]
   step_cards: number; step_royalty: number
   needs: { skill: string; name: string; left: number; built: boolean }[]
   wanted: { skill: string; name: string; agencies: number; built: boolean; waiting: number }[]
@@ -156,6 +156,7 @@ export type Campaign = {
   kind: string
   question: string
   audience: string
+  group: string
   depth: string
   pay: number
   twins: number

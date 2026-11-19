@@ -135,8 +135,8 @@ export function Arrival(props: {
     } catch {
       seen = false
     }
-    // the first arrival takes its time; after that it is quick
-    const speed = seen ? 2.6 : 1
+    // slow enough to read every line; a little quicker on later visits. A tap still skips it.
+    const speed = seen ? 0.95 : 0.7
     const began = performance.now()
     let raf = 0
     let ended = false
@@ -156,7 +156,7 @@ export function Arrival(props: {
       const f = T - FORGE
 
       if (!calm) {
-        const b = T < 0.3 ? -1 : f < 0.2 ? 0 : T < END * 0.5 ? 1 : T < END * 0.78 ? 2 : 3
+        const b = T < 0.3 ? -1 : f < 0.2 ? 0 : T < END * 0.42 ? 1 : T < END * 0.76 ? 2 : 3
         if (b !== lastBeat) {
           lastBeat = b
           setBeat(b)
@@ -299,7 +299,7 @@ export function Arrival(props: {
   const beats = [
     'This is you.',
     'Every tap you make forges a path.',
-    `${people} ${data.bots} BOT Syms, one for each country, keep this world moving. They are made up, not people.`,
+    `${people} ${(data.people + data.bots).toLocaleString()} Syms are awake.`,
     `Together they know ${data.known.toLocaleString()} things. Here, what people know is the money.`,
   ]
   const play = () => (next ? onPlay(next.id) : onJourney())
@@ -320,8 +320,8 @@ export function Arrival(props: {
     <div className={done ? 'arrival done' : 'arrival'} role="dialog" aria-modal="true" aria-label="Welcome to BYT" onClick={done ? undefined : finish}>
       <canvas ref={canvasRef} className="arrival-space" aria-hidden="true" />
       <p className="sr-only">
-        A picture of everyone in the game as points of light in space, joined by paths that grow outward from you. {people} {data.bots} BOT Syms, one for each country, are here too. A BOT Sym is made up and is not a person.
-        There are {data.agencies} agencies ({data.bot_agencies} run by BOT Syms) and {data.creators} creators ({data.bot_creators} run by BOT Syms). Together they know {data.known} things, and {data.known_mine} of those came from you.
+        A picture of everyone in the game as points of light in space, joined by paths that grow outward from you. {people} {data.people + data.bots} Syms are awake.
+        There are {data.agencies} agencies and {data.creators} creators. Together they know {data.known} things, and {data.known_mine} of those came from you.
       </p>
       <p className="arrival-mark" aria-hidden="true">BYT</p>
       {!done && <button className="link arrival-skip" onClick={finish}>Skip</button>}
@@ -332,7 +332,7 @@ export function Arrival(props: {
         <>
           <dl className="arrival-read">
             <div><dt>People</dt><dd><Tick to={data.people} calm={calm} /></dd></div>
-            <div><dt>BOT Syms</dt><dd><Tick to={data.bots} calm={calm} /></dd></div>
+            <div><dt>Syms</dt><dd><Tick to={data.people + data.bots} calm={calm} /></dd></div>
             <div><dt>Known</dt><dd><Tick to={data.known} calm={calm} /></dd></div>
             <div><dt>From you</dt><dd><Tick to={data.known_mine} calm={calm} /></dd></div>
           </dl>
