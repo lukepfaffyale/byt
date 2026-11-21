@@ -31,7 +31,7 @@ export function Signal(props: { tick: string; jobs: number; onWork: () => void }
       .then((w) => {
         if (cancelled) return
         const all = w.wallets.flatMap((purse) => purse.lines.map((l) => ({ ...l, who: WHO[purse.seat] })))
-        setEvents(all.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8))
+        setEvents(all.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 3))
       })
       .catch(() => {
         // the signal is an extra: when it cannot load, the screens below still work

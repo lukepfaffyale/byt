@@ -20,7 +20,7 @@ export function Worth({ seat, moment, who = 'My Sym' }: { seat: Seat; moment: Mo
     }
   })
   if (asked && !said) return null
-  if (said) return <p className="worth fine" role="status">{who}: Thank you. That goes to the people who make BYT, with no name on it.</p>
+  if (said) return <p className="worth fine" role="status">{who}: Thank you. No name goes with it.</p>
   const tap = (answer: 'yes' | 'unsure' | 'no') => () => {
     setSaid(true)
     try {

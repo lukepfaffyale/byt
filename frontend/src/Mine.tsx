@@ -3,6 +3,7 @@ import { api, type Activity, type Fact, type Judgment, type UsageSummary } from 
 import { Tabs } from './Deck'
 import { MirrorView } from './MirrorView'
 import { CodeView } from './Code'
+import { CueSlot } from './SymCue'
 import { More } from './More'
 import { Rows, type Row } from './Rows'
 import { SkillsView } from './SkillsView'
@@ -121,14 +122,14 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
   return (
     <section aria-labelledby="mine-h" className="mine">
       <h1 id="mine-h" className="sr-only">What my Sym knows</h1>
-      <Tabs label="What my Sym knows" value={tab} onChange={setTab}
+      <CueSlot><Tabs label="What my Sym knows" value={tab} onChange={setTab}
         tabs={[
           { id: 'type', label: 'Type' }, { id: 'code', label: 'Code' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }, { id: 'skills', label: 'Skills' },
           { id: 'judgment', label: 'Judgment', n: judged ? judged.taps.length : undefined },
           { id: 'beliefs', label: 'Beliefs', n: data ? beliefs.length : undefined },
           { id: 'proof', label: 'Proof', n: data ? data.certs.length : undefined },
           { id: 'data', label: 'Data', n: data ? data.responses.length : undefined },
-        ]} />
+        ]} /></CueSlot>
       {error && <Failed error={error} />}
 
       <div className="panel">

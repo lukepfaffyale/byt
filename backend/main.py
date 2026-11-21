@@ -797,7 +797,7 @@ def campaign_out(c) -> CampaignOut:
     first = math.ceil(market.tier_base(c.sample_twins, c.twins - c.sample_twins, c.pay, c.depth))
     return CampaignOut(kind=q.kind, question=q.question, audience=market.AUDIENCE_NAME.get(c.audience, c.audience), group=c.audience,
                        depth=market.TIER_NAME.get(c.depth, c.depth),
-                       pay=c.pay, twins=c.twins, sample_twins=c.sample_twins, spent=c.spent, extra=max(0, c.spent - first),
+                       pay=c.pay, twins=c.twins, sample_twins=c.sample_twins, spent=c.spent, total=round(c.spent + db.share_of(c.spent), 2), extra=max(0, c.spent - first),
                        split=[SplitRow(label=o.label, count=counts.get(o.id, 0), share=round(counts.get(o.id, 0) / total, 3))
                               for o in q.card.options],
                        created_at=db.iso(c.created_at))
@@ -863,7 +863,7 @@ def brief_out(b, made: dict[str, list[str]]) -> BriefOut:
             title = f"Skill step claimed: {counts.get('step', '')}"
             note = "You built this step. Players can play it." if live else "This step is yours. Tap Build my step to pick its cards."
         return BriefOut(kind=b.kind, title=title, audience=SKILL_BY_ID[b.topic]["name"],
-                        twins=0, sample_twins=0, spent=b.spent, fee=b.spent, created_at=db.iso(b.created_at), note=note)
+                        twins=0, sample_twins=0, spent=b.spent, fee=b.spent, total=b.spent, created_at=db.iso(b.created_at), note=note)
     total = sum(counts.values()) or 1
     if b.kind == "survey":
         q = market.QUESTION_BY_ID[b.topic]
@@ -871,7 +871,7 @@ def brief_out(b, made: dict[str, list[str]]) -> BriefOut:
     else:
         title, rows = f"Test: {SKILL_BY_ID[b.topic]['name']}", list(market.BANDS)
     return BriefOut(kind=b.kind, title=title, audience=audience, twins=b.twins, sample_twins=b.sample_twins, spent=b.spent,
-                    fee=market.CREW_FEE, created_at=db.iso(b.created_at),
+                    fee=market.CREW_FEE, total=round(b.spent + db.share_of(b.spent - market.CREW_FEE), 2), created_at=db.iso(b.created_at),
                     split=[SplitRow(label=label, count=counts.get(key, 0), share=round(counts.get(key, 0) / total, 3)) for key, label in rows])
 
 

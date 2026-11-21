@@ -7,7 +7,6 @@ import { More } from './More'
 import { Tabs } from './Deck'
 import { usePager } from './pager'
 import { Rows } from './Rows'
-import { Readout } from './Readout'
 import { WalletCard } from './WalletCard'
 import { Failed } from './Retry'
 import { CueSlot, SymCue } from './SymCue'
@@ -16,14 +15,15 @@ import { still } from './motion'
 import { credits } from './words'
 
 export type SeatView = 'desk' | 'results' | 'money'
-type Task = 'survey' | 'test' | 'skill' | 'make' | 'meet'
+type Task = 'survey' | 'test' | 'skill' | 'make' | 'meet' | 'needs'
 
 const TASKS: [Task, string, string][] = [
-  ['survey', 'Ask a group', 'One question to a whole group. You see totals.'],
-  ['test', 'Test a skill', 'See how strong a group is in one skill. You see totals.'],
-  ['skill', 'Claim a step', 'Take a waiting step, so it is yours to build.'],
-  ['make', 'Build my step', 'Pick the cards for a step you claimed. Then players can play it.'],
-  ['meet', 'Meet one Sym', 'Pay a royalty to see one Sym and who it is.'],
+  ['needs', 'Needs', 'What Syms and agencies need now. Build for it.'],
+  ['survey', 'Ask', 'One question to a whole group. You see totals.'],
+  ['test', 'Test', 'See how strong a group is in one skill. You see totals.'],
+  ['skill', 'Claim', 'Take a waiting step, so it is yours to build.'],
+  ['make', 'Build', 'Pick the cards for a step you claimed. Then players can play it.'],
+  ['meet', 'Meet', 'Pay to see one Sym and who it is.'],
 ]
 
 export function SplitBars({ rows }: { rows: { label: string; share: number }[] }) {
@@ -33,7 +33,7 @@ export function SplitBars({ rows }: { rows: { label: string; share: number }[] }
         <li key={row.label} className="bar">
           <span className="bar-head as-row">
             <span className="bar-name">{row.label}</span>
-            <span className="bar-n">{Math.round(row.share * 100)}</span>
+            <span className="bar-n">{Math.round(row.share * 100)}%</span>
             <span className="meter" aria-hidden="true"><span style={{ width: `${row.share * 100}%` }} /></span>
           </span>
         </li>
@@ -50,11 +50,12 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const [error, setError] = useState('')
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
-  const [task, setTask] = useState<Task>('skill')
+  const [task, setTask] = useState<Task>('needs')
+  const [need, setNeed] = useState<'paying' | 'asked' | 'new'>('paying')
   const [topic, setTopic] = useState<string | null>(null)
   const [group, setGroup] = useState('all')
   const [got, setGot] = useState<'briefs' | 'met'>('briefs')
-  const back = usePager(seat?.briefs ?? [], 2, 'briefs')
+  const back = usePager(seat?.briefs ?? [], 1, `briefs-${seat?.briefs.length ?? 0}`)
   const [cards, setCards] = useState<string[]>([])
   const [picking, setPicking] = useState(false)  // the pop-out where the creator taps the cards
   const [replay, setReplay] = useState<CrewScript | null>(null)
@@ -124,12 +125,13 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     setError('')
     setTopic(null)
     setCards([])
+    setGot('briefs')
     announce('Your crew is back.')
     setReplay(script(out.briefs[0]))
   }
 
   function send() {
-    if (!seat || !task || task === 'meet' || task === 'make' || !topic) return
+    if (!seat || !task || task === 'meet' || task === 'make' || task === 'needs' || !topic) return
     setBusy(true)
     const boss = seat.name
     if (task === 'skill') {
@@ -188,6 +190,8 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   // the whole price of a question to a group, said before the crew goes: each Sym's pay, the crew, and the game's share
   const asked = seat.reach[group] ?? 0
   const total = Math.round((asked * seat.pay * (1 + seat.platform_share) + seat.crew_fee) * 100) / 100
+  const meetTotal = meets ? Math.round((meets.price * (1 + seat.platform_share) + meets.fee) * 100) / 100 : 0
+  const armed = !!topic || task === 'meet'
   const cue: { say: string; go?: string; act?: () => void; alt?: string; altAct?: () => void } =
     // when something did not work, the crew says so first, with the way out
     error
@@ -201,12 +205,22 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
             go: 'You pick', act: () => build(pack.cards.map((c) => c.id).slice(0, seat.step_cards)), alt: 'I pick', altAct: () => setPicking(true) }
       : task === 'skill' && picked && picked.waiting.length > 0
         ? { say: `${picked.waiting[0]} is free to claim. ${seat.claim_fee} credits, and it is yours to build.`, go: 'Send my crew', act: send }
+        : task === 'skill' && !open
+          ? { say: 'Every step is claimed for now. See what Syms and agencies need next, and we build for that.', go: 'See what is needed', act: () => start('needs', null) }
+        : task === 'make' && seat.packs.length === 0
+          ? open
+            ? { say: `You have no step to build yet. ${open.waiting[0]} in ${open.name} is free to claim.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
+            : { say: 'You have no step to build, and every step is claimed for now. Ask a group what they need next.', go: 'Ask a group', act: () => start('survey', null) }
+        : task === 'meet'
+          ? { say: `One Sym, one meeting: ${meetTotal} credits in all. Pick its group below, then tap Meet.` }
+        : task === 'test' && !topic
+          ? { say: 'Pick one skill below, and we find how strong a group is in it.' }
         : (task === 'survey' || task === 'test') && topic
           ? asked === 0
             ? { say: 'Too few Syms match that group. Widen it, and we can go.', go: 'Ask every Sym', act: () => setGroup('all') }
             : total > seat.budget
               ? { say: `${asked} Syms can answer. That costs ${total} credits, and your wallet holds ${credits(seat.budget)}. Add play credits, or pick a smaller group.`, go: 'Add play credits', act: () => onView('money') }
-              : { say: `Ready. ${asked} Syms can answer, for ${total} credits in all: ${seat.pay} to each Sym, ${seat.crew_fee} for the crew, and the game's share. Say the word and we go.`, go: 'Send my crew', act: send }
+              : { say: `Ready. ${asked} Syms can answer, for ${total} credits in all: ${asked * seat.pay} to the Syms, ${seat.crew_fee} for the crew, ${Math.round(asked * seat.pay * seat.platform_share * 100) / 100} for the game.`, go: `Send my crew · ${total} credits`, act: send }
         : task === 'survey' && !topic
           ? { say: 'Pick one question below, and we carry it to the group you choose.' }
         : seat.packs.length > 0
@@ -224,8 +238,10 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                   : { say: 'Send us out with one question, and we find what Syms need.', go: 'Ask a group', act: () => start('survey', null) }
 
   // on the results page the crew says what the studio's work has paid, then asks for the next thing to build
+  const shownRow = back.rows[0]
+  const lead = shownRow && shownRow.split.length > 0 ? [...shownRow.split].sort((a, b) => b.share - a.share)[0] : null
   const paidOut = {
-    say: `${seat.made.length > 0 ? `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned you ${credits(earned)} credits. Each pass paid the player too.` : `We have run ${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} for you. Nothing you built has been passed yet.`} What do we build next?`,
+    say: lead ? `${shownRow.twins} Syms answered. Most said: ${lead.label}, ${Math.round(lead.share * 100)}%. What do we build next?` : `${seat.made.length > 0 ? `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned you ${credits(earned)} credits. Each pass paid the player too.` : `We have run ${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} for you. Nothing you built has been passed yet.`} What do we build next?`,
     go: seat.packs.length > 0 ? 'Build my step' : open ? `Claim: ${open.waiting[0]}` : 'Ask a group',
     act: () => (seat.packs.length > 0 ? start('make', seat.packs[0].id) : open ? start('skill', open.id) : start('survey', null)),
   }
@@ -233,49 +249,70 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   return (
     <section aria-labelledby="creator-h" className="mine">
       <h1 id="creator-h" className="sr-only">Creator studio</h1>
-      {view === 'results' && got === 'briefs' && (
-        <>
-          <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} /></CueSlot>
-          {seat.briefs.length > 0 && <Worth seat="creator" moment="studio" who="My crew" />}
-        </>
+      {view === 'results' && (
+        <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} /></CueSlot>
       )}
       {view === 'desk' && (
         <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} alt={busy ? undefined : cue.alt} altAct={cue.altAct} calm={still()} formed={0.6}
-          more={[...(best && best.strong > 0 ? [`${best.strong} Syms are already strong in ${best.name}. A harder step there keeps them growing.`] : []), 'Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} /></CueSlot>
+          more={armed ? undefined : [...(best && best.strong > 0 ? [`${best.strong} Syms are already strong in ${best.name}. A harder step there keeps them growing.`] : []), 'Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} /></CueSlot>
       )}
-      {view === 'desk' && <Readout value={seat.budget} label={<>credits in my wallet · {seat.name}</>} />}
       {error && <p className="error" role="alert">{error}</p>}
 
       {view === 'desk' && (
         <>
           <Tabs label="What my crew does" value={task} onChange={(id) => { setTask(id); setTopic(null); setCards([]); setError('') }}
             tabs={TASKS.map(([id, label]) => ({ id, label }))} />
-          <p className="fine">{TASKS.find(([id]) => id === task)?.[2]}</p>
 
-          {task === 'survey' && (
+          {task === 'needs' && (
             <>
-              <div className="chips" role="group" aria-label="Pick a question">
-                <span className="chips-label">Which question</span>
-                {seat.questions.map((q) => (
-                  <button key={q.id} className="chip wide" aria-pressed={topic === q.id} onClick={() => setTopic(q.id)}>
-                    <span className="chip-kind">{q.kind}</span> {q.question}
-                  </button>
-                ))}
-              </div>
-              {topic && audiences}
+              <Tabs label="What is needed" value={need} onChange={setNeed}
+                tabs={[{ id: 'paying', label: 'Paying now', n: seat.needs.length }, { id: 'asked', label: 'Asked about', n: seat.wanted.length }, { id: 'new', label: 'New needs', n: seat.emerging.length }]} />
+              {need === 'paying' && (
+                <Rows pageKey="paying" size={3} wide empty="No agency has put credits behind a skill yet." rows={seat.needs.map((n) => ({
+                  id: n.skill, top: 'Agencies pay', label: n.name, gold: !n.built, n: `${n.left} credits`,
+                  detail: <>{n.built ? 'A step is built. Each pass pays the player and its creator.' : 'No step is built yet. Claim one and build it, and that pay is yours to earn.'}</>,
+                }))} />
+              )}
+              {need === 'asked' && (
+                <Rows pageKey="wanted" size={3} wide empty="No agency has asked about a skill yet." rows={seat.wanted.map((w) => ({
+                  id: w.skill, top: `${w.agencies} ${w.agencies === 1 ? 'agency' : 'agencies'}`, label: w.name, gold: w.waiting > 0,
+                  n: w.waiting > 0 ? `${w.waiting} to build` : w.built ? 'built' : '',
+                  detail: <>{w.agencies} {w.agencies === 1 ? 'agency has' : 'agencies have'} asked about this skill, through a question, a job or by backing it. {w.waiting > 0 ? `${w.waiting} of its steps ${w.waiting === 1 ? 'is' : 'are'} still waiting for a creator.` : 'Every step of it that can be built is built.'} You never see which agency.</>,
+                }))} />
+              )}
+              {need === 'new' && (
+                <Rows pageKey="emerging" size={3} wide empty="No new need has shown up yet." rows={seat.emerging.map((p) => ({
+                  id: p.a + p.b, top: `${p.agencies} agencies`, label: `${p.a} and ${p.b}, together`,
+                }))} />
+              )}
             </>
           )}
 
-          {task === 'test' && (
+          {task === 'survey' && !topic && (
+            <div className="chips two" role="group" aria-label="Pick a question">
+              <span className="chips-label">Which question</span>
+              {seat.questions.map((q) => (
+                <button key={q.id} className="chip wide" onClick={() => setTopic(q.id)}>{q.question}</button>
+              ))}
+            </div>
+          )}
+          {(task === 'survey' || task === 'test') && topic && (
             <>
-              <div className="chips" role="group" aria-label="Pick a skill">
-                <span className="chips-label">Which skill</span>
-                {seat.skills.map((s) => (
-                  <button key={s.id} className="chip" aria-pressed={topic === s.id} onClick={() => setTopic(s.id)}>{s.name}</button>
-                ))}
-              </div>
-              {topic && audiences}
+              <p className="picked-line">
+                <span>{task === 'survey' ? seat.questions.find((q) => q.id === topic)?.question : `Test: ${picked?.name ?? ''}`}</span>
+                <button className="link" onClick={() => setTopic(null)}>Change</button>
+              </p>
+              {audiences}
             </>
+          )}
+
+          {task === 'test' && !topic && (
+            <div className="chips" role="group" aria-label="Pick a skill">
+              <span className="chips-label">Which skill</span>
+              {seat.skills.map((s) => (
+                <button key={s.id} className="chip" onClick={() => setTopic(s.id)}>{s.name}</button>
+              ))}
+            </div>
           )}
 
           {task === 'skill' && (
@@ -330,75 +367,45 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
             </>
           )}
 
-          {task && task !== 'meet' && task !== 'make' && topic && (
-            <>
-              {task !== 'skill' && (
-                <p className="fine">Each Sym that answers gets {seat.pay} credit. Your crew costs {seat.crew_fee} credits. You pay only if {seat.min_twins} or more Syms match.</p>
-              )}
-              <button className="primary big" disabled={busy} onClick={send}>Send my crew</button>
-            </>
-          )}
-
           {task === 'meet' && meets && (
-            <MeetPanel seat="creator" meets={meets} onError={fail}
+            <MeetPanel seat="creator" meets={meets} share={seat.platform_share} onError={fail}
               onMet={(out, groupName) => {
                 setMeets(out)
                 setError('')
+                setGot('met')
                 api.creator().then(setSeat).catch(fail)
                 announce('Your crew met one Sym.')
-                setReplay(meetScript({ boss: seat.name, group: groupName, nickname: out.met[0]?.nickname ?? '', price: out.price, fee: out.fee }))
+                setReplay(meetScript({ boss: seat.name, group: groupName, nickname: out.met[0]?.nickname ?? '', price: out.price, fee: out.fee, bot: !!out.met[0]?.sample }))
               }} />
           )}
-          <More>
+          {!topic && <More>
             You never type a question. You pick from lists, so no one can ask for something private. Your crew is a
             computer program, not AI, so there is no AI cost. You pay a small crew fee to the game. For a group you
             see totals only, and only when at least {seat.min_twins} Syms match. A skill step is built from cards
             the game wrote. You pick which ones. You do not see the right answers.
-          </More>
-          {/* what agencies are paying for and asking about: the log, after the place where the work is done */}
-          {seat.needs.length > 0 && (
-            <ul className="lines">
-              {seat.needs.map((n) => (
-                <li key={n.skill} className="gold">
-                  <span className="line-top">Agencies are paying for this skill</span>
-                  <span>{n.name} · {n.left} credits left</span>
-                  <span className="muted">{n.built ? 'A step is built. Each pass pays the player and its creator.' : 'No step is built yet. Claim one and build it.'}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {seat.wanted.length > 0 && (
-            <>
-              <p className="line-top">What agencies are asking about</p>
-              <Rows pageKey="wanted" size={3} wide empty="" rows={seat.wanted.map((w) => ({
-                id: w.skill, top: `${w.agencies} ${w.agencies === 1 ? 'agency' : 'agencies'}`, label: w.name, gold: w.waiting > 0,
-                n: w.waiting > 0 ? `${w.waiting} to build` : w.built ? 'built' : '',
-                detail: <>{w.agencies} {w.agencies === 1 ? 'agency has' : 'agencies have'} asked about this skill, through a question, a job or by backing it. {w.waiting > 0 ? `${w.waiting} of its steps ${w.waiting === 1 ? 'is' : 'are'} still waiting for a creator.` : 'Every step of it that can be built is built.'} You never see which agency.</>,
-              }))} />
-              {seat.emerging.map((p) => (
-                <p key={p.a + p.b} className="fine">New need: {p.agencies} agencies want {p.a} and {p.b} together.</p>
-              ))}
-            </>
-          )}
+          </More>}
         </>
       )}
 
       {view === 'results' && (
         <>
           {seat.briefs.length === 0 && (!meets || meets.met.length === 0) && <p className="fine">Nothing has come back yet. Send your crew from My Studio.</p>}
-          <Tabs label="What came back" value={got} onChange={setGot}
-            tabs={[{ id: 'briefs', label: 'From my crew', n: seat.briefs.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
+          <div className="results-head">
+            <Tabs label="What came back" value={got} onChange={setGot}
+              tabs={[{ id: 'briefs', label: 'From my crew', n: seat.briefs.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
+            {got === 'briefs' && back.pager}
+          </div>
           {got === 'briefs' && <ul className="lines">
             {back.rows.map((b) => (
               <li key={b.created_at + b.title}>
-                <span className="line-top">{b.kind === 'skill' || b.kind === 'build' ? 'Skill' : b.kind === 'test' ? 'Test' : 'Question'} · {b.audience}{b.twins > 0 ? ` · ${b.twins} Syms` : ''} · {b.spent} credits</span>
+                <span className="line-top">{b.kind === 'skill' || b.kind === 'build' ? 'Skill' : b.kind === 'test' ? 'Test' : 'Question'} · {b.audience}{b.twins > 0 ? ` · ${b.twins} Syms` : ''} · {b.total} credits</span>
                 <span>{b.title}</span>
                 {b.split.length > 0 && <SplitBars rows={b.split} />}
-                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} Syms are free Syms with no name. Some are made up, to fill the game while it is small.`}</span>
+                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} are free Syms, mostly BOT Syms.`}</span>
               </li>
             ))}
           </ul>}
-          {got === 'briefs' && back.pager}
+          {got === 'briefs' && seat.briefs.length > 0 && <Worth seat="creator" moment="studio" who="My crew" />}
           {got === 'met' && meets && <MetList meets={meets} />}
         </>
       )}
@@ -408,7 +415,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
           <WalletCard key={seat.briefs.length + (meets?.met.length ?? 0)} seat="creator" onChange={() => { api.creator().then(setSeat).catch(fail) }} />
           <p className="fine">
             {seat.reach_earned} credits from agencies that reached my players. {seat.sponsor_earned} from agencies that back my skills.
-            {seat.made.length === 0 ? ` Build a skill step to earn ${seat.step_royalty} credits each time another player passes it.` : ` ${seat.made.reduce((n, m) => n + m.passes, 0)} passes of the steps I built. You never see who.`}
+            {seat.made.length === 0 ? ` Build a skill step to earn ${seat.step_royalty} credits each time another player passes it.` : ` The steps I built were passed ${passes} ${passes === 1 ? 'time' : 'times'}. You never see who.`}
           </p>
         </>
       )}

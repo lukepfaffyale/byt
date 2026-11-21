@@ -822,3 +822,11 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
 - Being different is not the goal. The game shows how a code differs, but pay never depends on it. What is rewarded is what lifts the whole game: a Sym that is proved true to its person, skills finished, jobs checked, steps built for others.
 - Nothing in the game pays for, ranks or displays content meant to cause dread, anger or humiliation. Cards and questions come from fixed lists we wrote, and seats cannot type one. When a guess is wrong, the Sym is the one that was wrong and studies it; the person is never marked down.
 - A change that would pay for rarity must first show that it cannot be earned by random or hostile answers. The rule on the table: rare and proved by a certificate, never rare alone.
+
+## 2026-11-21: one whole price, and a second QA pass
+
+- **One price everywhere.** Every price the crew says, every send button and every result line now shows the whole amount that leaves the wallet: what the seat spends plus the game's 10 percent share. Results carry it from the server (`total` on a question and on a crew job). Before, a button could say 52 credits for a meeting that cost 57.
+- **A short wallet is said before a send,** on both desks, with one button to add play credits. A message about a failed send clears when the choice changes.
+- **BOT Syms are named where it matters.** The crew no longer says an answer "pays a real person". It says the owner of the Sym is paid, and that most Syms are BOT Syms for now. A meeting with a BOT Sym says so in the crew's own words.
+- **A seat stays the seat.** Opening Everyone or About no longer moves a person to the player seat, and tapping a name on the frame no longer changes seat. The seat switch at the top is the one way.
+- **How this was tested.** Three AI testers, one for each seat, clicked through every menu in their own browser tabs and wrote up what they found against the project's rules (no scrolling, taps only, one clear next step, plain words, honest numbers). They changed no files. Their findings were fixed by hand and re-checked in the browser.

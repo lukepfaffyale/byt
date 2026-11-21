@@ -151,6 +151,8 @@ export default function App() {
   const [hubs, setHubs] = useState<Hub[]>([])
   const [history, setHistory] = useState<SphereFrame[]>([])
   const [seatSphere, setSeatSphere] = useState<{ seat: string; view: string; sphere: Sphere } | null>(null)
+  const [kept, setKept] = useState<'agency' | 'creator' | null>(null)
+  const [purses, setPurses] = useState<{ seat: string; balance: number }[]>([])
   // a moment in the past that the sphere is showing, for one seat; null means now
   const [past, setPast] = useState<{ who: string; index: number } | null>(null)
   const [playing, setPlaying] = useState(false)
@@ -318,6 +320,7 @@ export default function App() {
       if (document.hidden) return
       api.wallets().then((w) => {
         if (cancelled) return
+        setPurses(w.wallets.map((p) => ({ seat: p.seat, balance: p.balance })))
         const all = (w.wallets.find((p) => p.seat === 'player')?.lines ?? []).map((l) => ({ ...l, t: new Date(l.at).getTime() }))
         const at = walletAt.current
         at.latest = all.reduce((n, l) => Math.max(n, l.t), 0)
@@ -378,7 +381,13 @@ export default function App() {
     )
   }
 
-  const seat = screen.name === 'agency' || screen.name === 'creator' ? screen : null
+  // Everyone and About belong to every seat: opening one keeps you in the seat you were in
+  const shared = screen.name === 'commons' || screen.name === 'about'
+  const want = screen.name === 'agency' || screen.name === 'creator' ? screen.name : shared ? kept : null
+  if (want !== kept) setKept(want)
+  const seat: { name: 'agency' | 'creator'; view: SeatView | '' } | null =
+    screen.name === 'agency' || screen.name === 'creator' ? screen : want ? { name: want, view: '' } : null
+  const purseOf = (name: string) => purses.find((p) => p.seat === name)?.balance
   const go = (id: string) => {
     if (id.startsWith('gate:')) setScreen({ name: 'gate', gateId: id.slice(5) })
     else if (id.startsWith('retry:')) {
@@ -407,9 +416,9 @@ export default function App() {
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
   const told = flash ? flash
     : cue && landed.n > 0
-    ? { ...cue, say: `Just now I earned you ${credits(landed.sum)} credits${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} ${cue.say}` }
+    ? { ...cue, say: `Just now I earned you ${credits(landed.sum)} ${landed.sum === 1 ? 'credit' : 'credits'}${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} ${cue.say}` }
     : cue && gain.n > 0
-    ? { ...cue, say: `While you were away I earned you ${credits(gain.sum)} credits in ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'}. ${cue.say}` }
+    ? { ...cue, say: `While you were away I earned you ${credits(gain.sum)} ${gain.sum === 1 ? 'credit' : 'credits'} in ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'}. ${cue.say}` }
     : cue
   const cueMore = me ? [
     me.gates_done === 0 ? 'I am waiting right here. The first gate is short, and you only tap.' : `Every tap you give me, I keep. You have finished ${me.gates_done} of ${me.gates_total} gates with me.`,
@@ -438,10 +447,7 @@ export default function App() {
   }
   // the four directions of the frame are controls: three seats to stand in, and time to move through
   const takeAxis = (index: number) => {
-    if (index === 0) setScreen({ name: 'journey' })
-    else if (index === 1) setScreen({ name: 'creator', view: 'desk' })
-    else if (index === 2) setScreen({ name: 'agency', view: 'desk' })
-    else toggleStory()
+    if (index === 3) toggleStory()
   }
   const story = frames.length > 1 && (
     <div className="story">
@@ -464,6 +470,7 @@ export default function App() {
       pulseKey={pulse}
       variant={dock === 'mini' ? 'dot' : dock === 'wall' || screen.name === 'journey' ? 'hero' : 'mini'}
       axes={dock === 'mini' ? undefined : AXES}
+      quiet={!!seat}
       onAxis={dock === 'mini' ? undefined : takeAxis}
       hubs={seat || dock === 'mini' ? undefined : hubs}
       onHub={() => open({ name: 'mine', tab: 'beliefs', at: Date.now() })}
@@ -604,14 +611,16 @@ export default function App() {
           <button className="link" aria-current={seat?.name === 'creator' ? 'true' : undefined} onClick={() => setScreen({ name: 'creator', view: 'desk' })}>Creator</button>
         </nav>
       }
-      status={me ? `${me.nickname} · ${me.credits} ${me.credits === 1 ? 'credit' : 'credits'} · ${me.certs} ${me.certs === 1 ? 'certificate' : 'certificates'}` : ''}
+      status={!me ? '' : seat && purseOf(seat.name) !== undefined
+        ? `${me.nickname} · ${seat.name === 'agency' ? 'Agency' : 'Studio'} wallet ${credits(purseOf(seat.name) ?? 0)} credits`
+        : `${me.nickname} · My wallet ${credits(me.credits)} credits · ${me.certs} ${me.certs === 1 ? 'certificate' : 'certificates'}`}
     >
       {me && screen.name !== 'gate' && screen.name !== 'about' && (
         <Signal tick={`${me.credits}|${me.jobs_open}|${screen.name}|${seat?.view ?? ''}`} jobs={screen.name === 'work' ? 0 : me.jobs_open}
           onWork={() => setScreen({ name: 'work' })} />
       )}
       {told && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'commons' && (
-        <SymCue say={told.say} more={cueMore} go={told.go} act={told.act} calm={!motion} formed={formed} />
+        <SymCue say={told.say} more={screen.name === 'journey' ? cueMore : undefined} go={told.go} act={told.act} calm={!motion} formed={formed} />
       )}
       {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'commons' && screen.name !== 'arena' && (
         <TwinTalk where={screen.name} announce={setLive}

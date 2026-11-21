@@ -31,11 +31,11 @@ export function groupScript(f: { boss: string; what: string; group: string; twin
 }
 
 /** A boss pays a royalty to meet one twin. */
-export function meetScript(f: { boss: string; group: string; nickname: string; price: number; fee: number }): CrewScript {
+export function meetScript(f: { boss: string; group: string; nickname: string; price: number; fee: number; bot?: boolean }): CrewScript {
   const steps: CrewStep[] = [
     { from: 0, to: 1, say: `Find one Sym in this group that is open to a meeting: ${f.group}.` },
-    { from: 1, to: 4, say: 'Did your human say yes to one to one?' },
-    { from: 4, to: 1, say: 'Yes. My human turned it on.' },
+    { from: 1, to: 4, say: f.bot ? 'Are you open to a meeting?' : 'Did your human say yes to one to one?' },
+    { from: 4, to: 1, say: f.bot ? 'Yes. I am a BOT Sym: made up, with no person behind me.' : 'Yes. My human turned it on.' },
     { from: 0, to: 3, say: `Pay the royalty first: ${f.price} credits to the owner.` },
     { from: 3, to: 4, say: `Paid ${f.price} credits. ${f.fee} more went to the game for the crew.` },
     { from: 0, to: 2, say: 'Now ask who it is, and ask it every question.' },

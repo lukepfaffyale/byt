@@ -1,16 +1,16 @@
 import { usePager } from './pager'
 import { useState } from 'react'
 import { api, type Meets } from './api'
-import { More } from './More'
 
 type Seat = 'agency' | 'creator'
 
 /** Pick a group, pay the royalty, meet one twin from it. The seat cannot name a twin: the game picks it. */
-export function MeetPanel(props: { seat: Seat; meets: Meets; group?: string; onMet: (out: Meets, group: string) => void; onError: (e: unknown) => void }) {
-  const { seat, meets, onMet, onError } = props
+export function MeetPanel(props: { seat: Seat; meets: Meets; share: number; group?: string; onMet: (out: Meets, group: string) => void; onError: (e: unknown) => void }) {
+  const { seat, meets, share, onMet, onError } = props
   const [group, setGroup] = useState(props.group ?? 'all')
   const [busy, setBusy] = useState(false)
-  const cost = meets.price + meets.fee
+  const forGame = Math.round(meets.price * share * 100) / 100
+  const cost = Math.round((meets.price + meets.fee + forGame) * 100) / 100
 
   function go() {
     setBusy(true)
@@ -31,28 +31,24 @@ export function MeetPanel(props: { seat: Seat; meets: Meets; group?: string; onM
       </div>
       <button className="primary big" disabled={busy} onClick={go}>Meet one Sym for {cost} credits</button>
       <p className="fine">
-        {meets.price} go to the Sym's owner as a royalty. {meets.fee} go to the game for your crew. The game adds its 10 percent share on top.
+        {meets.price} to the Sym's owner, {meets.fee} for your crew, {forGame} for the game. You see its nickname and its answers.
+        The game picks the Sym, and only from Syms whose owner said yes. Many Syms here are BOT Syms for now.
       </p>
-      <More>
-        Asking a group is cheap and shows totals only. Meeting one Sym costs much more, because you see who it is:
-        its nickname and its answers. You can only meet a Sym whose owner said yes. You pick the group and the game
-        picks the Sym. If the owner later says no, the Sym is hidden from you again.
-      </More>
     </>
   )
 }
 
 /** The twins this seat paid to meet. */
 export function MetList({ meets }: { meets: Meets }) {
-  const { rows, pager } = usePager(meets.met, 1, 'met')
+  const { rows, pager } = usePager(meets.met, 1, `met-${meets.met.length}`)
   if (meets.met.length === 0) return null
   return (
     <>
-      <h2>Syms I met one to one</h2>
-      <ul className="lines">
+      {pager}
+      <ul className="lines met-list">
         {rows.map((m) => (
           <li key={m.at}>
-            <span className="line-top">{new Date(m.at).toLocaleDateString()} · royalty {m.paid} credits</span>
+            <span className="line-top">{new Date(m.at).toLocaleDateString()} · {m.paid} credits to its owner</span>
             {m.open ? (
               <>
                 <span><strong>{m.nickname}</strong>{m.sample ? ' (a BOT Sym: made up, not a person)' : ''}</span>
@@ -69,7 +65,6 @@ export function MetList({ meets }: { meets: Meets }) {
           </li>
         ))}
       </ul>
-      {pager}
     </>
   )
 }

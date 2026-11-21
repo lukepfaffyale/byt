@@ -51,6 +51,8 @@ type Props = {
   time?: number
   /** the key of one area to hold in the light: the rest of the form dims, so its connections can be read */
   focus?: string
+  /** name only the direction that is live, so the names never crowd the groups (the seat spheres) */
+  quiet?: boolean
 }
 
 type Node = {
@@ -179,9 +181,9 @@ function makeLinks(nodes: Node[], brain: boolean): Link[] {
  * turn gold where a skill step is finished. Pale lines join one area to another.
  * Point at a dot to see its area; tap it to open that area.
  */
-export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1, hubs, onHub, focus }: Props) {
+export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, areas, motion = true, speed = 1, mode = 'fill', sky = 0, together = 1, onPick, axes, onSize, onAxis, axesOn, time = 1, hubs, onHub, focus, quiet }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus })
+  const target = useRef({ coherence, pulse: 0, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus, quiet })
   const redraw = useRef<(() => void) | null>(null)
   const [tip, setTip] = useState<Tip | null>(null)
 
@@ -201,10 +203,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     target.current.hubs = hubs
     target.current.onHub = onHub
     target.current.focus = focus
+    target.current.quiet = quiet
     // a drag on the twin belongs to the twin, so the page does not scroll under the finger
     if (canvasRef.current) canvasRef.current.style.touchAction = 'none'
     redraw.current?.()
-  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus])
+  }, [coherence, areas, onPick, speed, mode, sky, together, axes, onSize, onAxis, axesOn, time, hubs, onHub, focus, quiet])
 
   useEffect(() => {
     if (pulseKey > 0) target.current.pulse = 1
@@ -240,6 +243,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
     const tone: RGB[] = Array.from({ length: COUNT }, () => ICE)
     const gold = new Uint8Array(COUNT)
     const weight = new Float32Array(COUNT) // clusters: the size of a point, or -1 when the point is not in a group
+    // clusters: where a member sits inside its group. A group is a small ball of points, so it reads as a crowd
+    // from every side and never as a flat patch seen edge-on
+    const gx = new Float32Array(COUNT)
+    const gy = new Float32Array(COUNT)
+    const gz = new Float32Array(COUNT)
     const fillAt = new Float32Array(COUNT) // fill: where a point sits in its own slice, 0 first to light, 1 last
     const spot = new Float32Array(4) // one placed point: screen x, screen y, depth, height
     let grouped: SphereArea[] | null = null
@@ -279,9 +287,17 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           .filter((e) => weight[e.i] < 0) // a point belongs to one group only
           .sort((p, q) => p.d - q.d)
           .slice(0, sizes.length)
-          .forEach((e, j) => {
+          .forEach((e, j, all) => {
             weight[e.i] = sizes[j]
             slice[e.i] = k
+            // spread the members evenly through a ball around the group's middle; a bigger group is a bigger ball
+            const ball = Math.min(0.36, 0.1 + 0.04 * Math.sqrt(all.length))
+            const r = ball * Math.cbrt((j + 0.5) / all.length)
+            const up = 1 - (2 * (j + 0.5)) / all.length
+            const flat = Math.sqrt(1 - up * up)
+            gx[e.i] = mx * 0.92 + Math.cos(j * 2.399963) * flat * r
+            gy[e.i] = up * r
+            gz[e.i] = mz * 0.92 + Math.sin(j * 2.399963) * flat * r
           })
       })
     }
@@ -452,6 +468,10 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
           ax[d] = fx[i] + ((fx[i] - cx) / away) * 22
           ay[d] = fy[i] + ((fy[i] - cy) / away) * 16
           const lit = live[d] || hoverAxis === d
+          if (target.current.quiet && !live[d]) {
+            ax[d] = -1e6
+            return
+          }
           if (lit) {
             // the direction you are in, or are about to take, is drawn as a gold edge from the first corner
             ctx.beginPath()
@@ -511,9 +531,13 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         const sway = still ? 0 : 0.035 * Math.sin(t * 0.7 + p.seed * 3)
         // in a seat's sphere each member of a group drifts around its own place, so a group is a crowd that moves
         const swarm = clusters && weight[i] >= 0 && !still ? 0.02 : 0
-        const qx = p.x + (p.bx - p.x) * shape + swarm * Math.sin(t * 0.9 + p.seed * 7)
-        const qy = p.y + (p.by - p.y) * shape + swarm * Math.cos(t * 0.7 + p.seed * 3)
-        const qz = p.z + (p.bz - p.z) * shape + swarm * Math.sin(t * 0.8 + p.seed * 5)
+        const member = clusters && weight[i] >= 0
+        const sx = member ? gx[i] : p.x
+        const sy = member ? gy[i] : p.y
+        const sz = member ? gz[i] : p.z
+        const qx = sx + (p.bx - sx) * shape + swarm * Math.sin(t * 0.9 + p.seed * 7)
+        const qy = sy + (p.by - sy) * shape + swarm * Math.cos(t * 0.7 + p.seed * 3)
+        const qz = sz + (p.bz - sz) * shape + swarm * Math.sin(t * 0.8 + p.seed * 5)
         place(
           (qx + sway * qz) * k2,
           qy * k2 + (map ? 0 : (1 - c) * 0.08 * Math.sin(t * 0.4 + p.seed * 2)),
@@ -527,6 +551,7 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         if (formed) lit[i] = 1 + Math.max(0, 1 - Math.abs(-spot[3] / BALL - wave) * 3.2) * 1.6
       }
 
+      const names2: { text: string; x: number; y: number; color: string }[] = []
       // a seat's sphere: the seat is a core of light at the centre, and a line runs from it to each group.
       // A group the seat has reached is gold, and signals travel out along its line and back: asking, answering
       if (clusters && map) {
@@ -586,8 +611,11 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
             ctx.stroke()
           }
           if (Math.min(w, h) >= 260) {
-            ctx.fillStyle = `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, ${members[k] === 0 ? 0.5 : 0.85})`
-            ctx.fillText(map[k].name.replace(/^(Strongest in|Needs to grow): /, '').toUpperCase(), gx, gy + (members[k] === 0 ? 24 : 34) * size)
+            // the name is drawn last, over the points, so a group never hides its own name
+            let low = gy
+            for (let i = 0; i < COUNT; i++) if (weight[i] >= 0 && slice[i] === k && py[i] > low) low = py[i]
+            names2.push({ text: map[k].name.replace(/^(Strongest in|Needs to grow): /, '').toUpperCase(), x: gx, y: low + 18 * size,
+              color: `rgba(${colors[k][0] | 0}, ${colors[k][1] | 0}, ${colors[k][2] | 0}, ${members[k] === 0 ? 0.6 : 1})` })
           }
           const reached = map[k].earned > 0
           const col = reached ? GOLD : colors[k]
@@ -757,6 +785,17 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
         ctx.arc(px[i], py[i], (0.7 + 1.5 * depth[i]) * size * grow * (sameArea ? 1.25 : 1) * (1 + 0.3 * fire[i]), 0, Math.PI * 2)
         ctx.fillStyle = `rgba(${col[0] | 0}, ${col[1] | 0}, ${col[2] | 0}, ${Math.min(1, alpha + 0.25 * fire[i])})`
         ctx.fill()
+      }
+      if (names2.length > 0) {
+        ctx.font = `600 ${Math.round(Math.max(8, Math.min(11, radius / 26)))}px system-ui, sans-serif`
+        ctx.textAlign = 'center'
+        ctx.lineWidth = 3
+        ctx.strokeStyle = 'rgba(4, 5, 9, 0.85)'
+        for (const n of names2) {
+          ctx.strokeText(n.text, n.x, n.y)
+          ctx.fillStyle = n.color
+          ctx.fillText(n.text, n.x, n.y)
+        }
       }
       ctx.globalCompositeOperation = 'lighter'
 
@@ -1095,6 +1134,8 @@ export function TwinForm({ coherence, pulseKey = 0, variant = 'hero', label, are
       const map = target.current.areas
       if (i >= 0 && map && target.current.onPick) {
         target.current.onPick(map[slice[i]].key)
+        hover = -1
+        setTip(null)  // the card that opens says it all: the pointer note must not sit on top of it
         return
       }
       // two taps on the open space of the twin open or close the full screen

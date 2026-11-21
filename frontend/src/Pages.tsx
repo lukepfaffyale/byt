@@ -72,8 +72,8 @@ export function Pages({ children, calm, at }: { children: React.ReactNode; calm:
   return (
     <div className="pages">
       <div ref={ref} className="pages-flow" onScroll={measure}>{children}</div>
-      {count > 1 && (
-        <nav className="pages-nav" aria-label="Pages of this screen">
+      {(
+        <nav className={count > 1 ? 'pages-nav' : 'pages-nav pages-nav-one'} aria-label="Pages of this screen" aria-hidden={count > 1 ? undefined : true}>
           <button className="secondary" disabled={page === 0} onClick={() => turn(page - 1)}>Back</button>
           <span aria-live="polite">Page {page + 1} of {count}</span>
           <button className="primary" disabled={page >= count - 1} onClick={() => turn(page + 1)}>Next</button>

@@ -134,7 +134,7 @@ export type JobsOut = {
   auto_per_day: number; auto_choices: number[]; earned_credits: number; upkeep_credits: number
 }
 export type Brief = {
-  kind: 'survey' | 'test' | 'skill' | 'build'; title: string; audience: string; twins: number; sample_twins: number; spent: number; fee: number
+  kind: 'survey' | 'test' | 'skill' | 'build'; title: string; audience: string; twins: number; sample_twins: number; spent: number; fee: number; total: number
   split: { label: string; count: number; share: number }[]; note: string; created_at: string
 }
 export type Creator = {
@@ -162,6 +162,7 @@ export type Campaign = {
   twins: number
   sample_twins: number
   spent: number
+  total: number
   extra: number
   split: { label: string; count: number; share: number }[]
   created_at: string

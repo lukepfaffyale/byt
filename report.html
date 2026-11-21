@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BYT by Symbolon: final report</title>
+<style>
+  /* the BYT house style, the same tokens as the game */
+  :root { --bg: #010206; --ink: #f5f7fb; --soft: #a9b1c4; --hair: rgba(214, 228, 255, 0.2); --gold: #ffd98a; --teal: #bfe6ff; --panel: rgba(255, 255, 255, 0.035); --light: linear-gradient(110deg, #ffe2a0 0%, #ffffff 48%, #bfe6ff 100%); }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0 auto; max-width: 860px; padding: 48px 28px 80px; color: var(--ink); font: 300 17px/1.6 'Helvetica Neue', Helvetica, Arial, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  h1 { font-size: 4.6rem; font-weight: 100; letter-spacing: 0.6em; margin: 0; line-height: 1.1; display: inline-block; background: var(--light); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 22px rgba(255, 222, 150, 0.4)); }
+  h2 { font-size: 1.7rem; font-weight: 200; letter-spacing: -0.01em; margin: 56px 0 10px; padding-top: 18px; border-top: 1px solid var(--hair); }
+  h2 span { color: var(--gold); font-weight: 300; margin-right: 12px; }
+  h3 { font-size: 1.02rem; font-weight: 600; margin: 26px 0 6px; color: var(--teal); letter-spacing: 0.04em; }
+  p { margin: 0 0 12px; }
+  a { color: var(--teal); }
+  .lead { font-size: 1.25rem; font-weight: 200; }
+  .tag { font-size: 0.72rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
+  .meta { color: var(--soft); font-size: 0.95rem; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 0.9rem; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--hair); }
+  th { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 5px; }
+  code { font: 0.86em ui-monospace, Consolas, monospace; color: var(--gold); }
+  pre { background: var(--panel); border: 1px solid var(--hair); padding: 12px 14px; font: 0.8rem/1.5 ui-monospace, Consolas, monospace; overflow-x: auto; white-space: pre-wrap; }
+  .big { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 16px 0 20px; }
+  .big div { border: 1px solid var(--hair); background: var(--panel); padding: 14px; }
+  .big strong { display: block; font-size: 2rem; font-weight: 100; line-height: 1.15; background: var(--light); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .big span { font-size: 0.8rem; color: var(--soft); }
+  figure { margin: 18px 0; border: 1px solid var(--hair); background: var(--panel); padding: 14px; }
+  figcaption { font-size: 0.85rem; color: var(--soft); margin-top: 8px; }
+  figure img { width: 100%; display: block; }
+  .note { border-left: 2px solid var(--gold); padding: 4px 0 4px 14px; margin: 14px 0; color: var(--soft); }
+  /* work still owed before this is handed in: every one of these boxes must be gone */
+  .todo { border: 1px dashed #ff7a9c; color: #ffb3c6; padding: 10px 14px; margin: 14px 0; font-size: 0.9rem; }
+  .todo::before { content: 'TO ADD BEFORE HANDING IN  '; font-weight: 700; letter-spacing: 0.1em; font-size: 0.7rem; }
+  svg text { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  @media print {
+    :root { --bg: #fff; --ink: #111; --soft: #444; --hair: #bbb; --gold: #8a5a00; --teal: #005f73; --panel: #f6f6f6; }
+    body { font-size: 11pt; padding: 0; max-width: none; }
+    h2 { break-after: avoid; } table, figure, .big { break-inside: avoid; }
+    a { color: inherit; }
+    h1, .big strong { background: none; -webkit-text-fill-color: currentColor; filter: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 1. TITLE + LINKS ===================== -->
+<p class="tag">MGT 409 AI Foundations · final project · November 2026</p>
+<h1>BYT</h1>
+<p class="lead">by Symbolon. Beat your Sym. Benefit from your Sym. Be everywhere.</p>
+<p><strong>In one sentence:</strong> BYT is a tap-only game that builds a digital Sym of you, proves how well it knows you, and lets it earn for you while you are away.</p>
+<p class="meta">
+  Luke Pfaff · Yale School of Management<br>
+  Code: <a href="https://github.com/lukepfaffyale/byt">github.com/lukepfaffyale/byt</a><br>
+  App: <span class="todo" style="display:inline-block;margin:4px 0">the Render link, once the app is online</span>
+</p>
+<p class="note">Everything in the game is play money. Players are adults who give a nickname and nothing else: no email, no birth date, no real name. The numbers in this report come from the game's own database and tests on the dates shown. Where a number comes from test accounts or from BOT Syms and not from independent people, the report says so.</p>
+
+<div class="big">
+  <div><strong>4</strong><span>AI agents, one read-only tool each</span></div>
+  <div><strong>$0.0006</strong><span>average cost of one agent run (112 real runs)</span></div>
+  <div><strong>74% vs 39%</strong><span>Sym against the crowd's guess, 120 held-back picks (test accounts)</span></div>
+  <div><strong>91</strong><span>back-end tests, all passing</span></div>
+</div>
+
+<!-- ===================== 2. MOTIVATION ===================== -->
+<h2><span>2</span>Motivation</h2>
+<p><strong>Who has the problem.</strong> Two groups, on two sides of the same trade.</p>
+<ul>
+  <li><strong>People.</strong> Adults spend hours a day tapping and swiping on a phone. Published estimates for 2026 put the average at roughly four to five hours a day. Every tap tells someone what that person likes. That signal is sold, and the person is paid nothing and owns nothing at the end.</li>
+  <li><strong>Organizations that need to know what people think.</strong> A brand testing a product, a recruiter looking for a kind of thinker, a school choosing a course. Today they buy a survey panel. On one large research panel the platform asks researchers to pay people at least 8 US dollars an hour and recommends 12, then adds a platform fee of about 43 percent for companies (33 percent for universities). It takes days, it reaches the people who like doing surveys, and each new question starts from zero.</li>
+</ul>
+<p><strong>What it costs them.</strong> The person gives away the one thing that will still be scarce when AI does most work: taste, judgment and feeling. The organization pays again for every question and still cannot tell whether an answer is how a person would truly act.</p>
+<p><strong>The idea.</strong> Let the person keep that signal in something they own: a Sym. The game builds it from taps, tests it against the person, and only then lets it answer for them. The Sym can be asked a thousand times while its person sleeps, and its person is paid each time. An AI system needs what is new and particular about people. BYT is a way for people to give it by choice and share in what it earns.</p>
+<div class="todo">Confirm the screen-time figure on the primary source (DataReportal's 2026 report) and cite it. The panel prices are from Prolific's own pricing and help pages, read 2026-11-21: re-check and cite.</div>
+
+<!-- ===================== 3. WHAT IS NEW ===================== -->
+<h2><span>3</span>What is new here</h2>
+<table>
+  <tr><th>What exists today</th><th>Example</th><th>What it does</th><th>What BYT does differently</th></tr>
+  <tr><td>Paid research panels</td><td>Prolific</td><td>Pays real people per study. Every question is asked again from scratch.</td><td>The person is asked once, by play. After that the Sym answers, and the person is paid each time it does.</td></tr>
+  <tr><td>Synthetic respondents</td><td>Synthetic Users</td><td>A language model invents personas and answers as them.</td><td>Each Sym belongs to one consenting person and is scored against that person's real picks it has never seen.</td></tr>
+  <tr><td>Personality tests</td><td>Four-letter type tests</td><td>A one-time label. Nothing shows the label predicts anything.</td><td>A certificate is earned only when the Sym beats the crowd's guess on held-back picks.</td></tr>
+  <tr><td>Personal AI assistants with memory</td><td>Chat assistants</td><td>Learn a person for that person's own use.</td><td>The Sym works for other parties, under rules, and its owner checks the work and is paid.</td></tr>
+</table>
+<div class="todo">Check each product line on that product's own site, add one more named product per row if useful, and cite. Do not keep a claim that was not checked.</div>
+
+<h3>Eight things BYT does that the alternatives do not</h3>
+<ol>
+  <li><strong>Proved, not claimed.</strong> A Sym commits its guesses before its person sees the cards. Plain code compares them and gives the certificate. No model can award one.</li>
+  <li><strong>A person checks before pay.</strong> When a Sym does a job, its person approves or corrects the answer first. A correction teaches the Sym.</li>
+  <li><strong>Groups, never one person.</strong> An agency sees totals over at least 5 Syms. It cannot type a question: it taps one from a fixed list.</li>
+  <li><strong>Three seats, one login.</strong> Anyone can be a player, run an agency and run a creator studio, and see each seat's own books.</li>
+  <li><strong>An economy where each seat wins when the others do.</strong> Agencies pay Syms for answers. Creators build the skill steps Syms grow on and earn a royalty on each pass. The game keeps 10 percent on top of what a seat spends.</li>
+  <li><strong>The Sym's code.</strong> Every input a person gives writes one block, in four letters like the bases of DNA: T a tap, G a proof, A an agency act, C a creator act. The game shows how each code differs from every other Sym's, as counts only.</li>
+  <li><strong>Worth is not weighed by money.</strong> Everyone in a group is paid the same. Asking the same group again costs more, and the extra goes to a growth fund that pays players for finishing skill steps.</li>
+  <li><strong>One map, kept true by tests.</strong> One file ties a tap to a letter, a style, an area of the mind, a skill and a certificate. Tests fail when the records and the code disagree.</li>
+</ol>
+<figure>
+  <div class="todo">Screenshot: the journey with the Sym on the left, in the final look.</div>
+  <figcaption>Figure 1. A player's Sym. Each coloured point is something it has learned. Gold points are skill steps proved.</figcaption>
+</figure>
+
+<!-- ===================== 4. THE AGENTS ===================== -->
+<h2><span>4</span>The agents</h2>
+<p>BYT has four agents. Each has one job, one read-only tool, and a check that is not a model. They never call each other. The database carries the hand-off, so the design has no loops between agents.</p>
+<table>
+  <tr><th>Agent</th><th>Job</th><th>Its one tool</th><th>Never sees</th><th>Checked by</th></tr>
+  <tr><td><strong>Profiler</strong></td><td>Reads a player's picks and writes up to 8 short beliefs</td><td><code>get_picks</code></td><td>Nickname, player id, held-back picks, other players</td><td>Prompt guard and length cap, then stored by code and shown to the player</td></tr>
+  <tr><td><strong>Twin</strong></td><td>Guesses the player's picks on cards the player has not seen</td><td><code>get_brief</code></td><td>The raw picks, the right answers, other players</td><td>Each guess must be a real option. Code scores it against the real picks</td></tr>
+  <tr><td><strong>Worker</strong></td><td>Answers one job question as the player would, with a one-line reason</td><td><code>get_job</code></td><td>The requester's name, other players</td><td>The option must exist, the reason passes the guard, then the player approves or corrects</td></tr>
+  <tr><td><strong>Guide</strong></td><td>Answers one line the player says to their Sym and offers one move</td><td><code>get_situation</code></td><td>Anything said before, other players</td><td>The line passes the guard before the run and the answer after. The move must be on a list code gave</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 820 400" role="img" aria-label="Diagram: taps go to the Profiler, which writes beliefs. The Twin, the Worker and the Guide read the beliefs. Plain code checks each result and decides certificates and pay. The person sees and corrects everything." width="100%">
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2" color="#a9b1c4">
+    <rect x="10" y="160" width="120" height="70" rx="4"/>
+    <rect x="190" y="160" width="130" height="70" rx="4" stroke="#bfe6ff"/>
+    <rect x="380" y="160" width="120" height="70" rx="4"/>
+    <rect x="560" y="40" width="120" height="60" rx="4" stroke="#bfe6ff"/>
+    <rect x="560" y="165" width="120" height="60" rx="4" stroke="#bfe6ff"/>
+    <rect x="560" y="290" width="120" height="60" rx="4" stroke="#bfe6ff"/>
+    <rect x="380" y="320" width="120" height="60" rx="4" stroke="#ffd98a"/>
+    <rect x="10" y="320" width="120" height="60" rx="4"/>
+    <path d="M130,195 H186" marker-end="url(#a)"/><path d="M320,195 H376" marker-end="url(#a)"/>
+    <path d="M500,180 C530,150 530,80 556,72" marker-end="url(#a)"/><path d="M500,195 H556" marker-end="url(#a)"/><path d="M500,210 C530,240 530,310 556,318" marker-end="url(#a)"/>
+    
+    <path d="M680,70 H730 V394 H440 V384" marker-end="url(#a)"/><path d="M680,195 H730"/><path d="M680,320 H730"/>
+    <path d="M380,350 H134" marker-end="url(#a)"/><path d="M70,320 V234" marker-end="url(#a)" stroke-dasharray="3 4"/>
+  </g>
+  <g fill="#f5f7fb" font-size="13" text-anchor="middle">
+    <text x="70" y="190">The person</text><text x="70" y="208" font-size="11" fill="#a9b1c4">taps cards</text>
+    <text x="255" y="190" fill="#bfe6ff">Profiler</text><text x="255" y="208" font-size="11" fill="#a9b1c4">get_picks</text>
+    <text x="440" y="190">Beliefs</text><text x="440" y="208" font-size="11" fill="#a9b1c4">in the database</text>
+    <text x="620" y="66" fill="#bfe6ff">Twin</text><text x="620" y="84" font-size="11" fill="#a9b1c4">get_brief</text>
+    <text x="620" y="191" fill="#bfe6ff">Worker</text><text x="620" y="209" font-size="11" fill="#a9b1c4">get_job</text>
+    <text x="620" y="316" fill="#bfe6ff">Guide</text><text x="620" y="334" font-size="11" fill="#a9b1c4">get_situation</text>
+    <text x="440" y="346" fill="#ffd98a">Plain code</text><text x="440" y="364" font-size="11" fill="#a9b1c4">scores, pays, certifies</text>
+    <text x="70" y="346">The person</text><text x="70" y="364" font-size="11" fill="#a9b1c4">sees, approves, corrects</text>
+    <text x="100" y="278" font-size="11" fill="#a9b1c4">a correction is a new tap</text>
+  </g>
+</svg>
+<figcaption>Figure 2. How the agents are organized. Blue boxes are models. The gold box is plain code, and it is the only thing that gives a certificate, moves a credit or shows a total. The Profiler runs first. The other three read what it wrote and never call it or each other.</figcaption>
+</figure>
+
+<h3>Model, and why</h3>
+<p>All four agents use <code>gpt-6-luna</code> through Portkey, on the Responses API. It is the model the course key allows, and at 0.10 US dollars per million input tokens it is cheap enough to run an agent every time a player finishes a gate. Each run is capped at 4 model requests and 3 tool calls. A daily token budget stops spending, and a practice Sym that uses no AI takes over when there is no key or no budget, so the game always works.</p>
+
+<h3>What a model never decides</h3>
+<p>Certificates, pay, prices, what an agency sees, the Sym's letters, its code and every line the Sym or the crew says on screen are plain code. When an agency asks 194 Syms a question, no model runs at all: each Sym answers from its person's counted picks. That keeps the answers free, repeatable and impossible to talk into something.</p>
+
+<h3>One real run, step by step</h3>
+<div class="todo">Capture one fresh run in the final look: a new player finishes the Calibrator, the Profiler writes beliefs, the Twin commits guesses for a battle, the result and certificate, then one job checked. Put four screenshots here with the matching lines from <code>output/audit_trail.json</code> beside them.</div>
+
+<!-- ===================== 5. TOKENOMICS ===================== -->
+<h2><span>5</span>Tokenomics</h2>
+<p>Every agent run writes its real token counts to a usage table. These are all 112 runs made while the game was built and tested, from 2026-11-14 to 2026-11-21. Prices used: 0.10 US dollars per million input tokens, 0.01 for cached input, 0.50 for output.</p>
+<table>
+  <tr><th>Agent</th><th class="n">Runs</th><th class="n">Input</th><th class="n">Cached</th><th class="n">Output</th><th class="n">Avg time</th><th class="n">Total cost</th><th class="n">Per run</th></tr>
+  <tr><td>Profiler</td><td class="n">61</td><td class="n">210,363</td><td class="n">32,572</td><td class="n">57,133</td><td class="n">9.2 s</td><td class="n">$0.04667</td><td class="n">$0.00077</td></tr>
+  <tr><td>Twin</td><td class="n">15</td><td class="n">36,842</td><td class="n">2,573</td><td class="n">6,114</td><td class="n">5.3 s</td><td class="n">$0.00651</td><td class="n">$0.00043</td></tr>
+  <tr><td>Worker</td><td class="n">5</td><td class="n">8,497</td><td class="n">0</td><td class="n">572</td><td class="n">3.9 s</td><td class="n">$0.00114</td><td class="n">$0.00023</td></tr>
+  <tr><td>Guide</td><td class="n">31</td><td class="n">71,220</td><td class="n">0</td><td class="n">5,636</td><td class="n">3.4 s</td><td class="n">$0.00994</td><td class="n">$0.00032</td></tr>
+  <tr><td><strong>All</strong></td><td class="n"><strong>112</strong></td><td class="n">326,922</td><td class="n">35,145</td><td class="n">69,455</td><td class="n"></td><td class="n"><strong>$0.06426</strong></td><td class="n">$0.00057</td></tr>
+</table>
+<p>107 of the 112 runs completed. Five stopped on an error from the model service, and the game fell back to the practice Sym each time.</p>
+
+<h3>Cost per player, and at scale</h3>
+<p>A stated pattern for one active player in one month: 8 gates finished (8 Profiler runs), 2 battles (2 Twin runs), 10 jobs (10 Worker runs) and 10 lines said to the Sym (10 Guide runs).</p>
+<table>
+  <tr><th>Scale</th><th class="n">Agent cost per month</th><th>Note</th></tr>
+  <tr><td>1 active player</td><td class="n">$0.0125</td><td>8 × 0.00077 + 2 × 0.00043 + 10 × 0.00023 + 10 × 0.00032</td></tr>
+  <tr><td>100 players</td><td class="n">$1.25</td><td>Scales in a straight line: agents run per player, never per group</td></tr>
+  <tr><td>10,000 players</td><td class="n">$125</td><td>The same line</td></tr>
+</table>
+<p>The cost of an agency's question does not appear in that table because it is zero. Asking 194 Syms uses no tokens. That is the design choice that makes the economy work: the costly step (learning a person) happens once per gate, and the step that is sold (answering as that person) is free to run.</p>
+<div class="todo">Add the fixed hosting cost per month for the web service and the database at each scale, from the providers' price pages on the day of deploy.</div>
+
+<h3>What was done to cut cost, and whether it hurt</h3>
+<ul>
+  <li><strong>The Twin reads beliefs, not raw picks.</strong> Eight short beliefs stand in for every pick the player made, so the Twin's input stays near 2,500 tokens however long the player has played.</li>
+  <li><strong>The Profiler runs once per finished gate</strong>, not per tap.</li>
+  <li><strong>The Guide is sent only the part of the player's state its line is about.</strong> Code picks the part by matching words before the model is called.</li>
+  <li><strong>Group questions use no model.</strong></li>
+  <li><strong>A zero-token practice Sym</strong> is the fallback and the baseline.</li>
+  <li><strong>Prompt caching</strong> worked for the Profiler (15 percent of its input was cached) and barely for the others, whose prompts are too short to qualify.</li>
+</ul>
+<div class="todo">The experiment that answers "did a cut hurt": run the Twin on the same held-back cards twice for the same players, once on beliefs and once on all raw picks, and report tokens and matches for both. Also compare the AI Twin to the zero-token practice Sym on real players.</div>
+
+<!-- ===================== 6. SAFETY ===================== -->
+<h2><span>6</span>Safety</h2>
+<p>The main defense is a design choice: <strong>no one can type to anyone else, and almost no one can type to a model.</strong> Questions, jobs and cards are tapped from fixed lists. The one place a player types (a line to their own Sym) is guarded before and after the model, is never stored, and reaches no other player.</p>
+<table>
+  <tr><th>Risk</th><th>Defense built</th><th>Shown by</th></tr>
+  <tr><td>Injected text reaching a model or another person</td><td>No free-text channel between people. Fixed lists only. A prompt guard on the one typed line and on what a model writes back</td><td>Test: a typed question to an agency route is refused</td></tr>
+  <tr><td>A model inventing a score or a payment</td><td>Code decides certificates, pay and totals</td><td>Test: the modules that pay and certify import no model library</td></tr>
+  <tr><td>A Sym cheating a battle</td><td>It commits its guesses before the player sees a card</td><td>Test: the cards cannot be fetched until it has</td></tr>
+  <tr><td>An agency singling out one person</td><td>Totals only, 5 Syms or more, opt-in. A smaller group returns nothing and costs nothing</td><td>Test, and Figure 3</td></tr>
+  <tr><td>Overspending on tokens</td><td>4 requests and 3 tool calls per run, a daily token budget, a zero-token fallback, rate limits on every agent route</td><td>Test: the game plays through with no key</td></tr>
+  <tr><td>Overspending credits by surprise</td><td>Every price is said before a send. A short wallet is refused before anything is charged</td><td>Test: the price a creator is told equals the price charged</td></tr>
+  <tr><td>A Sym speaking for a person unchecked</td><td>The person approves or corrects before pay</td><td>Test: pay happens once, on review</td></tr>
+  <tr><td>BOT Syms passed off as people</td><td>193 BOT Syms (one per UN member state, random tastes) are labelled in the game and never counted as people</td><td>Test: a bot never raises the people count</td></tr>
+  <tr><td>Feedback tied to a person</td><td>Product feedback is a tap stored with no player id</td><td>Test: the table has no player column</td></tr>
+  <tr><td>Records drifting from the code</td><td>Every route, table and rule number is checked against the written records</td><td><code>test_governance.py</code></td></tr>
+</table>
+<figure>
+  <div class="todo">Screenshot: the agency desk refusing a group that is too small ("Too few Syms match that group"), with the passing test output beside it.</div>
+  <figcaption>Figure 3. A defense working: a group under 5 Syms cannot be asked, and nothing is charged.</figcaption>
+</figure>
+<pre>$ python -m pytest          (backend, 2026-11-21)
+91 passed in 27.25s</pre>
+
+<!-- ===================== 7. IMPACT ===================== -->
+<h2><span>7</span>Impact</h2>
+<h3>Does a Sym know its person?</h3>
+<div class="big">
+  <div><strong>89 of 120</strong><span>held-back picks the Sym guessed right (74 percent)</span></div>
+  <div><strong>47 of 120</strong><span>the crowd's guess on the same picks (39 percent)</span></div>
+  <div><strong>12</strong><span>battles, all with the AI Twin</span></div>
+  <div><strong>8</strong><span>Sym certificates earned</span></div>
+</div>
+<p class="note">Read this number with care. These 12 battles were played on test accounts by the author and by automated browser tests, not by independent people, and some test players answered in a deliberately steady way. It shows the measuring works. It does not yet show the result holds for real people.</p>
+<div class="todo">Real players (the student, family, classmates): for each, Sym matches against the crowd's guess, time to the first certificate, and one quote. One real asker with a real question: what they asked, what came back, how long it took, and what the same answer would have cost on a panel (section 2). Without this the row scores at most half.</div>
+
+<h3>What the game costs against how it is done today</h3>
+<p>To ask 194 people one question on a paid panel at the recommended rate, a company pays for each person's time plus about 43 percent in fees, and waits for the answers. In BYT the same question to 194 Syms returns at once, uses no tokens, and the agency's play credits go to the people behind the Syms. The saving is not that people are paid less. It is that a person is asked once and their Sym is asked many times.</p>
+<div class="todo">Turn this into one sourced line of arithmetic once the panel prices are re-checked.</div>
+
+<h3>Is it worth it to the people using it?</h3>
+<p>After a gate, a job or a question, the Sym or the crew asks one thing: was that worth it. One tap answers, and it is stored with no name. The About page shows the counts.</p>
+<div class="todo">The counts, once real people have played.</div>
+
+<!-- ===================== 8. LIMITS + NEXT ===================== -->
+<h2><span>8</span>Limits and next steps</h2>
+<h3>What does not work yet</h3>
+<ul>
+  <li><strong>No independent users yet.</strong> The accuracy and feedback numbers are from test accounts.</li>
+  <li><strong>The crowd is mostly bots.</strong> 193 of the Syms an agency can ask are BOT Syms with random tastes. They make the economy visible. Their answers are not evidence about people, and this report does not use them as such.</li>
+  <li><strong>A group of 5 can still hold one real person.</strong> The minimum counts BOT Syms. The rule that asks real people only in a crowd of 5 real people is written and tested but switched off, because with one real player it would stop that player earning.</li>
+  <li><strong>No way back after logging out.</strong> There is no password or recovery key, by choice, so that no email is stored.</li>
+  <li><strong>Certificates cannot be checked by an outside party.</strong></li>
+  <li><strong>The brain picture is a picture.</strong> The areas are loose textbook links. The game measures no brain and makes no health claim.</li>
+  <li><strong>Rule numbers are choices, not findings:</strong> the 5-Sym minimum, the 10 percent share, the price of a repeat ask, the pay for a skill step.</li>
+  <li><strong>Not yet tested</strong> on a phone, with a screen reader or by keyboard alone.</li>
+  <li><strong>Being different earns nothing by itself.</strong> The game shows how a code differs but does not pay for it. That is deliberate: paying for rarity alone would reward random or hostile answers.</li>
+</ul>
+<h3>What comes next</h3>
+<ul>
+  <li><strong>A calibrator across every area of the mind,</strong> so the first ten taps write a code that is already a person's own.</li>
+  <li><strong>Pay for what is rare and proved.</strong> A bonus for answers that differ from the crowd, only for a Sym that holds a certificate.</li>
+  <li><strong>The history of change.</strong> Every block is dated. Reading how groups shift over time, and what moved them, is what an AI system cannot get anywhere else.</li>
+  <li><strong>More kinds of game,</strong> built by creators from what Syms and agencies need.</li>
+  <li><strong>Agencies that act on an answer:</strong> reach a real person to hire, with that person's consent each time.</li>
+  <li><strong>Signed certificates, identity tiers and real money,</strong> in that order, each with its own review.</li>
+</ul>
+<p class="lead" style="margin-top:34px">On its own a Sym is black and white. Color comes from other people.</p>
+
+<p class="meta" style="margin-top:40px">Credits. The drawings, names and words in BYT are our own. Films and shows were mood references only. Nothing here is official, licensed or for sale. Outside reading is listed with dates in <code>docs/SOURCES.md</code>. This report and the game were built with an AI coding assistant, under the student's direction.</p>
+
+</body>
+</html>

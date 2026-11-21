@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BYT by Symbolon</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<style>
+  /* The BYT house style, the same as the game: infinite black, a world turning into light at the horizon,
+     sharp lines, platinum for structure, gold only for what is active or earned. */
+  :root {
+    --bg: #010206; --text: #f5f7fb; --muted: #a9b1c4; --label: #c6cede; --line: rgba(214, 228, 255, 0.42);
+    --hair: rgba(214, 228, 255, 0.16); --gold: #ffd98a; --ice: #bfe6ff; --ink: #04050c; --glass: rgba(255, 255, 255, 0.035);
+    --light: linear-gradient(110deg, #ffe2a0 0%, #ffffff 48%, #bfe6ff 100%);
+  }
+  html, body, .reveal-viewport { background: var(--bg) !important; }
+  .reveal { background: transparent; }
+  /* the world: a dark planet below, its edge catching the light */
+  body::before {
+    content: ''; position: fixed; left: 50%; top: 93vh; width: 340vmax; height: 340vmax; margin-left: -170vmax; border-radius: 50%;
+    background: radial-gradient(circle at 50% 0%, #0a1024 0%, #03040c 12%, #010208 40%);
+    box-shadow: 0 -1px 0 rgba(255, 246, 220, 0.95), 0 -2px 8px rgba(255, 226, 160, 0.7), 0 -6px 26px rgba(255, 200, 120, 0.28), 0 -18px 70px rgba(110, 160, 255, 0.16);
+    pointer-events: none; z-index: 0;
+  }
+  /* the sky: every other Sym is a far point of light, in color */
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.75;
+    background:
+      radial-gradient(1.6px 1.6px at 8% 18%, #8fd0ff 50%, transparent 51%), radial-gradient(1.4px 1.4px at 17% 62%, #ff9fb8 50%, transparent 51%),
+      radial-gradient(1.8px 1.8px at 26% 31%, #b9a2ff 50%, transparent 51%), radial-gradient(1.3px 1.3px at 34% 78%, #8fe6c0 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 43% 12%, #ffb070 50%, transparent 51%), radial-gradient(1.2px 1.2px at 52% 55%, #e6dcff 50%, transparent 51%),
+      radial-gradient(1.7px 1.7px at 61% 24%, #6fe0e0 50%, transparent 51%), radial-gradient(1.3px 1.3px at 69% 70%, #8fd0ff 50%, transparent 51%),
+      radial-gradient(1.6px 1.6px at 77% 40%, #ff9fb8 50%, transparent 51%), radial-gradient(1.2px 1.2px at 85% 15%, #8fe6c0 50%, transparent 51%),
+      radial-gradient(1.8px 1.8px at 92% 58%, #b9a2ff 50%, transparent 51%), radial-gradient(1.3px 1.3px at 96% 82%, #ffb070 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 4% 84%, #6fe0e0 50%, transparent 51%), radial-gradient(1.4px 1.4px at 57% 88%, #e6dcff 50%, transparent 51%),
+      radial-gradient(1.2px 1.2px at 38% 46%, #8fd0ff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 73% 8%, #ffd98a 50%, transparent 51%);
+  }
+  .reveal { font-family: 'Helvetica Neue', Helvetica, Arial, 'Segoe UI', sans-serif; font-weight: 300; color: var(--text); font-size: 32px; -webkit-font-smoothing: antialiased; }
+  .reveal .slides { text-align: left; z-index: 1; }
+  .reveal .slides section { padding-top: 1.5em; }
+  /* the mark, top left on every slide, as in the game */
+  .reveal .slides section::before { content: 'BYT'; position: absolute; top: 0; left: 0; font-size: 0.62em; font-weight: 200; letter-spacing: 0.7em;
+    background: var(--light); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .reveal .slides section.title::before { content: none; }
+  .reveal h1, .reveal h2, .huge, .row strong {
+    background: var(--light); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+  .reveal h1 { font-size: 6em; font-weight: 100; letter-spacing: 0.5em; margin: 0 -0.5em 0.1em 0; text-transform: none; line-height: 1; text-align: center; filter: drop-shadow(0 0 30px rgba(255, 222, 150, 0.4)); }
+  .reveal h2 { font-size: 1.8em; font-weight: 200; letter-spacing: -0.02em; margin: 0 0 0.55em; text-transform: none; line-height: 1.08; }
+  .reveal p { margin: 0 0 0.5em; line-height: 1.4; }
+  .reveal .title p { text-align: center; }
+  /* small capital labels, widely spaced */
+  .tag { font-size: 0.4em; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin: 0 0 1.4em 8.5em !important; padding-top: 0.25em; position: absolute; top: 0; left: 0; }
+  .title .tag { position: static; margin: 0 0 1.4em 0 !important; }
+  .soft { color: var(--muted); }
+  .gold { color: var(--gold); }
+  .teal { color: var(--ice); }
+  .huge { font-size: 4.8em; font-weight: 100; line-height: 1; font-variant-numeric: tabular-nums; filter: drop-shadow(0 0 22px rgba(255, 222, 150, 0.45)); display: inline-block; }
+  /* a panel is glass with a corner bracket at the top, like the read-outs in the game */
+  .row { display: flex; gap: 0.7em; align-items: stretch; }
+  .row > div { position: relative; flex: 1; border: 1px solid var(--hair); background: var(--glass); padding: 0.8em 0.8em 0.7em; font-size: 0.6em; line-height: 1.4; border-radius: 2px; }
+  .row > div::before, .row > div::after { content: ''; position: absolute; top: -1px; width: 14px; height: 14px; border-top: 1px solid var(--gold); }
+  .row > div::before { left: -1px; border-left: 1px solid var(--gold); }
+  .row > div::after { right: -1px; border-right: 1px solid var(--gold); }
+  .row.bare > div { border: none; background: none; padding: 0; }
+  .row.bare > div::before, .row.bare > div::after { content: none; }
+  .row strong { display: block; font-size: 2.2em; font-weight: 100; line-height: 1.1; margin-bottom: 0.1em; }
+  .reveal .row h3 { font-size: 0.72em; font-weight: 400; margin: 0 0 0.6em; color: var(--label); text-transform: uppercase; letter-spacing: 0.26em; }
+  .reveal table { font-size: 0.58em; width: 100%; border-collapse: collapse; }
+  .reveal table th, .reveal table td { border: none; border-bottom: 1px solid var(--hair); padding: 0.5em 0.6em 0.5em 0; text-align: left; font-weight: 300; }
+  .reveal table th { font-size: 0.7em; letter-spacing: 0.26em; text-transform: uppercase; color: var(--label); font-weight: 400; }
+  .reveal table td.n, .reveal table th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  /* the Sym's code: lit blocks, as on the Code tab */
+  .strand { display: flex; flex-wrap: wrap; gap: 7px; margin: 0.4em 0 0.7em; }
+  .strand span { display: inline-grid; place-items: center; width: 1.9em; height: 1.9em; border: 1px solid currentColor; border-radius: 2px; font: 600 0.5em ui-monospace, Consolas, monospace;
+    background: color-mix(in srgb, currentColor 14%, transparent); box-shadow: 0 0 10px color-mix(in srgb, currentColor 40%, transparent); }
+  /* a dotted meter, as the game draws them */
+  .meter { display: block; height: 4px; margin: 0.3em 0 0.5em; background: rgba(191, 230, 255, 0.26);
+    -webkit-mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px); mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px); }
+  .meter span { display: block; height: 4px; background: var(--gold); }
+  .meter.dim span { background: var(--muted); }
+  .shot { border: 1px dashed #ff7a9c; color: #ffb3c6; font-size: 0.45em; padding: 2em 1em; text-align: center; letter-spacing: 0.1em; }
+  .foot { position: absolute; bottom: -2.2em; left: 0; font-size: 0.36em; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; }
+  .reveal .progress { color: var(--gold); height: 2px; }
+  .reveal .controls { color: var(--label); }
+  .reveal .slide-number { background: none; color: var(--muted); font-size: 12px; letter-spacing: 0.2em; }
+  svg text { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 TITLE -->
+<section class="title">
+  <p class="tag">MGT 409 AI Foundations · final project</p>
+  <svg viewBox="0 0 600 150" width="62%" style="display:block;margin:0 auto 0.2em" role="img" aria-label="Points of light joined by fine lines: Syms reaching each other">
+    <g fill="none" stroke="rgba(230,236,250,0.5)" stroke-width="1">
+      <path d="M40,90 C110,40 150,110 215,70 S330,30 385,80 S500,110 560,55"/><path d="M215,70 C230,110 280,125 320,118"/><path d="M385,80 C400,40 440,25 470,30"/><path d="M120,66 C110,30 80,22 60,28"/>
+    </g>
+    <g>
+      <circle cx="40" cy="90" r="4" fill="#8fd0ff"/><circle cx="120" cy="66" r="5" fill="#fff"/><circle cx="60" cy="28" r="3" fill="#ffb070"/><circle cx="215" cy="70" r="6" fill="#ffd98a"/>
+      <circle cx="320" cy="118" r="4" fill="#b9a2ff"/><circle cx="300" cy="52" r="9" fill="#fff"/><circle cx="385" cy="80" r="5" fill="#6fe0e0"/><circle cx="470" cy="30" r="4" fill="#ff9fb8"/><circle cx="560" cy="55" r="5" fill="#ffd98a"/>
+      <circle cx="300" cy="52" r="22" fill="none" stroke="rgba(255,222,150,0.35)"/>
+    </g>
+    <text x="300" y="20" fill="#c6cede" font-size="9" letter-spacing="3" text-anchor="middle">YOU</text>
+  </svg>
+  <h1>BYT</h1>
+  <p style="font-weight:200">Beat your Sym. Benefit from your Sym. Be everywhere.</p>
+  <p class="soft" style="font-size:0.42em;margin-top:2.4em;letter-spacing:0.26em;text-transform:uppercase">by Symbolon · Luke Pfaff · Yale School of Management · November 2026</p>
+</section>
+
+<!-- 2 WHY NOW -->
+<section>
+  <p class="tag">Why now</p>
+  <h2 style="font-size:2.5em">Today people have jobs.<br>Tomorrow is uncertain.</h2>
+  <p style="font-size:0.8em">AI is learning to do the work. What it cannot make is <span class="gold">you</span>: your taste, your judgment, what you would choose.</p>
+  <p class="soft" style="font-size:0.66em">People already give that away. Published estimates put phone use at 4 to 5 hours a day, and every tap is sold by someone else. The person is paid nothing and owns nothing at the end.</p>
+  <p class="foot">Screen time: published 2026 estimates. Source to confirm before hand-in.</p>
+</section>
+
+<!-- 3 THE ANSWER -->
+<section>
+  <p class="tag">What we are building</p>
+  <h2>An ecosystem built on verified trust, where players, creators and agencies earn passive income.</h2>
+  <div class="row">
+    <div><h3>1. Play</h3>Tap cards. Each tap writes one block of your Sym: a digital you that you own.</div>
+    <div><h3>2. Prove</h3>Your Sym must guess picks it has never seen, and beat the crowd. Code gives the certificate, never an AI.</div>
+    <div><h3>3. Earn</h3>Your Sym answers and works while you are away. You are paid each time.</div>
+  </div>
+  <div class="shot" style="margin-top:0.8em">Three screenshots side by side: a card, the Sym forming, a certificate</div>
+</section>
+
+<!-- 4 THE ECONOMY -->
+<section>
+  <p class="tag">The economy</p>
+  <h2>How it works</h2>
+  <svg viewBox="0 0 860 350" width="100%" role="img" aria-label="Credits move in a loop. Agencies pay Syms for answers, jobs and meetings, and back skills. Creators build the skill steps Syms grow on and earn a royalty on each pass. Players check their Sym's work and are paid. The game keeps ten percent, and a growth fund pays for progress.">
+    <defs><marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ffd98a"/></marker></defs>
+    <g fill="none" stroke="#bfe6ff" stroke-width="1.4">
+      <rect x="20" y="130" width="190" height="90"/><rect x="335" y="14" width="190" height="80"/><rect x="650" y="130" width="190" height="90"/>
+      <rect x="335" y="150" width="190" height="56" stroke="#a9b1c4" stroke-dasharray="4 5"/><rect x="300" y="262" width="260" height="74" stroke="#ffd98a"/>
+    </g>
+    <g fill="none" stroke="#ffd98a" stroke-width="1.5">
+      <path d="M335,46 C240,52 150,84 122,126" marker-end="url(#b)"/>
+      <path d="M525,46 C620,52 710,84 738,126" marker-end="url(#b)"/>
+      <path d="M650,196 H529" marker-end="url(#b)"/><path d="M335,196 H214" marker-end="url(#b)"/>
+      <path d="M300,300 C220,300 140,268 118,224" marker-end="url(#b)"/>
+      <path d="M560,300 C640,300 720,268 742,224" marker-end="url(#b)"/>
+    </g>
+    <g fill="#f5f7fb" font-size="17" text-anchor="middle">
+      <text x="430" y="48">AGENCY</text><text x="430" y="72" font-size="12" fill="#a9b1c4">brings the pay</text>
+      <text x="115" y="170">PLAYER + SYM</text><text x="115" y="194" font-size="12" fill="#a9b1c4">brings what is theirs alone</text>
+      <text x="745" y="170">CREATOR</text><text x="745" y="194" font-size="12" fill="#a9b1c4">brings the growth</text>
+      <text x="430" y="174" font-size="13" fill="#a9b1c4">skill steps</text><text x="430" y="194" font-size="11" fill="#a9b1c4">built by creators, played by players</text>
+      <text x="430" y="288" fill="#ffd98a">GROWTH FUND</text><text x="430" y="308" font-size="12" fill="#a9b1c4">filled when a group is asked again</text><text x="430" y="325" font-size="12" fill="#a9b1c4">pays player and creator per step passed</text>
+    </g>
+    <g fill="#ffd98a" font-size="12" text-anchor="middle">
+      <text x="196" y="38">pays for answers,</text><text x="196" y="54">jobs and meetings</text>
+      <text x="666" y="38">backs the skills</text><text x="666" y="54">it wants to hire for</text>
+      <text x="150" y="318">a step passed pays the player</text><text x="712" y="318">and a royalty to its creator</text>
+    </g>
+  </svg>
+  <p class="soft" style="font-size:0.56em">The game keeps 10 percent on top of what a seat spends. Asking 194 Syms a question uses no AI tokens, so the answer that is sold costs almost nothing to make. Play money today.</p>
+</section>
+
+<!-- 5 THE ROLES -->
+<section>
+  <p class="tag">The roles</p>
+  <h2>Three seats. Each wins when the others do.</h2>
+  <table>
+    <tr><th>Seat</th><th>Puts in</th><th>Gets out</th><th>What it adds for everyone</th></tr>
+    <tr><td><span class="gold">Player</span></td><td>Taps. Checks of the Sym's work.</td><td>Pay for answers, jobs and growth. A Sym that keeps earning.</td><td>The one thing no one else has: a real, proved person.</td></tr>
+    <tr><td><span class="gold">Agency</span></td><td>Credits. Questions and jobs from fixed lists.</td><td>Answers at once, as totals over 5 or more Syms. A best-fit Sym to meet.</td><td>The pay, and the demand that tells creators what to build.</td></tr>
+    <tr><td><span class="gold">Creator</span></td><td>Skill steps, built from what Syms and agencies need.</td><td>A royalty each time a player passes a step.</td><td>The ladder Syms climb, so answers get worth more.</td></tr>
+    <tr><td><span class="gold">The game</span></td><td>The rules, the proof, the books.</td><td>10 percent on top of every spend.</td><td>Trust: no one can buy a certificate or see one person.</td></tr>
+  </table>
+  <p class="soft" style="font-size:0.56em;margin-top:0.8em">One login holds all three seats. The same person can play, hire and build.</p>
+</section>
+
+<!-- 6 THE CORE -->
+<section>
+  <p class="tag">The core</p>
+  <h2>A code only you can write, and proof that it is you.</h2>
+  <div class="strand">
+    <span class="teal">T</span><span class="teal">T</span><span style="color:#ff9fb8">T</span><span class="gold">G</span><span style="color:#b9a2ff">T</span><span class="teal">T</span><span style="color:#ffb070">A</span><span style="color:#8fe6c0">T</span><span class="gold">G</span><span style="color:#ff9fb8">T</span><span class="teal">C</span><span style="color:#b9a2ff">T</span><span style="color:#8fe6c0">T</span><span class="gold">G</span><span style="color:#ffb070">A</span><span class="teal">T</span><span style="color:#ff9fb8">T</span><span class="teal">C</span><span class="gold">G</span><span style="color:#b9a2ff">T</span>
+  </div>
+  <p class="soft" style="font-size:0.56em">Every input writes one block. T a tap. G growth you proved. A what you did as an agency. C what you did as a creator.</p>
+  <div class="row bare" style="align-items:flex-end;margin-top:0.5em">
+    <div><div class="huge" style="font-size:5em">74%</div><span class="meter"><span style="width:74%"></span></span><h3>My Sym, on picks it had never seen</h3></div>
+    <div><div class="huge" style="font-size:5em;background:none;-webkit-text-fill-color:var(--muted);filter:none">39%</div><span class="meter dim"><span style="width:39%"></span></span><h3>The crowd's guess, same picks</h3></div>
+  </div>
+  <p class="foot">120 held-back picks, 12 battles, test accounts. It shows the measuring works. Real players come next.</p>
+</section>
+
+<!-- 7 AGENTS -->
+<section>
+  <p class="tag">Under the hood</p>
+  <h2>Four agents. None of them decides.</h2>
+  <svg viewBox="0 0 820 330" width="100%" role="img" aria-label="Taps go to the Profiler, which writes beliefs. The Twin, Worker and Guide read them. Plain code scores, pays and certifies. The person checks.">
+    <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#a9b1c4"/></marker></defs>
+    <g fill="none" stroke="#a9b1c4" stroke-width="1.4">
+      <rect x="10" y="120" width="130" height="70"/><rect x="200" y="120" width="130" height="70" stroke="#bfe6ff"/><rect x="390" y="120" width="130" height="70"/>
+      <rect x="590" y="20" width="130" height="56" stroke="#bfe6ff"/><rect x="590" y="127" width="130" height="56" stroke="#bfe6ff"/><rect x="590" y="234" width="130" height="56" stroke="#bfe6ff"/>
+      <rect x="390" y="254" width="130" height="60" stroke="#ffd98a"/><rect x="10" y="254" width="130" height="60"/>
+      <path d="M140,155 H196" marker-end="url(#a)"/><path d="M330,155 H386" marker-end="url(#a)"/>
+      <path d="M520,140 C555,110 555,58 586,50" marker-end="url(#a)"/><path d="M520,155 H586" marker-end="url(#a)"/><path d="M520,170 C555,200 555,250 586,258" marker-end="url(#a)"/>
+      <path d="M720,48 H770 V326 H455 V318" marker-end="url(#a)"/><path d="M720,155 H770"/><path d="M720,262 H770"/>
+      <path d="M390,284 H144" marker-end="url(#a)"/><path d="M75,254 V194" marker-end="url(#a)" stroke-dasharray="4 5"/>
+    </g>
+    <g fill="#f5f7fb" font-size="15" text-anchor="middle">
+      <text x="75" y="152">The person</text><text x="75" y="172" font-size="12" fill="#a9b1c4">taps</text>
+      <text x="265" y="152" fill="#bfe6ff">Profiler</text><text x="265" y="172" font-size="12" fill="#a9b1c4">writes beliefs</text>
+      <text x="455" y="152">Beliefs</text><text x="455" y="172" font-size="12" fill="#a9b1c4">in the database</text>
+      <text x="655" y="44" fill="#bfe6ff">Twin</text><text x="655" y="62" font-size="12" fill="#a9b1c4">guesses unseen picks</text>
+      <text x="655" y="151" fill="#bfe6ff">Worker</text><text x="655" y="169" font-size="12" fill="#a9b1c4">answers a job</text>
+      <text x="655" y="258" fill="#bfe6ff">Guide</text><text x="655" y="276" font-size="12" fill="#a9b1c4">talks, offers one move</text>
+      <text x="455" y="280" fill="#ffd98a">Plain code</text><text x="455" y="300" font-size="12" fill="#a9b1c4">scores, pays, certifies</text>
+      <text x="75" y="280">The person</text><text x="75" y="300" font-size="12" fill="#a9b1c4">approves or corrects</text>
+    </g>
+  </svg>
+  <p class="soft" style="font-size:0.56em">One read-only tool each. They never call each other. A model never gives a certificate, moves a credit or shows a total.</p>
+</section>
+
+<!-- 8 COST + SAFETY -->
+<section>
+  <p class="tag">Cheap to run. Hard to abuse.</p>
+  <div class="row bare" style="align-items:flex-end;margin-bottom:0.5em">
+    <div><div class="huge" style="font-size:3.6em">$0.0006</div><h3>per agent run, 112 real runs</h3></div>
+    <div><div class="huge" style="font-size:3.6em">$125</div><h3>a month in AI cost at 10,000 players</h3></div>
+    <div><div class="huge" style="font-size:3.6em">0</div><h3>tokens to ask 194 Syms a question</h3></div>
+  </div>
+  <div class="row">
+    <div><h3>No one types to anyone</h3>Questions, jobs and cards are tapped from fixed lists. Nothing to inject.</div>
+    <div><h3>Groups, not people</h3>Totals over 5 Syms or more. A smaller group returns nothing and costs nothing.</div>
+    <div><h3>A person checks</h3>A Sym is paid only after its person approves or corrects the answer.</div>
+    <div><h3>Hard limits</h3>4 requests a run, a daily token budget, and a no-AI Sym that takes over.</div>
+  </div>
+  <div class="shot" style="margin-top:0.7em;padding:1.2em 1em">Screenshot: the agency desk refusing a group that is too small</div>
+  <p class="foot">gpt-6-luna through Portkey. Hosting is extra. 91 tests pass, and they fail if the written records and the code disagree.</p>
+</section>
+
+<!-- 9 WHERE WE ARE -->
+<section>
+  <p class="tag">Where we are</p>
+  <h2>It is built, and it runs.</h2>
+  <div class="row">
+    <div><strong>3</strong>seats live under one login: player, agency, creator</div>
+    <div><strong>4</strong>AI agents, each checked by plain code</div>
+    <div><strong>194</strong>Syms an agency can ask today (193 are labelled BOT Syms)</div>
+    <div><strong>91</strong>tests passing, with the rules kept in step with the code</div>
+  </div>
+  <div class="shot" style="margin-top:0.8em">Screenshots: the agency's crew returning with answers, and the map of credits moving</div>
+  <div class="shot" style="margin-top:0.5em;padding:1.2em 1em">Real players and one quote from a real asker go here</div>
+</section>
+
+<!-- 10 THE VISION -->
+<section>
+  <p class="tag">Where the core leads</p>
+  <h2>People provide the blocks. Agents make the connections.</h2>
+  <svg viewBox="0 0 860 196" width="100%" role="img" aria-label="A loop of four steps. Inputs today lead to more variety, which builds a digital encoding of you, which earns a larger role. A larger role asks for more of you, and the loop turns again.">
+    <defs><marker id="c" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ffd98a"/></marker></defs>
+    <g fill="none" stroke-width="1.4">
+      <rect x="6" y="10" width="188" height="122" stroke="#ffd98a"/><rect x="226" y="10" width="188" height="122" stroke="#bfe6ff"/><rect x="446" y="10" width="188" height="122" stroke="#bfe6ff"/><rect x="666" y="10" width="188" height="122" stroke="#bfe6ff" stroke-dasharray="4 5"/>
+      <g stroke="#ffd98a"><path d="M194,71 H222" marker-end="url(#c)"/><path d="M414,71 H442" marker-end="url(#c)"/><path d="M634,71 H662" marker-end="url(#c)"/>
+      <path d="M760,132 C760,182 100,182 100,136" marker-end="url(#c)"/></g>
+    </g>
+    <g fill="#f5f7fb" font-size="14" text-anchor="middle">
+      <text x="100" y="36" fill="#ffd98a">INPUTS TODAY</text><text x="100" y="60" font-size="11.5" fill="#a9b1c4">taps, checks of your Sym,</text><text x="100" y="77" font-size="11.5" fill="#a9b1c4">questions asked, steps built,</text><text x="100" y="94" font-size="11.5" fill="#a9b1c4">from all three seats</text><text x="100" y="120" font-size="11" fill="#ffd98a">built</text>
+      <text x="320" y="36">MORE VARIETY</text><text x="320" y="60" font-size="11.5" fill="#a9b1c4">the gaps in your code say what</text><text x="320" y="77" font-size="11.5" fill="#a9b1c4">to play next, and creators</text><text x="320" y="94" font-size="11.5" fill="#a9b1c4">build the games that are missing</text><text x="320" y="120" font-size="11" fill="#ffd98a">started</text>
+      <text x="540" y="36">A DIGITAL YOU</text><text x="540" y="60" font-size="11.5" fill="#a9b1c4">a dated, proved encoding that</text><text x="540" y="77" font-size="11.5" fill="#a9b1c4">changes as you change, and</text><text x="540" y="94" font-size="11.5" fill="#a9b1c4">that you own</text><text x="540" y="120" font-size="11" fill="#bfe6ff">next</text>
+      <text x="760" y="36">A LARGER ROLE</text><text x="760" y="60" font-size="11.5" fill="#a9b1c4">more kinds of work, a voice in</text><text x="760" y="77" font-size="11.5" fill="#a9b1c4">the collective, a partner an AGI</text><text x="760" y="94" font-size="11.5" fill="#a9b1c4">explores and builds ideas with</text><text x="760" y="120" font-size="11" fill="#bfe6ff">the vision</text>
+      <text x="430" y="190" font-size="11.5" fill="#ffd98a">a larger role asks for more of you, and the loop turns again</text>
+    </g>
+  </svg>
+  <p style="font-size:0.6em">An AI can learn the past from what is written. It cannot get what is new and true about a living person unless that person gives it. BYT is how they give it, own it and are paid for it.</p>
+  <p style="margin-top:0.5em;font-size:1.05em">Together we build toward something greater. <span class="gold">Color comes from other people.</span></p>
+</section>
+
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script>
+  Reveal.initialize({ hash: true, controls: true, progress: true, slideNumber: 'c/t', transition: 'fade', width: 1280, height: 720, margin: 0.09 })
+</script>
+</body>
+</html>
