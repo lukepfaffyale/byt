@@ -686,6 +686,19 @@ def sample_player_ids() -> list[str]:
         return list(s.exec(select(Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX))))
 
 
+def picks_of(player_ids: list[str]) -> dict[str, list[tuple[str, str]]]:
+    """The picks of many Syms in one query, oldest first: (card, choice) for each. Used where a screen looks at every
+    free Sym at once, so it asks the database once and not once for each Sym."""
+    out: dict[str, list[tuple[str, str]]] = {pid: [] for pid in player_ids}
+    if not player_ids:
+        return out
+    with Session(get_engine()) as s:
+        for pid, card_id, choice in s.exec(select(Response.player_id, Response.card_id, Response.choice)
+                                           .where(Response.player_id.in_(player_ids)).order_by(Response.created_at)).all():
+            out[pid].append((card_id, choice))
+    return out
+
+
 def free_twin_ids() -> list[str]:
     """Free Syms: anonymous, and not paid. The made-up Syms that fill a small game, and the Syms of players who
     left. A seat may count them in a group. No one can meet one of them one to one."""

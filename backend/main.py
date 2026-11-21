@@ -169,12 +169,26 @@ async def lifespan(_: FastAPI):
         pulse.cancel()
 
 
+def warm_bots(most: int | None = None) -> None:
+    """Refresh what is kept about the free Syms, oldest first, so a visitor's request never has to read all of them.
+    `most` limits how many are refreshed in one go; None refreshes every one."""
+    ids = db.free_twin_ids()
+    ids.sort(key=lambda pid: _bot_facts[pid][0] if pid in _bot_facts else 0.0)
+    for pid in ids[:most] if most else ids:
+        _bot_facts[pid] = (time.monotonic(), _twin_facts(pid, True))
+
+
 async def _life() -> None:
     """While the server is awake, one BOT Sym does one thing every so often. Plain code, no model."""
+    try:
+        await asyncio.to_thread(warm_bots)  # once at the start, in the background
+    except Exception:
+        logging.getLogger("byt.life").exception("warming the free Syms failed")
     while True:
         await asyncio.sleep(LIFE_SECONDS)
         try:
             await asyncio.to_thread(life.step)
+            await asyncio.to_thread(warm_bots, 24)  # a few at a time: every free Sym is refreshed long before it goes stale
         except Exception:  # a bot's move must never take the server down
             logging.getLogger("byt.life").exception("a BOT move failed")
 
@@ -763,7 +777,9 @@ def set_consent(body: ConsentIn, player: Player = Depends(current_player)) -> Jo
 # ---------- the agency seat ----------
 
 LIFE_SECONDS = 45  # how often one BOT Sym does one thing while the server is awake
-BOT_FACTS_SECONDS = 30
+BOT_FACTS_SECONDS = 1200  # a free Sym changes slowly; the server refreshes these in the background, so no visitor waits
+SEAT_BOTS_SECONDS = 120
+_seat_bots: dict[bool, tuple[float, dict[str, list[dict]]]] = {}
 _bot_facts: dict[str, tuple[float, market.TwinFacts]] = {}
 
 
@@ -1853,9 +1869,19 @@ def seat_groups(player: Player, by_weakest: bool) -> dict[str, list[dict]]:
     """Every Sym a seat may look at (the made-up sample Syms and players who turned data income on), sorted into
     groups: by strongest thinking style for an agency, by the style most in need of growth for a creator."""
     out: dict[str, list[dict]] = {key: [] for key, _, _ in market.GROUPS}
-    twins = [(pid, True) for pid in db.free_twin_ids()] + [(pid, False) for pid in db.opted_in_player_ids()]
+    # the free Syms are many and change slowly: they are read in one query and kept for a short while
+    kept = _seat_bots.get(by_weakest)
+    if kept and time.monotonic() - kept[0] < SEAT_BOTS_SECONDS:
+        out = {key: list(rows) for key, rows in kept[1].items()}
+        twins = [(pid, False) for pid in db.opted_in_player_ids()]
+        fresh = False
+    else:
+        twins = [(pid, True) for pid in db.free_twin_ids()] + [(pid, False) for pid in db.opted_in_player_ids()]
+        fresh = True
+    all_picks = db.picks_of([pid for pid, _ in twins])
+    bots: dict[str, list[dict]] = {key: [] for key, _, _ in market.GROUPS}
     for pid, sample in twins:
-        picks = [(r.card_id, r.choice) for r in db.responses_for(pid)]
+        picks = all_picks.get(pid, [])
         if len(picks) < market.MIN_PICKS:
             continue
         styles = mirror_rules.read_styles(picks)
@@ -1864,8 +1890,13 @@ def seat_groups(player: Player, by_weakest: bool) -> dict[str, list[dict]]:
         key = ranked[0].key if ready else "forming"
         areas = {f.name: f.share for f in mirror_rules.read_styles(picks, mirror_rules.FACULTIES)}
         since = None if sample else db.days_since_active(pid)
-        out[key].append({"sample": sample, "progress": min(1.0, len(picks) / market.FULL_PROGRESS), "areas": areas,
-                         "active": sample or (since is not None and since <= market.ACTIVE_FULL_DAYS)})
+        row = {"sample": sample, "progress": min(1.0, len(picks) / market.FULL_PROGRESS), "areas": areas,
+               "active": sample or (since is not None and since <= market.ACTIVE_FULL_DAYS)}
+        out[key].append(row)
+        if sample:
+            bots[key].append(row)
+    if fresh:
+        _seat_bots[by_weakest] = (time.monotonic(), bots)
     return out
 
 

@@ -29,6 +29,7 @@ import main  # noqa: E402
 def client():
     main._hits.clear()
     main._bot_facts.clear()
+    main._seat_bots.clear()
     agent.MODEL_OVERRIDE = None
     with TestClient(main.app) as c:
         yield c
