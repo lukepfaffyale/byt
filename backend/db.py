@@ -41,9 +41,28 @@ def get_engine() -> Engine:
     global _engine
     if _engine is None:
         url = os.getenv("DATABASE_URL") or f"sqlite:///{LOCAL_DB.as_posix()}"
-        args = {"check_same_thread": False} if url.startswith("sqlite") else {}
-        _engine = create_engine(url, connect_args=args)
+        if url.startswith("sqlite"):
+            _engine = create_engine(url, connect_args={"check_same_thread": False})
+        else:
+            # Supabase hands out a plain postgresql:// URL; this project's driver is psycopg 3
+            for plain in ("postgresql://", "postgres://"):
+                if url.startswith(plain):
+                    url = "postgresql+psycopg://" + url[len(plain):]
+            # a hosted database drops idle connections: check each one before use, and keep the pool small
+            _engine = create_engine(url, pool_pre_ping=True, pool_size=5, max_overflow=5, pool_recycle=300)
     return _engine
+
+
+def _lock_tables() -> None:
+    """Postgres only: row-level security on for every table of the app, with no policy for any outside role.
+    The back end is the only thing that reads or writes rows, so nothing can be reached through Supabase's own
+    data API, even with the project's public key. Table names come from the models, never from input."""
+    engine = get_engine()
+    if engine.dialect.name != "postgresql":
+        return
+    with engine.begin() as conn:
+        for name in SQLModel.metadata.tables:
+            conn.execute(text(f'ALTER TABLE "{name}" ENABLE ROW LEVEL SECURITY'))
 
 
 def ensure_schema() -> None:
@@ -62,6 +81,7 @@ def ensure_schema() -> None:
     if "because" not in {c["name"] for c in inspect(get_engine()).get_columns("predictions")}:
         with get_engine().begin() as conn:
             conn.execute(text("ALTER TABLE predictions ADD COLUMN because VARCHAR"))
+    _lock_tables()
     seed_samples()
 
 

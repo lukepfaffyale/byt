@@ -6,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 _TMP = Path(tempfile.mkdtemp())
-os.environ["DATABASE_URL"] = "sqlite:///" + (_TMP / "test.db").as_posix()
+# BYT_TEST_DATABASE_URL points the whole run at another database (a throwaway Postgres schema, to check the hosted path)
+os.environ["DATABASE_URL"] = os.environ.get("BYT_TEST_DATABASE_URL") or "sqlite:///" + (_TMP / "test.db").as_posix()
 os.environ["BYT_LIFE"] = "off"  # the BOT Syms do not move by themselves during tests; a test moves them
 os.environ["PORTKEY_API_KEY"] = ""  # set before main loads .env, so the real key is never picked up
 

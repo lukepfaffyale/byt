@@ -1,0 +1,46 @@
+# Render blueprint for BYT: one web service (the FastAPI back end) and one static site (the React front end).
+# No secret value is in this file. Every "sync: false" variable is typed into the Render dashboard by the owner.
+services:
+  # ---- back end: the rules, the agents and the books ----
+  - type: web
+    name: byt_backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.7
+      - key: OPENAI_MODEL
+        value: gpt-6-luna
+      # the course key for the agents. Without it the game still runs, on the practice Sym that uses no AI.
+      - key: PORTKEY_API_KEY
+        sync: false
+      # the Supabase session pooler URL (postgresql://postgres.<ref>:<password>@...pooler.supabase.com:5432/postgres)
+      - key: DATABASE_URL
+        sync: false
+      # the address of the static site below, and nothing else: https://<the front end's address>
+      - key: CORS_ORIGINS
+        sync: false
+
+  # ---- front end: the game's screens, built once and served as files ----
+  - type: web
+    name: byt_frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 24.20.0
+      # the address of the back end above: https://<the back end's address>, with no slash at the end
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

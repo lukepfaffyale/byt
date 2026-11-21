@@ -65,6 +65,13 @@
   .screen .shot { border: none; }
   svg text { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
   .orb { display: block; margin: 0 auto; }
+  /* the opening: the Sym fills the stage, the mark is a fine drawn line under it */
+  .reveal .slides section.title { padding-top: 0; }
+  .orb.hero { width: 78%; margin-top: -0.6em; }
+  .mark { display: block; width: 19%; margin: -0.5em auto 0; filter: drop-shadow(0 0 14px rgba(255, 222, 150, 0.55)); }
+  .reveal .title .byline { font-size: 0.4em; letter-spacing: 0.5em; text-transform: uppercase; color: var(--label); margin: 1.1em 0 1.6em; padding-left: 0.5em; }
+  .reveal .title .lead { font-size: 0.82em; font-weight: 300; letter-spacing: 0.02em; margin: 0; }
+  .reveal .title .who { font-size: 0.36em; letter-spacing: 0.26em; text-transform: uppercase; margin-top: 1.5em; }
   /* drawings that draw themselves when their slide opens */
   .draw path { stroke-dasharray: 1200; stroke-dashoffset: 1200; }
   .present .draw path { animation: draw 2.2s 0.2s ease forwards; }
@@ -89,11 +96,18 @@
 
 <!-- 1 TITLE -->
 <section class="title">
-  <p class="tag">MGT 409 AI Foundations · final project</p>
-  <canvas class="orb" data-size="1" data-color="1" width="440" height="300" role="img" aria-label="A Sym: a turning form of joined points of light, in color"></canvas>
-  <h1 style="font-size:4.8em">BYT</h1>
-  <p style="font-weight:200">Beat your Sym. Benefit from your Sym. Be everywhere.</p>
-  <p class="soft" style="font-size:0.42em;margin-top:1.6em;letter-spacing:0.26em;text-transform:uppercase">by Symbolon · Luke Pfaff · Yale School of Management · November 2026</p>
+  <canvas class="orb hero" data-size="1.15" data-color="1" data-n="520" data-frame="1" width="900" height="430" role="img" aria-label="A Sym: a turning brain of joined points of light, in color, inside the frame that holds it"></canvas>
+  <svg class="mark" viewBox="-12 -12 404 124" role="img" aria-label="BYT">
+    <defs><linearGradient id="markg" x1="0" x2="1"><stop offset="0" stop-color="#ffe2a0"/><stop offset="0.48" stop-color="#ffffff"/><stop offset="1" stop-color="#bfe6ff"/></linearGradient></defs>
+    <g fill="none" stroke="url(#markg)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0,0 V100 M0,0 H36 a25,25 0 0 1 0,50 H0 M0,50 H42 a25,25 0 0 1 0,50 H0"/>
+      <path d="M155,0 L190,52 L225,0 M190,52 V100"/>
+      <path d="M310,0 H380 M345,0 V100"/>
+    </g>
+  </svg>
+  <p class="byline">by Symbolon</p>
+  <p class="lead">Beat your Sym. Benefit from your Sym. Be everywhere.</p>
+  <p class="soft who">Luke Pfaff · Yale School of Management · MGT 409 AI Foundations · November 2026</p>
 </section>
 
 <!-- 2 WHY NOW -->
@@ -397,7 +411,7 @@
 
   // ---- a Sym: a turning form of joined points, as in the game ----
   document.querySelectorAll('canvas.orb').forEach((c) => {
-    const x = c.getContext('2d'), N = 190, k = parseFloat(c.dataset.size || '1')
+    const x = c.getContext('2d'), N = parseInt(c.dataset.n || '190', 10), k = parseFloat(c.dataset.size || '1'), framed = c.dataset.frame === '1'
     const pts = Array.from({ length: N }, (_, i) => {
       const y = 1 - (2 * (i + 0.5)) / N, r = Math.sqrt(1 - y * y), a = i * 2.399963
       // two halves with a gap between them, a little flatter underneath
@@ -407,13 +421,24 @@
     const links = []
     pts.forEach((p, i) => pts.map((q, j) => ({ j, d: (p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2 })).filter((e) => e.j > i).sort((a, b) => a.d - b.d).slice(0, 2).forEach((e) => links.push([i, e.j])))
     const draw = (now) => {
-      const t = calm ? 2 : now / 1000, w = c.width, h = c.height, R = Math.min(w, h) * 0.4
+      const t = calm ? 2 : now / 1000, w = c.width, h = c.height, R = Math.min(w, h) * (framed ? 0.27 : 0.4)
       const cs = Math.cos(t * 0.25), sn = Math.sin(t * 0.25)
       x.clearRect(0, 0, w, h)
       const glow = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, R * 1.7)
       glow.addColorStop(0, 'rgba(255, 232, 170, 0.22)'); glow.addColorStop(1, 'rgba(0,0,0,0)')
       x.fillStyle = glow; x.fillRect(0, 0, w, h)
       const P = pts.map((p) => { const xa = p.x * cs + p.z * sn, za = -p.x * sn + p.z * cs, s = 3.2 / (3.2 - za * 0.9); return [w / 2 + xa * R * s, h / 2 - (p.y - 0.12 * za) * R * s, (za + 1.2) / 2.4] })
+      if (framed) {
+        // the frame: an outer cube and an inner one, joined corner to corner, turning with the Sym
+        const corner = (i, sz) => { const cx = (i & 1 ? sz : -sz), cy = (i & 2 ? sz : -sz), cz = (i & 4 ? sz : -sz); const xa = cx * cs + cz * sn, za = -cx * sn + cz * cs, q = 3.2 / (3.2 - za * 0.9); return [w / 2 + xa * R * q, h / 2 - (cy - 0.12 * za) * R * q] }
+        const breathe = 0.62 + 0.1 * Math.sin(t * 0.5)
+        const out = Array.from({ length: 8 }, (_, i) => corner(i, 1.2)), inn = Array.from({ length: 8 }, (_, i) => corner(i, breathe))
+        x.lineWidth = 0.8; x.strokeStyle = 'rgba(223, 230, 242, 0.16)'; x.beginPath()
+        for (let i = 0; i < 8; i++) for (const d of [1, 2, 4]) if (!(i & d)) { x.moveTo(out[i][0], out[i][1]); x.lineTo(out[i | d][0], out[i | d][1]); x.moveTo(inn[i][0], inn[i][1]); x.lineTo(inn[i | d][0], inn[i | d][1]) }
+        for (let i = 0; i < 8; i++) { x.moveTo(out[i][0], out[i][1]); x.lineTo(inn[i][0], inn[i][1]) }
+        x.stroke()
+        for (const q of out) { x.beginPath(); x.arc(q[0], q[1], 1.6, 0, 7); x.fillStyle = 'rgba(223, 230, 242, 0.4)'; x.fill() }
+      }
       x.lineWidth = 0.7
       for (const [a, b] of links) { x.beginPath(); x.moveTo(P[a][0], P[a][1]); x.lineTo(P[b][0], P[b][1]); x.strokeStyle = `rgba(230, 236, 250, ${0.05 + 0.22 * P[a][2] * P[b][2]})`; x.stroke() }
       pts.forEach((p, i) => { x.beginPath(); x.arc(P[i][0], P[i][1], (0.9 + 2.1 * P[i][2]) * (p.gold ? 1.5 : 1) * Math.max(0.7, k), 0, 7); x.globalAlpha = 0.3 + 0.7 * P[i][2]; x.fillStyle = p.gold ? '#ffd98a' : c.dataset.color === '1' ? p.hue : '#ffffff'; x.fill() })
