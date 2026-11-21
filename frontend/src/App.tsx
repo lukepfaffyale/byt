@@ -409,11 +409,14 @@ export default function App() {
         look={look}
         onLook={toggleLook}
       >
-        <Start onStarted={(seat) => {
-          if (seat !== 'player') setIntent(seat)  // everyone meets the game first; the Sym then points at the seat they came for
-          setWelcome(true)
-          setSignedIn(true)
-        }} />
+        {/* inside the pages, so nothing on the first screen can ever sit out of reach */}
+        <Pages at="start" calm={!motion}>
+          <Start onStarted={(seat) => {
+            if (seat !== 'player') setIntent(seat)
+            setWelcome(true)
+            setSignedIn(true)
+          }} />
+        </Pages>
       </Shell>
     )
   }
