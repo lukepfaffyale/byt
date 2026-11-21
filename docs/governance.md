@@ -23,9 +23,9 @@ logical model, or a model library imported into a module that decides money or c
 - Players: adults only (18 or older). The start screen says so.
 - Who can access the database: the student only (a local file on the student's machine; the Supabase dashboard for
   the hosted copy).
-- Supabase project name and region: to be recorded when the student creates it (planned 2026-11-17).
-- Hosting: Render. Service names `<repo>_frontend` (static site) and `<repo>_backend` (web service); region and
-  dashboard members to be recorded at deploy.
+- Supabase project name and region: `byt`, US East (created 2026-11-22). Dashboard access: the student only.
+- Hosting: Render (deployed 2026-11-22). `byt_frontend` is a static site; `byt_backend` is a web service in Virginia,
+  next to the database. Dashboard access: the student only. Both are described in `render.yaml`, with no secret in it.
 - Data leaves the laptop to hosted providers once deployed: yes (Supabase for data, Render for compute and logs,
   Portkey and the model provider for the text sent to the model). Because of that, no column that names a person is
   collected, and log lines carry no nickname, pick or token.
@@ -125,8 +125,8 @@ Ticked when verified, with how. Unticked items wait for the hosted deployment.
 - [x] Secrets from `.env` only (repo folder first, then one folder above); `.env.example` committed with placeholders. (Read `backend/main.py`; the key was never printed.)
 - [x] All request schemas are Pydantic models with `extra="forbid"` and bounded lengths. (Tests post unknown fields and get 422.)
 - [x] CORS restricted to the configured front-end origins. (Read `backend/main.py`; hosted origin to be set at deploy.)
-- [ ] Row-level security on for every hosted table, no access for anon or authenticated (see `data/logical_model.md`)
-- [ ] The database URL lives only on the Render web service; the front end holds no database key
+- [x] Row-level security on for every hosted table, no access for anon or authenticated. (Checked on the hosted database on 2026-11-22: 27 tables, 27 with row-level security, no policies. `db._lock_tables` turns it on at every start.)
+- [x] The database URL lives only on the Render web service; the front end holds no database key. (The front end's one setting is the back end's address.)
 - [x] No passwords exist; the player token is random, stored hashed, sent in a header, never in a URL. (Read `backend/db.py`, `frontend/src/api.ts`.)
 - [x] Model endpoints rate-limited, behind the safe agent harness, with a daily token budget that stops the model. (Read `backend/main.py`, `backend/agent.py`; tests cover the fallback.)
 - [x] No free text from a user reaches a model: nicknames and agency names are validated and never sent; questions are fixed lists. Model-written text passes the prompt guard. (Tests post typed questions and get 422.)
@@ -830,3 +830,14 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
 - **BOT Syms are named where it matters.** The crew no longer says an answer "pays a real person". It says the owner of the Sym is paid, and that most Syms are BOT Syms for now. A meeting with a BOT Sym says so in the crew's own words.
 - **A seat stays the seat.** Opening Everyone or About no longer moves a person to the player seat, and tapping a name on the frame no longer changes seat. The seat switch at the top is the one way.
 - **How this was tested.** Three AI testers, one for each seat, clicked through every menu in their own browser tabs and wrote up what they found against the project's rules (no scrolling, taps only, one clear next step, plain words, honest numbers). They changed no files. Their findings were fixed by hand and re-checked in the browser.
+
+## 2026-11-22: the game goes online
+
+- **Where it runs.** Front end and back end on Render, database on Supabase (Postgres, US East). The back end was moved to Virginia to sit next to the database.
+- **What leaves the laptop now.** Rows for people who play online are stored by Supabase, and request metadata passes through Render. No column names a person: a nickname, the days played and taps. Log lines carry no nickname, pick or token.
+- **Who can reach the data.** Only the back end, with the database URL that lives in the Render dashboard. Row-level security is on for all 27 tables with no policy for outside roles, so Supabase's public data API returns nothing.
+- **Local and hosted are separate.** A local run uses a local file. The hosted URL is kept under a different name in the student's `.env` (`SUPABASE_DATABASE_URL`) so a local start can never write to the hosted database by accident.
+- **Two mistakes made while deploying, and what changed.**
+  1. A connection check printed a database driver's error message, which quoted part of the database password. The password was reset at once and the check now prints only "connected" or a plain reason.
+  2. A test run aimed at a throwaway area of the hosted database wrote into the real tables instead, because the pooler ignored the setting that selects the area. It was caught the same hour, before any real person had played; the database was wiped and rebuilt (tables, row-level security, BOT Syms). Tests are no longer run against the hosted database.
+- **Free plan.** The back end sleeps after 15 minutes without visitors and takes up to a minute to wake. The README says so. No keep-alive trick is used.

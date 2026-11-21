@@ -54,7 +54,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
   const roles: { id: string; name: string; n: number; what: string; life: string; go: string; act: () => void }[] = [
     { id: 'player', name: 'Players', n: data.people, what: 'A player taps, and a Sym learns them.', life: 'They bring the color. Nothing is known here until a person shows it.',
       go: next ? 'Play' : 'My Journey', act: play },
-    { id: 'agency', name: 'Agencies', n: data.agencies, what: `An agency asks Syms questions and posts jobs. ${data.bot_agencies} of these are run by BOT Syms.`, life: 'They bring the pay. Every answer they buy pays a person.',
+    { id: 'agency', name: 'Agencies', n: data.agencies, what: `An agency asks Syms questions and posts jobs. ${data.bot_agencies} of these are run by BOT Syms.`, life: 'They bring the pay. Every answer they buy pays the owner of a Sym.',
       go: data.has_agency ? 'My agency' : 'Open one', act: () => onSeat('agency') },
     { id: 'creator', name: 'Creators', n: data.creators, what: `A creator builds skill steps. ${data.bot_creators} of these are run by BOT Syms.`, life: 'They bring the growth. Each step lets Syms do more, and pays its maker.',
       go: data.has_creator ? 'My studio' : 'Open one', act: () => onSeat('creator') },

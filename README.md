@@ -12,6 +12,19 @@ earns a certificate.
 
 This is a class project (MGT 409, final project).
 
+## Play it online
+
+The game is live at **https://byt-frontend.onrender.com**. Type a nickname, tick the two boxes and start. Nothing else is needed.
+
+- The back end runs on a free plan and sleeps after 15 minutes without visitors. The first visit after that can take up to a minute to wake: the page loads at once, and the first tap waits. After that it is quick.
+- The online game stores its data in a hosted Postgres database (Supabase). The copy you run locally below uses a local file and never touches the hosted one.
+- Online or local, credits are play money and the game is for adults.
+
+## Deliverables
+
+- `report.html`: the report, eight sections. Open it in a browser.
+- `slides.html`: ten slides (reveal.js, loaded from a CDN, so it needs the internet). Open it in a browser and use the arrow keys.
+
 ## Run it locally
 
 You need Python 3.12 or newer and Node 20 or newer.
@@ -98,3 +111,15 @@ licensed or for sale. Credits and royalties in the game are play money.
 ## Sources
 
 Every outside paper that was read while this was built is listed in `docs/SOURCES.md`, with the date it was read, what the project already had, and what was taken from it afterwards.
+
+## How it is hosted
+
+`render.yaml` at the top of the repository describes both online services, with no secret in it.
+
+| Piece | Where | Notes |
+|---|---|---|
+| Front end | Render static site `byt_frontend` | Built with `npm ci && npm run build`. Its one setting, `VITE_API_URL`, is the back end's address. |
+| Back end | Render web service `byt_backend`, region Virginia, on the free compute plan (0.1 CPU, 512 MB) | `uvicorn main:app`. Settings entered in the dashboard only: `PORTKEY_API_KEY`, `DATABASE_URL`, `CORS_ORIGINS` (the front end's address). |
+| Database | Supabase (Postgres), US East | Reached only by the back end, through the session pooler. Row-level security is on for every table, with no policy for any outside role, so nothing can be read through Supabase's own data API. |
+
+With no `DATABASE_URL` the back end uses the local file `backend/data/local.db`, which is what a fresh clone does.
