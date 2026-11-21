@@ -72,6 +72,34 @@ def test_judgment_counts_sure_against_right_on_any_card_with_a_right_answer(clie
     assert "can be trusted" in judged["says"]
 
 
+def test_the_sure_record_counts_wrong_answers_and_says_which_gates_it_covers(client, auth):
+    """A tester tapped Sure, Think so (wrong) and A guess in one gate and was shown totals from every gate, with the
+    wrong answers missing. The gate's own record and the record over all gates are two lists, and both count misses."""
+    from tests.test_twin import play_until
+    play_until(client, auth, "strategy-easy")
+    for c in client.get("/gates/strategy-easy/cards", headers=auth).json()["cards"]:  # an earlier gate: Sure and right, 3 times
+        client.post("/responses", headers=auth, json={"card_id": c["id"], "choice": sorted(CARDS[c["id"]].winning)[0], "response_ms": 800, "sure": 3})
+    play_until(client, auth, "pattern-four")
+    cards = client.get("/gates/pattern-four/cards", headers=auth).json()["cards"]
+    right = lambda c: CARDS[c["id"]].board.answer  # noqa: E731
+    wrong = lambda c: next(o["id"] for o in c["options"] if o["id"] not in CARDS[c["id"]].winning)  # noqa: E731
+    plays = [(right, 3), (wrong, 2), (wrong, 2), (right, 1)]  # sure and right, think so and wrong twice, a guess and right
+    for c, (pick, level) in zip(cards, plays):
+        out = client.post("/responses", headers=auth, json={"card_id": c["id"], "choice": pick(c), "response_ms": 900, "sure": level}).json()
+        assert out["right_choice"] == right(c)  # shown only now, after the pick is stored
+    assert out["sure_gate"] == [{"level": 3, "right": 1, "total": 1}, {"level": 2, "right": 0, "total": 2}, {"level": 1, "right": 1, "total": 1}]
+    assert out["sure_record"] == [{"level": 3, "right": 4, "total": 4}, {"level": 2, "right": 0, "total": 2}, {"level": 1, "right": 1, "total": 1}]
+    judged = client.get("/me/judgment", headers=auth).json()
+    assert judged["rows"] == out["sure_record"] and len(judged["taps"]) == 7 and judged["unsaid"] == 0
+    assert "Over all your gates" in judged["says"] and "4 of 4" in judged["says"] and "are counted" not in judged["says"]
+    # an answer given with no "how sure" tap is in no row, and the line says so instead of looking like a full count
+    c = client.get("/gates/strategy-medium/cards", headers=auth).json()["cards"][0]
+    bare = client.post("/responses", headers=auth, json={"card_id": c["id"], "choice": sorted(CARDS[c["id"]].winning)[0], "response_ms": 800}).json()
+    assert bare["sure_record"] == [] and bare["sure_gate"] == []
+    judged = client.get("/me/judgment", headers=auth).json()
+    assert judged["unsaid"] == 1 and len(judged["taps"]) == 7 and "are counted: 7 of 8." in judged["says"]
+
+
 def test_a_certificate_is_earned_by_play_and_never_bought(client, auth):
     import verifier
     from tests.test_twin import play_until

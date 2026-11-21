@@ -297,7 +297,7 @@ export function CrewStage(props: { script: CrewScript; doneLabel: string; onDone
           {over
             ? <button className="primary" disabled={waiting} onClick={onDone}>{waiting ? 'Still working.' : doneLabel}</button>
             : <button className="secondary" onClick={() => setAt(script.steps.length)}>Skip</button>}
-          {over && !calm && <button className="link" onClick={() => setAt(0)}>Play again</button>}
+          {over && !calm && <button className="link" onClick={() => setAt(0)}>Watch it again</button>}
         </div>
         <ol className={calm ? 'crew-log' : 'crew-log sr-only'} aria-live="polite">
           {script.steps.slice(0, Math.min(at + 1, script.steps.length)).map((s, i) => (

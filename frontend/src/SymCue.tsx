@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Typed } from './Future'
 import { TAU, along, body, clamp, ease, seeded, shoot, trace, wander, type V } from './neural'
+import './play.css'
 
 /**
  * My Sym, present on a page: a living cell body that speaks in the first person and asks for one thing.
@@ -9,12 +10,14 @@ import { TAU, along, body, clamp, ease, seeded, shoot, trace, wander, type V } f
  * and once it arrives signals keep running to the button: the Sym is reaching for the next tap.
  *
  * Every line is written by code from counts. No model writes them. The path is a drawing, not a record.
+ * The path is never drawn over the words: it is cut away where the words are, so it shows before and after them.
  */
 export function SymCue(props: { say: string; more?: string[]; go?: string; act?: () => void; calm: boolean; formed: number; who?: string; rgb?: string; crew?: boolean; alt?: string; altAct?: () => void }) {
   const { say, more = [], go = '', act, calm, formed, who = 'My Sym', rgb = '255, 205, 150', crew = false, alt, altAct } = props
   const boxRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const goRef = useRef<HTMLButtonElement>(null)
+  const sayRef = useRef<HTMLDivElement>(null)
   const eager = useRef(false)
   const flare = useRef(0)
   // the Sym does not go quiet: after a while it says something more, then asks again
@@ -61,6 +64,15 @@ export function SymCue(props: { say: string; more?: string[]; go?: string; act?:
       const lit = clamp((now - flare.current) / 700)
       const burst = flare.current > 0 ? 1 - lit : 0
 
+      // keep the drawing clear of the words: everything from here to the body is cut away where the words sit
+      const words = sayRef.current?.getBoundingClientRect()
+      ctx.save()
+      if (words && words.width > 0) {
+        ctx.beginPath()
+        ctx.rect(0, 0, w, h)
+        ctx.rect(words.left - frame.left - 10, words.top - frame.top - 6, words.width + 20, words.height + 12)
+        ctx.clip('evenodd')
+      }
       ctx.globalCompositeOperation = 'lighter'
       trace(ctx, see, path, from, to, grow, 0.5 + 0.4 * burst, rgb, t, 1 - clamp(age - 2.4))
       if (grow >= 1 && !calm) {
@@ -75,6 +87,8 @@ export function SymCue(props: { say: string; more?: string[]; go?: string; act?:
           ctx.fill()
         }
       }
+      ctx.restore()
+      ctx.globalCompositeOperation = 'lighter'
       const breath = calm ? 1 : 0.88 + 0.12 * Math.sin(t * 1.6)
       // a crew is more than one: two smaller bodies keep close to the first
       if (crew) {
@@ -102,7 +116,7 @@ export function SymCue(props: { say: string; more?: string[]; go?: string; act?:
   return (
     <div ref={boxRef} className="sym-cue" role="region" aria-label={`${who} asks`}>
       <canvas ref={canvasRef} className="sym-cue-life" aria-hidden="true" />
-      <div className="sym-cue-say">
+      <div ref={sayRef} className="sym-cue-say">
         <span className="line-top">{who}</span>
         <p><Typed key={line} text={line} calm={calm} /></p>
       </div>

@@ -43,8 +43,8 @@ export function SplitBars({ rows }: { rows: { label: string; share: number }[] }
 }
 
 /** The seat for people who make skills. Everything is a tap: pick a job, pick from the lists, send the crew. */
-export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) => void; announce: (text: string) => void }) {
-  const { view, onView, announce } = props
+export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) => void; announce: (text: string) => void; onMoney?: () => void }) {
+  const { view, onView, announce, onMoney } = props
   const [seat, setSeat] = useState<Creator | null>(null)
   const [meets, setMeets] = useState<Meets | null>(null)
   const [error, setError] = useState('')
@@ -126,6 +126,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     setTopic(null)
     setCards([])
     setGot('briefs')
+    onMoney?.()
     announce('Your crew is back.')
     setReplay(script(out.briefs[0]))
   }
@@ -374,6 +375,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                 setError('')
                 setGot('met')
                 api.creator().then(setSeat).catch(fail)
+                onMoney?.()
                 announce('Your crew met one Sym.')
                 setReplay(meetScript({ boss: seat.name, group: groupName, nickname: out.met[0]?.nickname ?? '', price: out.price, fee: out.fee, bot: !!out.met[0]?.sample }))
               }} />
@@ -412,7 +414,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
 
       {view === 'money' && (
         <>
-          <WalletCard key={seat.briefs.length + (meets?.met.length ?? 0)} seat="creator" onChange={() => { api.creator().then(setSeat).catch(fail) }} />
+          <WalletCard key={seat.briefs.length + (meets?.met.length ?? 0)} seat="creator" onChange={() => { onMoney?.(); api.creator().then(setSeat).catch(fail) }} />
           <p className="fine">
             {seat.reach_earned} credits from agencies that reached my players. {seat.sponsor_earned} from agencies that back my skills.
             {seat.made.length === 0 ? ` Build a skill step to earn ${seat.step_royalty} credits each time another player passes it.` : ` The steps I built were passed ${passes} ${passes === 1 ? 'time' : 'times'}. You never see who.`}

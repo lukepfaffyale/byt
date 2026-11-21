@@ -1,0 +1,110 @@
+/* Styles for playing a gate, the talk box, my Sym's panel and checking a job.
+   Kept apart from index.css. Imported by GatePlay, TwinTalk, SymCue and Work. */
+
+/* ---------- a board card is one page: the board on the left, what comes next beside it ---------- */
+.play-row { display: grid; gap: 14px; margin: 0 0 8px; }
+.play-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.play-side .chips.sure { display: grid; gap: 8px; margin: 0; max-width: 18rem; }
+.play-side .chips.sure .chip { width: 100%; min-height: 44px; }
+.play-side .result, .picked-line + .result { margin-top: 0; }
+.picked-line { display: block; margin: 0 0 10px; padding: 0; box-shadow: none; font-size: 1.1rem; font-weight: 300; text-align: left; }
+.picked-line .line-top { display: block; }
+.play-side .result { display: grid; gap: 10px; justify-items: start; max-width: 30rem; padding: 14px 16px; }
+.play-hint { margin: 0; text-align: left; }
+@media (min-width: 720px) {
+  .play-row { grid-template-columns: minmax(0, var(--board, 20rem)) minmax(0, 1fr); column-gap: 28px; align-items: start; break-inside: avoid; }
+  .play-row.game-pattern { --board: 17rem; }
+  .play-row.game-tictactoe { --board: 300px; }
+  .play-row.game-connect4 { --board: 420px; }
+  .play-row.game-reflex { --board: 24rem; }
+  .play-row .pattern-wrap, :root .pages-flow .play-row .pattern-wrap { max-width: none; }
+  .play-row :is(.ttt, .c4) { margin: 0; }
+}
+@media (min-width: 1000px) and (min-height: 600px) {
+  /* a short window: the boards are a little smaller, so the card and the way out share the page */
+  .play-row { column-gap: 20px; }
+  /* the question of a board card is one or two short lines, so the board and its answer keep the page */
+  :root .pages-flow .play:is(:has(.play-row), .answered) h1.prompt { font-size: 1.25rem; line-height: 1.3; margin: 4px 0 10px; }
+  :root .pages-flow .play.answered .result { padding: 10px 14px; gap: 8px; }
+  :root .pages-flow .play.answered .leaned { margin-top: 4px; }
+  .play-row.game-connect4 { --board: min(280px, 36vh); }
+  .play-row.game-tictactoe { --board: min(230px, 31vh); }
+  .play-row.game-pattern { --board: min(16rem, 40vh); }
+  .play-row .c4-drops, .play-row .c4-grid { gap: 4px; }
+  .play-row .c4-drops { margin-bottom: 6px; }
+  .play-row .c4 .drop { min-height: 34px; padding: 0; }
+  :root .pages-flow section.play > .link { margin-top: 2px; }
+}
+
+/* where the dot went, shown on the board once the pick is stored. A number says it too, not color alone. */
+.pcell.answer { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold), 0 0 18px rgba(255, 222, 150, 0.45); }
+.pcell.missed { border-style: dashed; border-color: var(--text); }
+.pnext { color: var(--gold); font-weight: 600; font-size: 1rem; }
+.pmine { color: var(--text); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ---------- an answer becomes a block of the Sym: a small lit T rises from the card and fades ---------- */
+.t-fly { position: relative; display: block; height: 0; pointer-events: none; }
+.t-block {
+  position: absolute; left: 7rem; top: 3rem; z-index: 6; display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem;
+  border: 1px solid var(--gold); border-radius: 3px; color: var(--gold); background: rgba(255, 222, 150, 0.14);
+  font-size: 0.8rem; font-weight: 600; line-height: 1; box-shadow: 0 0 14px rgba(255, 222, 150, 0.7);
+  opacity: 0;
+}
+/* the rise is run by the component, and only when motion is on: it asks still(), which follows the game's own
+   switch and, if that was never set, the device */
+
+/* ---------- the end of a gate: how sure and how right, for this gate only ---------- */
+.sure-done { text-align: left; }
+.sure-done .pair { padding: 6px 0; margin: 0 0 4px; }
+.sure-done .pair dd { font-size: 1.15rem; margin-top: 2px; }
+.sure-done .pair dd.muted { font-size: 0.68rem; }
+.sure-done .fine { margin: 2px 0 0; }
+.sure-done .line-top { display: block; margin: 6px 0 4px; }
+.gate-done > .fine { margin: 6px 0; }
+
+/* ---------- my Sym's panel: the words keep clear of the button ---------- */
+.sym-cue .sym-cue-say { margin-right: 14px; }
+
+/* ---------- the talk box: one row on the page, and the answer in a pop-out ---------- */
+.talk .talk-bar { justify-content: flex-end; }
+.talk .talk-ideas { flex: none; }
+.talk-pop { text-align: left; }
+.talk-pop .talk-asked { margin: 0; font-weight: 300; color: var(--muted); overflow-wrap: anywhere; }
+.talk-pop .talk-asked .line-top { display: block; }
+.talk-pop .talk-reply { margin: 0; max-height: none; padding: 12px 14px; }
+.talk-pop .talk-say { overflow-wrap: anywhere; }
+.talk-pop .talk-note { margin: 0; text-align: left; }
+.talk-pop .chips { margin: 6px 0 0; }
+.talk-pop .pick-pop-foot { flex-wrap: wrap; }
+
+/* ---------- a checked job: the result is one page, and the detail opens in a pop-out ---------- */
+.job-done { text-align: left; }
+.job-pay { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 8px; }
+.job-pay .stat { font-size: 2.6rem; line-height: 1; text-align: left; }
+.job-pay .stat-label { margin: 0; text-align: left; }
+.job-cert, :root .pages-flow .job-cert { display: flex; flex-wrap: wrap; align-items: baseline; justify-items: start; gap: 2px 12px; max-width: none; margin: 0 0 8px; padding: 8px 14px; text-align: left; }
+.job-cert strong { font-size: 1.05rem; }
+.job-group { margin: 0 0 6px; font-weight: 300; }
+.job-foot { display: flex; flex-wrap: wrap; gap: 4px 22px; }
+.pick-pop-box .split-bars { margin: 0; }
+.job-pop-h { margin: 0; }
+.pick-pop-box .chain { margin: 0; }
+.pick-pop-box .chain li { padding: 6px 0; }
+.play .twin-line { margin: 4px 0 10px; }
+
+/* the end of a gate or a battle is one page: the one-tap question sits on one row */
+@media (min-width: 1000px) and (min-height: 600px) {
+  :root .pages-flow .gate-done .worth .chips-label { flex: 0 1 auto; }
+  :root .pages-flow .gate-done { padding-top: 0; }
+  :root .pages-flow .gate-done .fine { margin: 4px 0; }
+  :root .pages-flow .gate-done .pair { padding: 8px 0; }
+  :root .pages-flow .gate-done .cert { margin: 6px 0; padding: 8px 18px; }
+}
+.done-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; margin: 6px 0 0; text-align: left; }
+:root .pages-flow .done-foot .worth, .done-foot .worth { margin: 0; }
+/* my Sym's panel at the end of a gate keeps its height when it says its second line */
+.gate-done .sym-cue-say p { min-height: 4.05em; }
+
+/* the list of jobs: tabs, list arrows and the note share one row, so the list is one page */
+.work-head .more { position: static; margin: 0; flex: none; }
+.work-head .seg { flex: 1 1 12rem; }

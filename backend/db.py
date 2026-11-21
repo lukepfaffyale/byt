@@ -188,6 +188,13 @@ def twin_count() -> int:
         return int(s.exec(select(func.count()).select_from(Player)).one())
 
 
+def people_count() -> int:
+    """How many Syms have a living person behind them: every Sym but the BOT Syms and the Syms left behind. A count only."""
+    with Session(get_engine()) as s:
+        return int(s.exec(select(func.count()).select_from(Player).where(
+            ~(Player.token_hash.startswith(SAMPLE_PREFIX) | Player.token_hash.startswith(FREE_PREFIX)))).one())
+
+
 def player_by_token(token: str) -> Player | None:
     with Session(get_engine()) as s:
         return s.exec(select(Player).where(Player.token_hash == hash_token(token))).first()
@@ -1337,6 +1344,7 @@ def commons(player_id: str, most: int = 8) -> dict:
             "taps": tally["taps"], "checks": tally["checks"], "told": tally["told"], "lessons": tally["lessons"],
             "proofs": count(Cert, real(Cert.player_id)), "beliefs": count(Tendency, real(Tendency.player_id)),
             "known": known, "known_mine": mine, "happenings": seen[:most], "taps_mine": tally["taps_mine"],
+            "checks_mine": tally["checks_mine"], "told_mine": tally["told_mine"], "lessons_mine": tally["lessons_mine"],
             "has_agency": any(kind == "agency" and owner == player_id for kind, owner in orgs.values()),
             "has_creator": any(kind == "creator" and owner == player_id for kind, owner in orgs.values()),
         }

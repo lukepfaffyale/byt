@@ -72,9 +72,19 @@ export function WorldField(props: { names: string[]; flows: Flow[]; pick: number
       })
       const scale = Math.min(w * 0.3, h * 0.43)
       const wide = Math.min(1.7, Math.max(1, (w / h) * 0.8)) // a wide picture spreads the bodies sideways
+      // as the shape turns, a body can swing far out: the whole picture draws in just enough to keep every body
+      // and its name inside the frame
+      let farX = 1
+      let farY = 1
+      for (const q of at) {
+        const near = 4 / (4 - q[2])
+        farX = Math.max(farX, Math.abs(q[0] * near * scale * wide))
+        farY = Math.max(farY, Math.abs(q[1] * near * scale))
+      }
+      const fit = Math.min(1, (w * 0.42) / farX, (h * 0.32) / farY)
       const see = (q: V): V => {
         const near = 4 / (4 - q[2])
-        return [w / 2 + q[0] * near * scale * wide, h * 0.48 - q[1] * near * scale, near]
+        return [w / 2 + q[0] * near * scale * wide * fit, h * 0.46 - q[1] * near * scale * fit, near]
       }
       deepSpace(ctx, w, h, calm ? 0 : t, dust, false)
       const { flows: links, pick: held } = live.current
@@ -106,21 +116,35 @@ export function WorldField(props: { names: string[]; flows: Flow[]; pick: number
       })
       ctx.globalCompositeOperation = 'source-over'
       ctx.textAlign = 'center'
-      ctx.font = "500 10px 'Helvetica Neue', Helvetica, Arial, sans-serif"
+      ctx.textBaseline = 'middle'
+      // every word on the map gets a dark plate and a place of its own: a word that would land on another
+      // steps down (a name) or up (a number) until it is clear
+      const plates: [number, number, number, number][] = []
+      const place = (words: string, x: number, y: number, step: number, color: string) => {
+        const half = ctx.measureText(words).width / 2 + 6
+        const cx = Math.max(half + 2, Math.min(w - half - 2, x))
+        let cy = Math.max(11, Math.min(h - 11, y))
+        for (let tries = 0; tries < 8 && plates.some((q) => Math.abs(q[0] - cx) < q[2] + half && Math.abs(q[1] - cy) < q[3] + 9); tries++) cy += step
+        plates.push([cx, cy, half, 9])
+        ctx.fillStyle = 'rgba(2, 4, 9, 0.8)'
+        ctx.fillRect(cx - half, cy - 9, half * 2, 18)
+        ctx.fillStyle = color
+        ctx.fillText(words, cx, cy + 0.5)
+      }
+      ctx.font = "500 11px 'Helvetica Neue', Helvetica, Arial, sans-serif"
       names.forEach((words, i) => {
         const s = see(at[i])
-        ctx.fillStyle = held === i ? '#ffe2a8' : 'rgba(210, 217, 230, 0.85)'
-        ctx.fillText(words.toUpperCase().split('').join(' '), s[0], s[1] + (i === 0 ? 0.2 : 0.15) * scale * s[2])
+        place(words.toUpperCase().split('').join(' '), s[0], s[1] + (i === 0 ? 0.2 : 0.15) * scale * s[2] + 4, 19, held === i ? '#ffe2a8' : 'rgba(210, 217, 230, 0.92)')
       })
       if (held !== null) {
-        ctx.font = "300 12px 'Helvetica Neue', Helvetica, Arial, sans-serif"
-        ctx.fillStyle = '#ffe2a8'
+        ctx.font = "400 12px 'Helvetica Neue', Helvetica, Arial, sans-serif"
         links.forEach((l) => {
           if (l.a !== held && l.b !== held) return
           const s = see(along(pathOf(l.a, l.b), at[Math.min(l.a, l.b)], at[Math.max(l.a, l.b)], l.a < l.b ? 0.38 : 0.62))
-          ctx.fillText(String(Math.round(l.credits)), s[0], s[1] - 6)
+          place(String(Math.round(l.credits)), s[0], s[1] - 8, -19, '#ffe2a8')
         })
       }
+      ctx.textBaseline = 'alphabetic'
       if (!calm) raf = requestAnimationFrame(draw)
     }
     const watch = new ResizeObserver(() => {

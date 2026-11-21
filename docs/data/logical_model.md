@@ -64,7 +64,7 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 |---|---|---|---|
 | GET /health | | Health | |
 | POST /players | PlayerCreate (nickname, consent) | PlayerCreated (player token, shown once) | players |
-| GET /me | | Me (nickname, points, level, certs) | players, certs |
+| GET /me | | Me (nickname, points, level, certs; `twins` is every Sym in the game and `people` is how many of them have a living person, so the app can say "206 Syms (13 people)") | players, certs |
 | GET /journey | | Journey (gates, which are unlocked) | players, responses |
 | GET /gates/{gate_id}/cards | | CardOut list (never the correct option) | cards, responses |
 | POST /responses | ResponseIn (card_id, choice, response_ms) | ResponseOut (correct or not for skill cards, points; on a battle card, the Sym's pick revealed; a skill cert if earned) | responses, players, predictions, certs |
@@ -93,8 +93,8 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | GET /rps | | RpsOut (the score against the Sym, the last rounds, the habits the Sym found, and the league of Syms, each other Sym as a number) | throws |
 | POST /rps | RpsIn (throw: r, p or s) | RpsOut, with the round just played and why the Sym threw what it did | throws |
 | POST /me/auto | AutoIn (per_day, from a fixed list) | Jobs | autowork |
-| GET /me/plan | | Plan (up to four best uses of the next few minutes, each with a reason and what it can pay) | responses, work, postings, made_steps, consents |
-| GET /commons | player | Commons (the first screen after signing in: how many real people, how many played today, how many stand-ins, the seats, what is known together and the reader's part of it, and the newest happenings as nameless lines with a loose time: now, today, week, earlier). Names no player, seat or answer | players, active_days, responses, work, facts, lessons, certs, tendencies, orgs, campaigns, briefs, made_steps, postings, as counts and newest rows |
+| GET /me/plan | | Plan (up to four best uses of the next few minutes, each with a reason and what it can pay; a step a creator built is titled "Extra step", since it is not one of the journey's gates) | responses, work, postings, made_steps, consents |
+| GET /commons | player | Commons (the first screen after signing in: how many real people, how many played today, how many stand-ins, the seats, what is known together and the reader's part of it (`known_mine` is `taps_mine` + `checks_mine` + `told_mine` + `lessons_mine`), and the newest happenings as nameless lines with a loose time: now, today, week, earlier). Names no player, seat or answer | players, active_days, responses, work, facts, lessons, certs, tendencies, orgs, campaigns, briefs, made_steps, postings, as counts and newest rows |
 | GET /me/ripple | player | Ripple (what this person set moving across their own seats: taps and checks as a player, asks from their own agency and from others, steps passed, people their agency paid, passes of steps their studio built). Their own rows; other people only as counts | responses, work, earnings, orgs, campaigns, postings, sponsorships, made_steps, briefs, transfers |
 | GET /world | no login | World (totals for the whole game: Syms, seats, certificates, checked answers, corrections, and credits moved between kinds of wallet). Names no player, seat or answer | all tables, as counts |
 | POST /twin/ask | AskIn (text, at most 200 characters) | AskOut (one or two sentences, one move from a fixed list, one card to answer) | tendencies, responses, work, usage. The text is not stored |
@@ -108,7 +108,7 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | POST /agency | OrgCreate (name) | Agency | orgs |
 | POST /agency/campaigns | CampaignIn (question id, audience, pay; all from fixed lists) | Agency (counts per option) | orgs, campaigns, earnings, responses, certs, consents |
 | GET /me/code | | SymCode (one block for each thing the person did, oldest first: T a tap, G a proof, A an agency act, C a creator act; counts and the areas with no block). Built on each read, nothing stored | responses, facts, battles, certs, work, orgs, campaigns, postings, sponsorships, meets, briefs |
-| GET /me/sphere | | Sphere (one colored area per faculty: level from picks, share of skill steps finished) | responses |
+| GET /me/sphere | | Sphere (one colored area per faculty: `level` is how much of the area is drawn, cards seen out of 30; the first detail line is picks out of chances, the same share the mirror shows; share of skill steps finished) | responses |
 | GET /seats/{seat}/sphere | | Sphere for the agency or creator seat, with its history | orgs, campaigns |
 | GET /me/money | | Money (credits earned by source with each line, real AI cost by agent, the agency's spend) | work, earnings, usage, orgs, campaigns |
 | GET /wallets | | Wallets (for each of the caller's own wallets: balance, total in, total out, and each move with the other side named by kind only) | wallets, transfers, orgs |

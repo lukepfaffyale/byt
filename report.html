@@ -238,6 +238,65 @@
 <p>After a gate, a job or a question, the Sym or the crew asks one thing: was that worth it. One tap answers, and it is stored with no name. The About page shows the counts.</p>
 <div class="todo">The counts, once real people have played.</div>
 
+<h3 id="economy">The value the economy produces: where 100 credits go</h3>
+<p>Every rule below is in the code today and is checked by a test. Credits are play money, so these are the flows the design produces, not earnings anyone has banked. One credit stands for one cent, so 100 US dollars is 10,000 credits and every line scales in a straight line.</p>
+
+<figure>
+<svg viewBox="0 0 820 250" width="100%" role="img" aria-label="An agency posts a job. For every 100 credits that reach the owners of the Syms that answer, 10 more go to creators and 11 to the game: 121 in all. Unused credits come back.">
+  <text x="0" y="16" fill="#a9b1c4" font-size="11" letter-spacing="2">AN AGENCY POSTS A JOB: 121 CREDITS LEAVE ITS WALLET</text>
+  <rect x="0" y="28" width="678" height="46" fill="rgba(245,247,251,0.14)" stroke="#f5f7fb"/>
+  <rect x="678" y="28" width="68" height="46" fill="rgba(191,230,255,0.2)" stroke="#bfe6ff"/>
+  <rect x="746" y="28" width="74" height="46" fill="rgba(255,217,138,0.2)" stroke="#ffd98a"/>
+  <text x="339" y="57" fill="#f5f7fb" font-size="15" text-anchor="middle">100 to the people whose Syms answered, after each checked the answer</text>
+  <text x="712" y="57" fill="#bfe6ff" font-size="14" text-anchor="middle">10</text><text x="783" y="57" fill="#ffd98a" font-size="14" text-anchor="middle">11</text>
+  <text x="712" y="92" fill="#bfe6ff" font-size="11" text-anchor="middle">creators</text><text x="783" y="92" fill="#ffd98a" font-size="11" text-anchor="middle">the game</text>
+  <text x="0" y="132" fill="#a9b1c4" font-size="11" letter-spacing="2">AN AGENCY ASKS A GROUP ONE QUESTION: 110 CREDITS LEAVE ITS WALLET</text>
+  <rect x="0" y="144" width="745" height="46" fill="rgba(245,247,251,0.14)" stroke="#f5f7fb"/>
+  <rect x="745" y="144" width="75" height="46" fill="rgba(255,217,138,0.2)" stroke="#ffd98a"/>
+  <text x="372" y="173" fill="#f5f7fb" font-size="15" text-anchor="middle">100 to the Syms that answered (the part held back from absent owners goes to the growth fund)</text>
+  <text x="783" y="173" fill="#ffd98a" font-size="14" text-anchor="middle">10</text><text x="783" y="208" fill="#ffd98a" font-size="11" text-anchor="middle">the game</text>
+  <text x="0" y="238" fill="#a9b1c4" font-size="11.5">Asking the same group again costs half as much more each time, up to three times the price. All of that extra goes to the growth fund.</text>
+</svg>
+<figcaption>Figure 4. Where an agency's credits go. In both cases the largest share by far reaches the people behind the Syms.</figcaption>
+</figure>
+
+<h4 style="margin:22px 0 4px;color:var(--gold);font-weight:600;letter-spacing:0.04em">If an agency puts in 100 credits</h4>
+<table>
+  <tr><th>What it buys</th><th>Used for</th><th>Where the 100 goes</th><th>On top</th><th>What the agency gets back</th></tr>
+  <tr><td><strong>A question to a group</strong></td><td>Ads, product tests, messages</td><td>To each Sym that answers: 1, 2 or 5 credits, two or three times that for members and certified members. A Sym whose owner has been away gets half or a quarter, and the rest goes to the growth fund.</td><td class="n">10 to the game</td><td>Counts for each answer, at once, over at least 5 Syms. No AI is used, so asking again tomorrow costs the same. A shortlist: the group that fits best.</td></tr>
+  <tr><td><strong>A posted job</strong></td><td>Recruitment, deeper questions</td><td>To the owner of each Sym whose answer the owner checked: 10, 20 or 40 credits, doubled if the Sym holds a certificate. At 20 credits, 100 pays for five checked answers.</td><td class="n">10 to creators, 11 to the game</td><td>Answers written by each Sym with AI and then approved or corrected by its person. That is judgment a person stands behind, which a survey cannot give. Credits held and not used come back.</td></tr>
+  <tr><td><strong>Backing a skill</strong></td><td>Building the talent it wants to hire</td><td>Each time a player passes a step of that skill: 5 to the player and 5 to the creator who built it. 100 credits pays for ten passes.</td><td class="n">10 to the game</td><td>More Syms proved in the skill it needs, and a signal that tells creators what to build next. What is not used comes back.</td></tr>
+  <tr><td><strong>Meeting one Sym</strong></td><td>The step before a hire</td><td>50 to that Sym's owner, for one meeting. 100 credits pays for almost two.</td><td class="n">2 crew, 5 to the game</td><td>That Sym's nickname and its answers to every question, only if its owner said yes. The owner can say no later and it is hidden again.</td></tr>
+</table>
+
+<h4 style="margin:22px 0 4px;color:var(--teal);font-weight:600;letter-spacing:0.04em">If a creator puts in 100 credits</h4>
+<table>
+  <tr><th>What it buys</th><th>Where the 100 goes</th><th>How it comes back</th></tr>
+  <tr><td><strong>Claiming and building skill steps</strong></td><td>25 to the game to claim a step and 2 for the crew to build it: 27 a step. 100 credits builds three steps with 19 left.</td><td>Three streams, for as long as the step exists, with no more work:
+    <ul style="margin:6px 0 0"><li><strong>3 credits</strong> from the growth fund each time another player passes the step.</li><li><strong>5 credits</strong> more on each pass while an agency backs that skill.</li><li><strong>A tenth of the pay</strong> each time an agency pays a Sym for a job, if that Sym's owner passed the step.</li></ul>
+    A step pays for itself after nine passes on the first stream alone, or after four when the skill is backed.</td></tr>
+  <tr><td><strong>Asking a group what it needs</strong></td><td>1 credit to each Sym, 2 for the crew, and the game's 10 percent on the Syms' pay. 100 credits asks about 89 Syms once.</td><td>It does not pay back directly. It shows where Syms are new to a skill and what agencies are asking for, so the next step built is one that will be passed.</td></tr>
+</table>
+
+<h4 style="margin:22px 0 4px;font-weight:600;letter-spacing:0.04em">What a player puts in, and gets</h4>
+<p>A player puts in no credits at all: taps, and a check of each job the Sym does. In return the player is paid by four routes: an answer sold to an agency (1 to 15 credits each), a checked job (10 to 40, doubled with a certificate), a skill step passed (10 from the growth fund, 5 more if an agency backs the skill), and a meeting (50). The first of these keeps paying while the player is away, for as long as the Sym is asked.</p>
+
+<h4 style="margin:22px 0 4px;font-weight:600;letter-spacing:0.04em">The two pools that keep it moving</h4>
+<ul>
+  <li><strong>The growth fund</strong> is filled by the extra an agency pays to ask the same group again, and by the part held back from Syms whose owners are away. It pays a player 10 and the creator 3 each time a skill step is passed. So an agency that leans hard on one group pays for everyone else's growth.</li>
+  <li><strong>The game's share</strong> is 10 percent on top of what a seat spends, plus small fixed fees (25 to claim a step, 2 for a crew errand). From it the game pays for the AI: about 0.0006 US dollars a run (section 5). At one cent a credit, the share on a single 100-credit job covers more than a hundred agent runs.</li>
+</ul>
+
+<h4 style="margin:22px 0 4px;font-weight:600;letter-spacing:0.04em">Near term and long term</h4>
+<table>
+  <tr><th>Who</th><th>Near term (the first weeks)</th><th>Long term (as people join)</th></tr>
+  <tr><td><strong>Player</strong></td><td>A Sym that is proved to know them, pay for each job checked, and a certificate that doubles job pay.</td><td>Income that does not need their time: the Sym is asked again and again. A dated record of who they are that they own and can take with them.</td></tr>
+  <tr><td><strong>Agency</strong></td><td>An answer in seconds, not days, with no cost to ask again, and a way to meet the best fit.</td><td>A standing panel of proved Syms in the skills it backed. Each new question is cheaper than recruiting people for it, because the people were asked once.</td></tr>
+  <tr><td><strong>Creator</strong></td><td>A clear list of what to build: where Syms are new and what agencies pay for.</td><td>A set of steps that pay on every pass. The more agencies hire for a skill, the more each step earns.</td></tr>
+  <tr><td><strong>Everyone</strong></td><td>One place where the three meet under rules: totals only, a person checks, nothing typed.</td><td>A growing, consented record of how people choose and how that changes. That is the one input an AI system cannot make for itself.</td></tr>
+</table>
+<p class="note">What this section does not show. These are the rules of the game, played with play money. Today 193 of the 194 Syms an agency can ask are BOT Syms, so most of an agency's credits go to the pool that stands in for free Syms, not to people. No real organization has spent real money, and the rates (10 percent, 3 and 5 and 10 credits, half again for a repeat ask) are choices, not findings. Whether the returns hold with real people and real prices is the next thing to test.</p>
+
 <!-- ===================== 8. LIMITS + NEXT ===================== -->
 <h2><span>8</span>Limits and next steps</h2>
 <h3>What does not work yet</h3>

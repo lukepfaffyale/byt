@@ -9,12 +9,17 @@ import { SymCue } from './SymCue'
 import { Worth } from './Worth'
 import { CodeView } from './Code'
 import { credits, stop } from './words'
+import './play.css'
 
 // what my Sym says after a tap that has no right answer: short, and true of every tap
 const KEPT = ['Kept.', 'Got it.', 'That tells me something.', 'Noted.']
 
 const SURE: [number, string][] = [[3, 'Sure'], [2, 'Think so'], [1, 'A guess']]
 const LESSON: Record<string, string> = { changed: 'Rewrote', new: 'New', dropped: 'Dropped', count: 'Counted', held: 'Held' }
+
+/** What the server sends back for one answer. The last two are new and are read here only. */
+type SureRows = { level: number; right: number; total: number }[]
+type Answer = ResponseOut & { sure_gate?: SureRows; right_choice?: string | null }
 
 type Props = {
   gateId: string
@@ -35,7 +40,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   const [gate, setGate] = useState<Gate | null>(null)
   const [cards, setCards] = useState<Card[]>([])
   const [index, setIndex] = useState(0)
-  const [result, setResult] = useState<ResponseOut | null>(null)
+  const [result, setResult] = useState<Answer | null>(null)
   const [earned, setEarned] = useState(0)
   const [cert, setCert] = useState<Cert | null>(null)
   const [bonus, setBonus] = useState(0)
@@ -48,7 +53,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   const [chosen, setChosen] = useState<string | null>(null)
   const [mark, setMark] = useState<{ need: number | null; right: number } | null>(null)
   const [calls, setCalls] = useState({ right: 0, total: 0 })
-  const [record, setRecord] = useState<ResponseOut['sure_record']>([])
+  // how sure against how right, for the cards of this gate only. The record over every gate is on My Sym.
+  const [record, setRecord] = useState<SureRows>([])
+  const [flown, setFlown] = useState(0) // answers given on this visit: each one sends up one block
   const [after, setAfter] = useState<'learned' | 'areas' | 'score'>('learned')
   const [busy, setBusy] = useState(false)
   const [streak, setStreak] = useState(0)
@@ -94,17 +101,17 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
 
   const card = cards[index]
   const finished = gate !== null && index >= cards.length
-  // asking how sure costs a tap, so it is asked on every second board card: enough to fill the record
-  const askSure = !!card?.board && card.board.game !== 'reflex' && index % 2 === 0
+  // every board card with a right answer asks how sure, so no answer is left out of the record
+  const askSure = !!card?.board && card.board.game !== 'reflex'
 
   useEffect(() => {
     if (!card) return
     shownAt.current = performance.now()
-    promptRef.current?.focus()
+    promptRef.current?.focus({ preventScroll: true })
   }, [card])
 
   useEffect(() => {
-    if (result) nextRef.current?.focus()
+    if (result) nextRef.current?.focus({ preventScroll: true })
   }, [result])
 
   useEffect(() => {
@@ -154,18 +161,21 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           .catch((e: unknown) => setError(e instanceof Error ? e.message : 'The game could not save a pick.'))
         pending.current.push(saving)
         announce('Saved.')
+        setFlown((n) => n + 1)
         setIndex((i) => i + 1)
         return
       }
       setBusy(true)
+      setChosen(choice)
       try {
-        const out = await api.respond(card.id, choice, ms, sure)
+        const out: Answer = await api.respond(card.id, choice, ms, sure)
+        setFlown((n) => n + 1)
         setEarned((n) => n + out.points_earned)
         if (out.twin_bet !== null) {
           const called = out.twin_bet === out.is_correct
           setCalls((c) => ({ right: c.right + (called ? 1 : 0), total: c.total + 1 }))
         }
-        if (out.sure_record.length > 0) setRecord(out.sure_record)
+        if (out.sure_gate && out.sure_gate.length > 0) setRecord(out.sure_gate)
         if (!isBattle) setStreak((n) => (out.is_correct ? n + 1 : 0))
         if (out.cert) setCert(out.cert)
         if (out.cert_right !== null) setMark({ need: out.cert_need, right: out.cert_right })
@@ -176,7 +186,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           setTally((t) => ({ twin: t.twin + (out.twin_match ? 1 : 0), crowd: t.crowd + (out.crowd_match ? 1 : 0), done: t.done + 1 }))
           announce(`Your Sym said: ${out.twin_choice}. ${out.twin_match ? 'Your Sym was right.' : 'Your Sym was wrong. It will study this after the battle.'}`)
         } else {
-          const said = card.board ? (out.is_correct ? 'That move wins.' : 'That move does not win.') : out.is_correct ? 'That is right.' : 'That is not right.'
+          const said = card.board?.game === 'pattern' ? (out.is_correct ? 'You saw the pattern.' : 'The dot went to another square. It is marked on the board.')
+            : card.board?.game === 'reflex' ? (out.is_correct ? 'In time.' : 'Not this time.')
+              : card.board ? (out.is_correct ? 'That move wins.' : 'That move does not win.') : out.is_correct ? 'That is right.' : 'That is not right.'
           announce(`${said} You get ${out.points_earned} points.`)
         }
         setResult(out)
@@ -235,9 +247,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
         {battle && (
           <>
             <SymCue who={`My Sym${battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}`} calm={still()} formed={1} go={onwardGo} act={onward}
-              say={`I guessed ${battle.twin_matches} of your ${battle.n} picks before you made them. The crowd's guess got ${battle.baseline_matches}. ${!learned ? 'I am studying what I got wrong.'
-                : learned.misses === 0 ? 'I got every one right, so my beliefs held.'
-                  : `I studied my ${learned.misses} wrong ${learned.misses === 1 ? 'guess' : 'guesses'} and made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'} to what I believe about you.`}${battle.cert ? ' We earned a certificate.' : ''}${onwardSay}`} />
+              more={learned ? [`Your ${learned.picks_added} picks in this battle now count as proof for what I believe.`] : undefined}
+              say={`I guessed ${battle.twin_matches} of your ${battle.n} picks before you made them. The crowd's guess got ${battle.baseline_matches}. ${!learned ? 'I am studying my misses.'
+                : learned.misses === 0 ? 'My beliefs held.'
+                  : `I studied my ${learned.misses} ${learned.misses === 1 ? 'miss' : 'misses'} and made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'}.`}${battle.cert ? ' We earned a certificate.' : ''}${onwardSay}`} />
             <Tabs label="After the battle" value={after} onChange={setAfter}
               tabs={[
                 { id: 'learned', label: 'What I learned', n: learned ? learned.lessons.length : '...' },
@@ -247,14 +260,13 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
             {after === 'learned' && !learned && <p className="muted" aria-live="polite">My Sym is studying its wrong guesses.</p>}
             {after === 'learned' && learned && (
               <>
-                <Rows pageKey="lessons" size={4} wide empty="Nothing changed." rows={learned.lessons.map((l, i) => ({
+                <Rows pageKey="lessons" size={3} wide empty="Nothing changed." rows={learned.lessons.map((l, i) => ({
                   id: `l${i}`, top: LESSON[l.kind] ?? l.kind, gold: l.kind !== 'held', label: l.after || l.before,
                   detail: l.kind === 'changed' ? <>About {l.topic}. Before the battle I believed: {l.before}</>
                     : l.kind === 'dropped' ? <>I no longer believe this. The battle showed it was wrong.</>
                       : l.kind === 'count' ? <>On the card "{l.topic}". {l.before}.</>
                         : l.kind === 'new' ? <>A new belief about {l.topic}. I did not hold it before the battle.</> : undefined,
                 }))} />
-                <p className="fine">Your {learned.picks_added} picks in this battle now count as proof. My next battle uses cards I have not seen.</p>
               </>
             )}
             {after === 'areas' && (
@@ -270,7 +282,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
                     </li>
                   ))}
                 </ul>
-                <p className="fine">Each pick you made falls in one area. The number is how many of those my Sym had guessed. The areas are loose textbook links. Nothing here measures a brain.</p>
+                <p className="fine">How many of your picks in each area my Sym had guessed. The areas are loose links. Nothing here measures a brain.</p>
               </>
             )}
             {after === 'score' && (
@@ -294,8 +306,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           </>
         )}
         {error && <p className="error" role="alert">{error}</p>}
-        <Worth seat="player" moment="gate" />
-        {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
+        <div className="done-foot">
+          <Worth seat="player" moment="gate" />
+          {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
+        </div>
       </section>
     )
   }
@@ -318,59 +332,83 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           <p className="fine">
             {mark.need === null
               ? 'This gate is too short to earn a certificate. A full score here could still be luck.'
-              : `No certificate this time. It needed ${mark.need} right and you got ${mark.right}. A certificate is only given for a score that guessing would almost never reach. It cannot be bought.`}
+              : `No certificate this time: it needed ${mark.need} right, and this run had ${mark.right}. It cannot be bought.`}
           </p>
         )}
         {record.some((r) => r.total > 0) && (
-          <>
-            <div className="twin-line">
-              <span className="line-top">My Sym</span>
-              <p>
-                {calls.total > 0 && `I called ${calls.right} of ${calls.total} of your answers before you gave them.`}
-                {(() => {
-                  const top = record.find((r) => r.level === 3)
-                  if (!top || top.total === 0) return ' Tap Sure when you are sure, and I can tell you how often that holds.'
-                  return ` When you say you are sure, you are right ${top.right} of ${top.total} times. ${top.right / top.total >= 0.8 ? 'You can trust that feeling.' : 'Slow down when you feel sure.'}`
-                })()}
-              </p>
-            </div>
+          <div className="sure-done">
+            <span className="line-top">How sure and how right · this gate only</span>
             <dl className="pair">
               {SURE.map(([level, name]) => {
                 const row = record.find((r) => r.level === level)
-                return <div key={level}><dt>{name}</dt><dd>{row && row.total ? `${row.right}/${row.total}` : '0'}</dd><dd className="muted">right when you said this</dd></div>
+                return <div key={level}><dt>{name}</dt><dd>{row && row.total ? `${row.right} of ${row.total}` : 'not said'}</dd><dd className="muted">{row && row.total ? 'right, in this gate' : 'in this gate'}</dd></div>
               })}
             </dl>
-          </>
+            <p className="fine">
+              {calls.total > 0 && `My Sym: I called ${calls.right} of ${calls.total} of your answers before you gave them. `}
+              Every gate together is on My Sym, under Judgment.
+            </p>
+          </div>
         )}
-        <Worth seat="player" moment="gate" />
-        {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
+        <div className="done-foot">
+          <Worth seat="player" moment="gate" />
+          {nextUp && <button className="link" onClick={leave}>Go back to Journey</button>}
+        </div>
       </section>
     )
   }
 
   // my Sym answers each tap in its own voice. Code writes the line from what just happened; no model does.
   const left = cards.length - index
-  const bet = (yes: boolean) => (yes ? 'get it' : 'miss it')
+  const last = left === 1
+  // the bet my Sym made before the gate began, and how it came out. A miss is never the player's fault here.
+  const betSay = (bet: boolean, got: boolean | null) =>
+    bet ? (got ? 'I bet you would get it. You did.' : 'I bet you would get it. I was wrong this time.')
+      : got ? 'I bet this one would be too hard. You surprised me.' : 'I bet this one would be hard. It was.'
   const symSay = result && isBattle
     ? (result.twin_match ? 'I guessed that. I know you here.' : 'I was wrong about you. I will study this one after the battle.')
     : result
       ? result.twin_bet !== null
-        ? `I bet you would ${bet(result.twin_bet)}, ${result.twin_bet_sure} percent sure. ${result.twin_bet === result.is_correct ? 'I called it.' : 'I was wrong about you.'}`
-        : result.is_correct ? (streak >= 3 ? `That is ${streak} right in a row. Keep going.` : 'That was right. Keep going.') : 'Not that one. The next one is yours.'
+        ? `${betSay(result.twin_bet, result.is_correct)}${last ? ' That was the last card.' : ''}`
+        : result.is_correct
+          ? `${streak >= 3 ? `That is ${streak} right in a row.` : 'That was right.'} ${last ? 'That was the last card.' : 'Keep going.'}`
+          : last ? 'That one got away. It was the last card.' : 'That one got away. The next one is yours.'
       : isBattle
         ? `My guess is sealed. ${sure[card.id] === undefined ? 'Tap, and we see if I know you.' : sure[card.id] >= 75 ? `I am ${sure[card.id]} percent sure. I think I know you here.`
           : sure[card.id] >= 45 ? `I am ${sure[card.id]} percent sure.` : `I am only ${sure[card.id]} percent sure. This one is hard for me.`}`
         : card.board?.game === 'pattern' && card.bet_sure !== null
-          ? `I have bet on whether you get this one. I am ${card.bet_sure} percent sure of my bet.`
+          ? `I have bet on this one. I am ${card.bet_sure} percent sure of my bet.`
           : index === 0 ? 'I am watching. Tap, and I learn.'
             : left === 1 ? 'One more tap, and this gate is mine to keep.'
               : index === Math.ceil(cards.length / 2) ? `Half way. ${left} more and I know you better.`
                 : `${KEPT[index % KEPT.length]} ${left} to go.`
 
+  const game = card.board?.game
+  const resultCard = result && (isBattle ? (
+    <div className={`result ${result.twin_match ? 'right' : 'wrong'}`}>
+      <p>
+        <strong>{result.twin_match ? '✓ Your Sym was right.' : '✗ Your Sym was wrong.'}</strong> Your Sym said: {result.twin_choice}
+        {result.twin_sure !== null && `, ${result.twin_sure} percent sure`}. The crowd's guess was {result.crowd_match ? 'right' : 'wrong'}.
+      </p>
+      {result.twin_because && <p className="leaned"><span className="line-top">{result.twin_match ? 'The belief that got it right' : 'The belief that failed'}</span> {result.twin_because}</p>}
+      <button ref={nextRef} className="primary" onClick={advance}>{last ? 'See the result' : 'Next card'}</button>
+    </div>
+  ) : (
+    <div className={`result ${result.is_correct ? 'right' : 'wrong'}`}>
+      <p>
+        <strong>{game === 'reflex' ? (result.is_correct ? '✓ In time.' : '✗ Not this time.')
+          : game === 'pattern' ? (result.is_correct ? '✓ You saw the pattern.' : '✗ The dot went to another square.')
+            : card.board ? (result.is_correct ? '✓ That move wins.' : '✗ That move does not win.') : result.is_correct ? '✓ That is right.' : '✗ That is not right.'}</strong> +{result.points_earned} points
+        {result.others_total !== null && result.others_total > 0 && `. ${result.others_right} of ${result.others_total} other players got this one.`}
+      </p>
+      <button ref={nextRef} className="primary" onClick={advance}>{last ? 'Finish the gate' : 'Next card'}</button>
+    </div>
+  ))
+
   return (
-    <section aria-labelledby="card-h" className="play">
+    <section aria-labelledby="card-h" className={result && !card.board ? 'play answered' : 'play'}>
       <SymLive say={symSay} done={index + (result ? 1 : 0)} total={cards.length} pulse={index * 2 + (result ? 1 : 0)} calm={still()}
-        label={`My Sym · ${gate.title} · ${index + 1} of ${cards.length}${isBattle && twinKind === 'offline' ? ' · practice Sym, no AI' : ''}`} />
+        label={`My Sym · ${index + 1} of ${cards.length} · ${isBattle ? `battle${twinKind === 'offline' ? ' · practice Sym, no AI' : ''}` : gate.title}`} />
       {isBattle && (
         <p className="duel" aria-label={`So far: your Sym ${tally.twin}, the crowd's guess ${tally.crowd}, of ${tally.done} cards.`}>
           <span><strong>{tally.twin}</strong> my Sym</span>
@@ -380,53 +418,48 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
       )}
       <h1 id="card-h" ref={promptRef} tabIndex={-1} className="prompt">{card.prompt}</h1>
 
+      {flown > 0 && !still() && <span className="t-fly" aria-hidden="true"><TBlock key={flown} /></span>}
       {card.board ? (
-        card.board.game === 'reflex' ? (
-          <ReflexView key={card.id} board={card.board} disabled={busy || result !== null} onDone={(outcome, ms) => void pick(outcome, undefined, ms)} />
-        ) : (
-          <BoardView board={card.board} options={card.options.map((o) => o.id)} disabled={busy || result !== null} chosen={chosen}
-            onPick={askSure ? setChosen : (move) => void pick(move)} />
-        )
+        <div className={`play-row game-${card.board.game}`}>
+          {card.board.game === 'reflex' ? (
+            <ReflexView key={card.id} board={card.board} disabled={busy || result !== null} onDone={(outcome, ms) => void pick(outcome, undefined, ms)} />
+          ) : (
+            <BoardView board={card.board} options={card.options.map((o) => o.id)} disabled={busy || result !== null} chosen={chosen}
+              answer={result?.right_choice ?? null} onPick={askSure ? setChosen : (move) => void pick(move)} />
+          )}
+          {/* what comes next sits beside the board, so a card is one page: how sure, then how it went */}
+          <div className="play-side">
+            {!result && !chosen && card.board.game !== 'reflex' && <p className="muted play-hint">Tap the board. Then say how sure you are.</p>}
+            {!result && chosen && (
+              <div className="chips sure" role="group" aria-label="How sure are you?">
+                <span className="chips-label">
+                  {card.board.game === 'pattern' ? '' : `You picked: ${card.options.find((o) => o.id === chosen)?.label ?? chosen}. `}How sure are you?
+                </span>
+                {SURE.map(([level, name]) => (
+                  <button key={level} className="chip" disabled={busy} onClick={() => void pick(chosen, level)}>{name}</button>
+                ))}
+              </div>
+            )}
+            {result && resultCard}
+          </div>
+        </div>
       ) : (
-        <div className={`options n${card.options.length}`}>
-          {card.options.map((o, i) => (
-            <button key={o.id} className="option" disabled={busy || result !== null} onClick={() => void pick(o.id)}>
-              <span className="key" aria-hidden="true">{i + 1}</span>
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {result && isBattle && (
-        <div className={`result ${result.twin_match ? 'right' : 'wrong'}`}>
-          <p>
-            <strong>{result.twin_match ? '✓ Your Sym was right.' : '✗ Your Sym was wrong.'}</strong> Your Sym said: {result.twin_choice}
-            {result.twin_sure !== null && `, ${result.twin_sure} percent sure`}. The crowd's guess was {result.crowd_match ? 'right' : 'wrong'}.
-          </p>
-          {result.twin_because && <p className="leaned"><span className="line-top">{result.twin_match ? 'The belief that got it right' : 'The belief that failed'}</span> {result.twin_because}</p>}
-          {!result.twin_match && <p className="fine">I will study this after the battle and change what I believe.</p>}
-          <button ref={nextRef} className="primary" onClick={advance}>Next</button>
-        </div>
-      )}
-      {card.board && chosen && !result && (
-        <div className="chips sure" role="group" aria-label="How sure are you?">
-          <span className="chips-label">
-            {card.board.game === 'pattern' ? '' : `You picked: ${card.options.find((o) => o.id === chosen)?.label ?? chosen}. `}How sure are you?
-          </span>
-          {SURE.map(([level, name]) => (
-            <button key={level} className="chip" disabled={busy} onClick={() => void pick(chosen, level)}>{name}</button>
-          ))}
-        </div>
-      )}
-      {result && !isBattle && (
-        <div className={`result ${result.is_correct ? 'right' : 'wrong'}`}>
-          <p>
-            <strong>{card.board?.game === 'reflex' ? (result.is_correct ? '✓ In time.' : '✗ Not this time.') : card.board?.game === 'pattern' ? (result.is_correct ? '✓ You saw the pattern.' : '✗ The dot went somewhere else.') : card.board ? (result.is_correct ? '✓ That move wins.' : '✗ That move does not win.') : result.is_correct ? '✓ That is right.' : '✗ That is not right.'}</strong> +{result.points_earned} points
-            {result.others_total !== null && result.others_total > 0 && `. ${result.others_right} of ${result.others_total} other players got this one.`}
-          </p>
-          <button ref={nextRef} className="primary" onClick={advance}>Next</button>
-        </div>
+        result ? (
+          // once the answer is in, the choices make room for what came of it, so the card stays one page
+          <>
+            <p className="picked-line"><span className="line-top">You picked</span> {card.options.find((o) => o.id === chosen)?.label ?? ''}</p>
+            {resultCard}
+          </>
+        ) : (
+          <div className={`options n${card.options.length}`}>
+            {card.options.map((o, i) => (
+              <button key={o.id} className="option" disabled={busy} onClick={() => void pick(o.id)}>
+                <span className="key" aria-hidden="true">{i + 1}</span>
+                {o.label}
+              </button>
+            ))}
+          </div>
+        )
       )}
       {error && <p className="error" role="alert">{error}</p>}
       <button className="link" onClick={leave}>Leave this gate</button>
@@ -434,11 +467,33 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   )
 }
 
-function BoardView(props: { board: Board; options: string[]; disabled: boolean; chosen?: string | null; onPick: (choice: string) => void }) {
+/**
+ * One answer becomes one block of the Sym's code: a small lit T rises from the card toward the Sym and fades.
+ * It is drawn only when motion is on (the caller asks still()). The script runs the motion, as the Sym's own
+ * drawing does, so it follows the game's motion switch.
+ */
+function TBlock() {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const move = ref.current?.animate?.(
+      [
+        { opacity: 0, transform: 'translate(0, 0) scale(0.6)' },
+        { opacity: 1, transform: 'translate(-6px, -14px) scale(1.15)', offset: 0.18 },
+        { opacity: 1, transform: 'translate(-40px, -80px) scale(0.95)', offset: 0.7 },
+        { opacity: 0, transform: 'translate(-64px, -118px) scale(0.7)' },
+      ],
+      { duration: 1300, easing: 'ease-out', fill: 'both' },
+    )
+    return () => move?.cancel()
+  }, [])
+  return <span ref={ref} className="t-block">T</span>
+}
+
+function BoardView(props: { board: Board; options: string[]; disabled: boolean; chosen?: string | null; answer?: string | null; onPick: (choice: string) => void }) {
   const { board, options, disabled, onPick } = props
   const name = (mark: string) => (mark === '.' ? 'empty' : mark)
 
-  if (board.game === 'pattern') return <PatternView key={board.seq.join('|')} board={board} disabled={disabled} chosen={props.chosen ?? null} onPick={onPick} />
+  if (board.game === 'pattern') return <PatternView key={board.seq.join('|')} board={board} disabled={disabled} chosen={props.chosen ?? null} answer={props.answer ?? null} onPick={onPick} />
 
   if (board.game === 'tictactoe') {
     return (
@@ -494,8 +549,8 @@ const NTH = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 
  * each square keeps the numbers of its flashes, so the game tests seeing the rule and not memory. With motion off
  * the numbers are shown at once. A screen reader hears the order in the label of each square.
  */
-function PatternView(props: { board: Board; disabled: boolean; chosen: string | null; onPick: (choice: string) => void }) {
-  const { board, disabled, chosen, onPick } = props
+function PatternView(props: { board: Board; disabled: boolean; chosen: string | null; answer: string | null; onPick: (choice: string) => void }) {
+  const { board, disabled, chosen, answer, onPick } = props
   const calm = still()
   const [lit, setLit] = useState(calm ? board.seq.length : -1)
   const [run, setRun] = useState(0)
@@ -522,18 +577,27 @@ function PatternView(props: { board: Board; disabled: boolean; chosen: string | 
             const id = `${r},${c}`
             const hits = board.seq.map((cell, i) => (cell === id ? i : -1)).filter((i) => i >= 0)
             const on = watching && board.seq[lit] === id
+            // once the pick is stored the server says where the dot went, and the board shows it
+            const here = answer === id
+            const missed = answer !== null && chosen === id && !here
             return (
-              <button key={id} className={on ? 'pcell on' : chosen === id ? 'pcell picked' : 'pcell'} aria-pressed={chosen === id} disabled={disabled || watching} onClick={() => onPick(id)}
-                aria-label={`Row ${r + 1}, column ${c + 1}${hits.length ? `, flashed ${hits.map((i) => NTH[i] ?? `number ${i + 1}`).join(' and ')}` : ', did not flash'}`}>
+              <button key={id} className={on ? 'pcell on' : here ? 'pcell picked answer' : missed ? 'pcell missed' : chosen === id ? 'pcell picked' : 'pcell'} aria-pressed={chosen === id} disabled={disabled || watching} onClick={() => onPick(id)}
+                aria-label={`Row ${r + 1}, column ${c + 1}${hits.length ? `, flashed ${hits.map((i) => NTH[i] ?? `number ${i + 1}`).join(' and ')}` : ', did not flash'}${here ? '. The next dot went here' : missed ? '. Your pick' : ''}`}>
                 {on && <span className="pdot" />}
-                {!watching && <span className="pnum">{hits.map((i) => i + 1).join(' · ')}</span>}
+                {!watching && (hits.length > 0 || here || missed) && (
+                  <span className="pnum">
+                    {hits.map((i) => i + 1).join(' · ')}
+                    {here && <strong className="pnext">{hits.length ? ' · ' : ''}{board.seq.length + 1}</strong>}
+                    {missed && <span className="pmine">{hits.length ? ' · ' : ''}you</span>}
+                  </span>
+                )}
               </button>
             )
           }),
         )}
       </div>
       <p className="pattern-foot">
-        <span className="muted" aria-live="polite">{watching ? `Dot ${Math.max(1, lit + 1)} of ${board.seq.length}` : 'The numbers show the order. Where is the next dot?'}</span>
+        <span className="muted" aria-live="polite">{watching ? `Dot ${Math.max(1, lit + 1)} of ${board.seq.length}` : answer ? `Dot ${board.seq.length + 1} went to the square marked ${board.seq.length + 1}.` : 'The numbers show the order. Where is the next dot?'}</span>
         {!calm && !watching && !disabled && <button className="link" onClick={() => { setLit(-1); setRun((n) => n + 1) }}>Watch again</button>}
       </p>
     </div>

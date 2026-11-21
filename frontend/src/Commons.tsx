@@ -82,7 +82,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
         label={`Everyone in the game, moving in space around a core of light. ${said} Together they know ${data.known} things, and ${data.known_mine} of those came from you.`} />
       <p className="commons-key" aria-hidden="true">
         <span><i className="key-person" /> a person and their Sym</span>
-        <span><i className="key-hold" /> a BOT Sym on its track (made up, not a person)</span>
+        <span><i className="key-hold" /> a BOT Sym (made up, not a person)</span>
         <span><i className="key-agency" /> agency</span>
         <span><i className="key-creator" /> creator</span>
         <span>drag to turn</span>
@@ -92,6 +92,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
           rows={data.happenings.map((h, i) => ({ id: String(i), top: WHEN[h.when] ?? h.when, label: h.text, n: h.mine ? 'you' : '', gold: h.mine }))} />
       )}
       {tab === 'known' && (
+        <>
         <dl className="pair commons-pair">
           <div><dt>Taps</dt><dd><Tick to={data.taps} calm={calm} /></dd><dd className="muted">what people chose</dd></div>
           <div><dt>Checks</dt><dd><Tick to={data.checks} calm={calm} /></dd><dd className="muted">a person checked a Sym</dd></div>
@@ -99,6 +100,12 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
           <div><dt>Lessons</dt><dd><Tick to={data.lessons} calm={calm} /></dd><dd className="muted">a Sym was wrong, and changed</dd></div>
           <div><dt>Proof</dt><dd><Tick to={data.proofs} calm={calm} /></dd><dd className="muted">certificates earned</dd></div>
         </dl>
+        {/* the same two numbers as the welcome screen, with what each one counts */}
+        <p className="commons-mine">
+          Known together is taps, checks, told and lessons added up: {data.known.toLocaleString()}. Proof is counted apart.
+          {' '}{data.known_mine.toLocaleString()} of them came from you: {data.taps_mine} {data.taps_mine === 1 ? 'tap' : 'taps'}, {data.checks_mine} {data.checks_mine === 1 ? 'check' : 'checks'}, {data.told_mine} told and {data.lessons_mine} {data.lessons_mine === 1 ? 'lesson' : 'lessons'}.
+        </p>
+        </>
       )}
       {tab === 'mine' && <RippleMap calm={calm} onSeat={onSeat} />}
       {tab === 'flow' && <WorldView split />}

@@ -38,13 +38,15 @@ export function MeetPanel(props: { seat: Seat; meets: Meets; share: number; grou
   )
 }
 
-/** The twins this seat paid to meet. */
-export function MetList({ meets }: { meets: Meets }) {
-  const { rows, pager } = usePager(meets.met, 1, `met-${meets.met.length}`)
+/** The twins this seat paid to meet. A screen that already has a pager beside its tabs passes the rows to show,
+ * so there is one pager on the screen and not two. */
+export function MetList({ meets, rows: given }: { meets: Meets; rows?: Meets['met'] }) {
+  const { rows: own, pager } = usePager(meets.met, 1, `met-${meets.met.length}`)
   if (meets.met.length === 0) return null
+  const rows = given ?? own
   return (
     <>
-      {pager}
+      {!given && pager}
       <ul className="lines met-list">
         {rows.map((m) => (
           <li key={m.at}>

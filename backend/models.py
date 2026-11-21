@@ -435,6 +435,7 @@ class Me(Strict):
     credits: float = 0
     jobs_open: int = 0
     twins: int = 0  # every twin in the game: the sky behind the sphere has one point for each
+    people: int = 0  # of those Syms, how many have a living person behind them (never a BOT Sym or a Sym left behind)
     together: float = 0.0  # 0 = this twin has only played alone (black and white); 1 = fully connected (full color)
     active_days: int = 0  # days played in the last 14
     income_share: float = 1.0  # the part of data income this twin receives, from how lately its owner played
@@ -511,6 +512,7 @@ class Judgment(Strict):
     rows: list[SureRow]
     taps: list[SureTap]
     says: str
+    unsaid: int = 0  # right-or-wrong answers given with no "how sure" tap; they are in no row
 
 
 class CertOut(Strict):
@@ -538,7 +540,9 @@ class ResponseOut(Strict):
     others_total: int | None = None  # and how many other players tried it
     twin_bet: bool | None = None  # pattern cards: the twin bet that the player would get it (true) or miss it
     twin_bet_sure: int | None = None  # and how sure the twin was of that bet, 50 to 100
-    sure_record: list[SureRow] = []  # pattern cards: the player's record at each level of sureness, so far
+    sure_record: list[SureRow] = []  # the player's record at each level of sureness, over every gate so far
+    sure_gate: list[SureRow] = []  # the same record for the cards of this gate only
+    right_choice: str | None = None  # pattern cards: the square the next dot went to, sent only after the pick is stored
     cert_need: int | None = None  # at the end of a skill gate: how many right answers the certificate needed
     cert_right: int | None = None  # and how many the player got
     cert: CertOut | None = None  # a skill cert earned by finishing this gate
@@ -1376,6 +1380,13 @@ class CodeBase(Strict):
     area: str = ""  # the area of the mind a tap fell in; empty when the block has none
     color: str = ""
     apart: bool = False  # a tap where fewer than half of the other Syms picked the same
+    # the story of the block, for the pop-out a tap on it opens. The person's own row and counts only, never a name or an id.
+    what: str = ""  # one short plain line: "A pick you made", "A gate finished", "A job posted"
+    gate: str = ""  # a tap: the title of the gate the card is in
+    prompt: str = ""  # a tap: what the card asked
+    picked: str = ""  # a tap: the words of the option the person chose
+    same: int = 0  # a tap: how many of the compared Syms picked the same option
+    of: int = 0  # a tap: how many compared Syms answered this card; 0 when the crowd is under the minimum
 
 
 class SymCode(Strict):
@@ -1429,6 +1440,9 @@ class Commons(Strict):
     known: int  # taps, checks, told and lessons together
     known_mine: int  # the reader's part of that
     taps_mine: int = 0  # 0 means the reader has not started yet
+    checks_mine: int = 0  # the reader's part of checks, told and lessons: with taps_mine they add up to known_mine
+    told_mine: int = 0
+    lessons_mine: int = 0
     has_agency: bool = False  # the reader opened an agency seat
     has_creator: bool = False  # the reader opened a creator seat
     happenings: list[Happening] = []

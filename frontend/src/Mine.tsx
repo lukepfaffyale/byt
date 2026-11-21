@@ -1,21 +1,31 @@
 import { useEffect, useState } from 'react'
 import { api, type Activity, type Fact, type Judgment, type UsageSummary } from './api'
-import { Tabs } from './Deck'
 import { MirrorView } from './MirrorView'
 import { CodeView } from './Code'
 import { CueSlot } from './SymCue'
 import { More } from './More'
-import { Rows, type Row } from './Rows'
+import { usePager } from './pager'
+import { Pick, Rows, Tools, type Row } from './Rows'
 import { SkillsView } from './SkillsView'
 import { Failed } from './Retry'
+import './mine.css'
 
 type TabId = 'type' | 'code' | 'mind' | 'brain' | 'skills' | 'judgment' | 'beliefs' | 'proof' | 'data'
+type GroupId = 'who' | 'know' | 'proof'
+// nine views in three groups: the groups are pinned above the page, the views of one group are the sub-tabs on it
+const GROUPS: { id: GroupId; label: string; tabs: { id: TabId; label: string }[] }[] = [
+  { id: 'who', label: 'Who I am', tabs: [{ id: 'type', label: 'Type' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }] },
+  { id: 'know', label: 'What I know', tabs: [{ id: 'code', label: 'Code' }, { id: 'skills', label: 'Skills' }, { id: 'beliefs', label: 'Beliefs' }] },
+  { id: 'proof', label: 'Proof and data', tabs: [{ id: 'judgment', label: 'Judgment' }, { id: 'proof', label: 'Proof' }, { id: 'data', label: 'Data' }] },
+]
+const SIZE = 4  // rows shown at a time, so a list, its tabs and its arrows share one page
 const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Think so', 1: 'A guess' }
 const CERT_NAME: Record<string, string> = { twin: 'Sym', insight: 'Insight', skill: 'Skill' }
 
 /**
- * What my twin knows, one panel at a time. The twin says what the panel holds in one line; the rows below are
- * a few at a time, and a tap on a row opens it. Nothing here needs a scroll.
+ * What my Sym knows, one view at a time, and every view is one page. Three groups are pinned above the page; the
+ * views of a group are the sub-tabs at the top of the page, with the arrows for more rows and the More note on the
+ * same row. A tap on a row opens it in a pop-out. Nothing here needs a scroll or a second page.
  */
 export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void; onPlay: (gateId: string) => void; area?: string; start?: TabId }) {
   const [data, setData] = useState<Activity | null>(null)
@@ -25,16 +35,27 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
   const [from, setFrom] = useState<'taps' | 'told'>('taps')
   const [error, setError] = useState('')
   const [tab, setTab] = useState<TabId>(start ?? (area ? 'brain' : 'type'))
+  const [last, setLast] = useState<Partial<Record<GroupId, TabId>>>({})  // the view last seen in each group
+  const [slot, setSlot] = useState<HTMLElement | null>(null)  // the place beside the sub-tabs for a view's small tools
   const [focusTree, setFocusTree] = useState<string | null>(null)
   const [proof, setProof] = useState<'certs' | 'work' | 'battles'>('certs')
   const [store, setStore] = useState<'about' | 'taps' | 'keep'>('about')
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const mirrorTab = tab === 'type' || tab === 'mind' || tab === 'brain'
+  const group = GROUPS.find((g) => g.tabs.some((t) => t.id === tab)) ?? GROUPS[0]
+  const toldPages = usePager(told, SIZE, 'told')
+
+  function go(next: TabId) {
+    const g = GROUPS.find((x) => x.tabs.some((t) => t.id === next)) ?? GROUPS[0]
+    setLast({ ...last, [g.id]: next })
+    setTab(next)
+    setConfirming(false)
+  }
 
   function toSkill(id: string) {
     setFocusTree(id)
-    setTab('skills')
+    go('skills')
   }
 
   useEffect(() => {
@@ -119,77 +140,77 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
   }))
   const won = (data?.battles ?? []).filter((b) => b.twin_matches !== null && b.twin_matches > (b.baseline_matches ?? 0)).length
 
+  const counts: Partial<Record<TabId, number>> = {
+    judgment: judged ? judged.taps.length : undefined,
+    beliefs: data ? beliefs.length : undefined,
+    proof: data ? data.certs.length : undefined,
+    data: data ? data.responses.length : undefined,
+  }
+
   return (
     <section aria-labelledby="mine-h" className="mine">
       <h1 id="mine-h" className="sr-only">What my Sym knows</h1>
-      <CueSlot><Tabs label="What my Sym knows" value={tab} onChange={setTab}
-        tabs={[
-          { id: 'type', label: 'Type' }, { id: 'code', label: 'Code' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }, { id: 'skills', label: 'Skills' },
-          { id: 'judgment', label: 'Judgment', n: judged ? judged.taps.length : undefined },
-          { id: 'beliefs', label: 'Beliefs', n: data ? beliefs.length : undefined },
-          { id: 'proof', label: 'Proof', n: data ? data.certs.length : undefined },
-          { id: 'data', label: 'Data', n: data ? data.responses.length : undefined },
-        ]} /></CueSlot>
+      <CueSlot>
+        <Pick className="mine-groups" label="What my Sym knows" value={group.id} items={GROUPS}
+          onChange={(id) => go(last[id] ?? (GROUPS.find((g) => g.id === id) ?? GROUPS[0]).tabs[0].id)} />
+      </CueSlot>
       {error && <Failed error={error} />}
 
+      <div className="mine-bar">
+        <Pick className="mine-subs" label={group.label} value={tab} onChange={go}
+          items={group.tabs.map((t) => ({ ...t, n: counts[t.id] }))} />
+        <span className="mine-tools" ref={setSlot} />
+      </div>
+
       <div className="panel">
-        {tab === 'code' && <CodeView />}
-        {mirrorTab && <MirrorView view={tab} onSkill={toSkill} open={area} />}
-        {tab === 'skills' && <SkillsView key={focusTree ?? 'all'} focus={focusTree} onPlay={onPlay} />}
-        {!mirrorTab && tab !== 'skills' && !data && !error && <p className="muted" aria-live="polite">Loading.</p>}
+        {tab === 'code' && <CodeView slot={slot} />}
+        {mirrorTab && <MirrorView view={tab} onSkill={toSkill} open={area} slot={slot} />}
+        {tab === 'skills' && <SkillsView key={focusTree ?? 'all'} focus={focusTree} onPlay={onPlay} slot={slot} />}
+        {!mirrorTab && tab !== 'skills' && tab !== 'code' && tab !== 'judgment' && !data && !error && <p className="muted" aria-live="polite">Loading.</p>}
 
         {tab === 'judgment' && !judged && !error && <p className="muted" aria-live="polite">Loading.</p>}
         {tab === 'judgment' && judged && (
           <>
-            <div className="twin-line">
-              <span className="line-top">My Sym</span>
-              <p>{judged.says}</p>
-            </div>
-            <ul className="bars split-bars">
+            <Tools slot={slot}>
+              <More>My Sym: {judged.says} Each mark is one answer, oldest on the left. A full mark was right. An empty one was wrong. A sure answer that was wrong is the one to watch.</More>
+            </Tools>
+            <p className="mine-says"><span className="line-top">My Sym</span> {judged.says}</p>
+            {judged.taps.length > 0 && (
+              <p className="sr-only">Your last {judged.taps.length} answers in order. {judged.taps.filter((t) => t.right).length} were right.</p>
+            )}
+            <ul className="mine-judge">
               {judged.rows.map((r) => (
-                <li key={r.level} className="bar">
-                  <span className="bar-head as-row">
-                    <span className="bar-name">When you said: {SURE_NAME[r.level]}</span>
-                    <span className="bar-n">{r.total ? `${r.right}/${r.total}` : '0'}</span>
-                    <span className="meter" aria-hidden="true"><span style={{ width: `${r.total ? (r.right / r.total) * 100 : 0}%` }} /></span>
+                <li key={r.level}>
+                  <span className="bar-name">When you said: {SURE_NAME[r.level]}</span>
+                  <span className="bar-n">{r.total ? `${r.right}/${r.total}` : '0'}</span>
+                  <span className="judge-dots" aria-hidden="true">
+                    {judged.taps.map((t, i) => <span key={i} className={t.level !== r.level ? 'jdot none' : t.right ? 'jdot right' : 'jdot wrong'} />)}
                   </span>
                 </li>
               ))}
             </ul>
-            {judged.taps.length > 0 && (
-              <div className="judge" role="img"
-                aria-label={`Your last ${judged.taps.length} answers in order. ${judged.taps.filter((t) => t.right).length} were right.`}>
-                {[3, 2, 1].map((level) => (
-                  <div key={level} className="judge-row">
-                    <span className="line-top">{SURE_NAME[level]}</span>
-                    <span className="judge-dots">
-                      {judged.taps.map((t, i) => <span key={i} className={t.level !== level ? 'jdot none' : t.right ? 'jdot right' : 'jdot wrong'} />)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            <p className="fine">Each mark is one answer, oldest on the left. A full mark was right. An empty one was wrong. A sure answer that was wrong is the one to watch.</p>
           </>
         )}
 
         {tab === 'beliefs' && data && (
           <>
-            <div className="twin-line">
-              <span className="line-top">My Sym</span>
-              <p>
-                {beliefs.length === 0
+            <Tools slot={slot}>
+              {from === 'told' && toldPages.pager}
+              <More>
+                My Sym: {beliefs.length === 0
                   ? 'I do not believe anything about you yet. Finish your first gate of picks and I will start.'
                   : `I hold ${beliefs.length} ${beliefs.length === 1 ? 'belief' : 'beliefs'} about you. I am most sure of the first one. The number is how many of your picks stand behind it.`}
-              </p>
-            </div>
-            <Tabs label="Where a belief came from" value={from} onChange={setFrom}
-              tabs={[{ id: 'taps', label: 'From your taps', n: beliefRows.length }, { id: 'told', label: 'You told me', n: told.length }]} />
-            {from === 'taps' && <Rows rows={beliefRows} pageKey="beliefs" size={4} wide empty="No beliefs yet." />}
+                {' '}Tap a belief to see why I hold it. What you told me is kept only after I ask you, and you can make me forget it.
+              </More>
+            </Tools>
+            <Pick className="mine-parts" label="Where a belief came from" value={from} onChange={setFrom}
+              items={[{ id: 'taps', label: 'From your taps', n: beliefRows.length }, { id: 'told', label: 'You told me', n: told.length }]} />
+            {from === 'taps' && <Rows rows={beliefRows} pageKey="beliefs" size={SIZE} wide slot={slot}
+              empty="No beliefs yet. Finish your first gate of picks and I will start." />}
             {from === 'told' && told.length === 0 && <p className="muted ledger-empty">Nothing yet. Tell me something about you, and I will ask before I keep it.</p>}
             {from === 'told' && told.length > 0 && (
               <ul className="ledger-rows wide">
-                {told.slice(0, 5).map((f) => (
+                {toldPages.rows.map((f) => (
                   <li key={f.id} className="told-row">
                     <span className="ledger-at">{f.scope === 'topic' ? `About ${f.topic}` : 'Trait'}</span>
                     <span className="told-what">{f.statement}</span>
@@ -203,47 +224,49 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
 
         {tab === 'proof' && data && (
           <>
-            <div className="twin-line">
-              <span className="line-top">My Sym</span>
-              <p>
-                I hold {data.certs.length} {data.certs.length === 1 ? 'certificate' : 'certificates'}. You checked {data.work.length} of
+            <Tools slot={slot}>
+              <More>
+                My Sym: I hold {data.certs.length} {data.certs.length === 1 ? 'certificate' : 'certificates'}. You checked {data.work.length} of
                 my {data.work.length === 1 ? 'job' : 'jobs'}. I beat the crowd's guess in {won} of {data.battles.length} {data.battles.length === 1 ? 'battle' : 'battles'}.
-              </p>
-            </div>
-            <Tabs label="Kinds of proof" value={proof} onChange={setProof}
-              tabs={[{ id: 'certs', label: 'Certificates', n: certRows.length }, { id: 'work', label: 'Checked work', n: workRows.length }, { id: 'battles', label: 'Battles', n: battleRows.length }]} />
-            {proof === 'certs' && <Rows rows={certRows} pageKey="certs" wide
+                {' '}Tap a row to see what is behind it.
+              </More>
+            </Tools>
+            <Pick className="mine-parts" label="Kinds of proof" value={proof} onChange={setProof}
+              items={[{ id: 'certs', label: 'Certificates', n: certRows.length }, { id: 'work', label: 'Checked work', n: workRows.length }, { id: 'battles', label: 'Battles', n: battleRows.length }]} />
+            {proof === 'certs' && <Rows rows={certRows} pageKey="certs" size={SIZE} wide slot={slot}
               empty="None yet. Your Sym earns one when it guesses better than the crowd on picks it has never seen. You earn one when you finish a skill gate." />}
-            {proof === 'work' && <Rows rows={workRows} pageKey="work" empty="No checked work yet. Send your Sym to a job, then check its answer." />}
-            {proof === 'battles' && <Rows rows={battleRows} pageKey="battles" empty="No battles yet. A battle gate lets your Sym guess your picks." />}
+            {proof === 'work' && <Rows rows={workRows} pageKey="work" size={SIZE} slot={slot} empty="No checked work yet. Send your Sym to a job, then check its answer." />}
+            {proof === 'battles' && <Rows rows={battleRows} pageKey="battles" size={SIZE} slot={slot} empty="No battles yet. A battle gate lets your Sym guess your picks." />}
           </>
         )}
 
         {tab === 'data' && data && (
           <>
-            <div className="twin-line">
-              <span className="line-top">My Sym</span>
-              <p>
-                This is all the game stores about you: {data.responses.length} taps, a nickname and the day you joined.
+            <Tools slot={slot}>
+              <More>
+                My Sym: This is all the game stores about you: {data.responses.length} taps, a nickname and the day you joined.
                 I have cost {usage ? `$${usage.my_cost_usd.toFixed(4)}` : 'a little'} to run.
-              </p>
-            </div>
-            <Tabs label="What is stored" value={store} onChange={(id) => { setStore(id); setConfirming(false) }}
-              tabs={[{ id: 'about', label: 'About me' }, { id: 'taps', label: 'My taps', n: tapRows.length }, { id: 'keep', label: 'Keep or delete' }]} />
+                {' '}You cannot change your answers. Play more gates to change your Sym. This screen shows everything the game has stored about you.
+              </More>
+            </Tools>
+            <Pick className="mine-parts" label="What is stored" value={store} onChange={(id) => { setStore(id); setConfirming(false) }}
+              items={[{ id: 'about', label: 'About me' }, { id: 'taps', label: 'My taps', n: tapRows.length }, { id: 'keep', label: 'Keep or delete' }]} />
             {store === 'about' && (
-              <Rows pageKey="about" empty="" rows={[
+              <Rows pageKey="about" empty="" size={SIZE} slot={slot} rows={[
                 { id: 'n', top: 'Nickname', label: data.nickname },
                 { id: 'j', top: 'Joined', label: new Date(data.joined).toLocaleString() },
                 { id: 'r', top: 'AI runs', label: `${usage?.my_runs ?? 0} uses of AI`, n: usage ? `$${usage.my_cost_usd.toFixed(4)}` : '' },
                 ...(usage ? [{ id: 'm', top: 'Model', label: usage.model, detail: <>{usage.price_note}</> }] : []),
               ]} wide />
             )}
-            {store === 'taps' && <Rows rows={tapRows} pageKey="taps" size={6} empty="No taps yet. Play a gate." />}
+            {store === 'taps' && <Rows rows={tapRows} pageKey="taps" size={SIZE} slot={slot} empty="No taps yet. Play a gate." />}
             {store === 'keep' && (
               <div className="keep">
-                <button className="secondary" onClick={download}>Download what I entered</button>
                 {!confirming ? (
-                  <button className="danger" onClick={() => setConfirming(true)}>Delete my account</button>
+                  <>
+                    <button className="secondary" onClick={download}>Download what I entered</button>
+                    <button className="danger" onClick={() => setConfirming(true)}>Delete my account</button>
+                  </>
                 ) : (
                   <span className="confirm" role="group" aria-label="Confirm that you want to delete">
                     <span>You cannot undo this. Your login and nickname are removed and your wallets close. Your Sym stays as a free Sym with no name. It cannot be linked back to you.</span>
@@ -253,7 +276,6 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
                 )}
               </div>
             )}
-            <More>You cannot change your answers. Play more gates to change your Sym. This screen shows everything the game has stored about you.</More>
           </>
         )}
       </div>

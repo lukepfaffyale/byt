@@ -13,13 +13,15 @@ import { WorthTotals } from './Worth'
 import { credits, stop } from './words'
 import { Failed, RetryZone } from './Retry'
 import { Pages } from './Pages'
+import { Tabs } from './Deck'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
-import { MoneyView } from './MoneyView'
+import { MoneyView, type MoneyCue } from './MoneyView'
 import { Rps } from './Rps'
 import { Start } from './Start'
 import { TwinForm } from './TwinForm'
 import { Work } from './Work'
+import './shell.css'
 
 type Screen = { name: 'journey' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number; tab?: 'beliefs' } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'commons' } | { name: 'about' }
 
@@ -58,7 +60,24 @@ function readDock(): Dock {
 type Look = 'mono' | 'light'
 const LOOK_KEY = 'byt_look'
 
-/** Mono: black and white, no glow, color only inside the sphere. Light: the gold and light look. */
+const PLACE_KEY = 'byt_place'
+const KEEP = ['journey', 'mine', 'work', 'money', 'arena', 'commons', 'about']
+
+/** Where this person was in this tab. A reload brings them back there, not to the welcome. */
+function readPlace(): Screen | null {
+  try {
+    const kept = JSON.parse(sessionStorage.getItem(PLACE_KEY) ?? 'null') as { name?: string; view?: string } | null
+    if (!kept || typeof kept.name !== 'string') return null
+    if (kept.name === 'agency' || kept.name === 'creator') return { name: kept.name, view: kept.view === 'results' || kept.view === 'money' ? kept.view : 'desk' }
+    return KEEP.includes(kept.name) ? ({ name: kept.name } as Screen) : null
+  } catch {
+    return null
+  }
+}
+
+/** Mono: black and white, no glow, color only inside the sphere. The other look is dark too, with gold and glow:
+ * it keeps its old key 'light' so a saved choice still works, and it is called Glow on screen. */
+const LOOK_NAME: Record<Look, string> = { mono: 'Mono', light: 'Glow' }
 function readLook(): Look {
   try {
     const saved = localStorage.getItem(LOOK_KEY)
@@ -123,12 +142,15 @@ export default function App() {
   const [gates, setGates] = useState<Gate[]>([])
   const [bins, setBins] = useState<Bin[]>([])
   const [openBin, setOpenBin] = useState<string | null>(null)
-  const [screen, setScreen] = useState<Screen>({ name: 'commons' })
+  // My Journey is one page at a time: what to do next, or the kinds of gates
+  const [way, setWay] = useState<'next' | 'gates'>('next')
+  const [screen, setScreen] = useState<Screen>(() => readPlace() ?? { name: 'commons' })
   const [error, setError] = useState('')
   const [live, setLive] = useState('')
   const [intent, setIntent] = useState<'agency' | 'creator' | undefined>(undefined)
   // the ecosystem meets a person each time they come in; it steps aside once they choose where to go
-  const [welcome, setWelcome] = useState(true)
+  // (a reload inside the same tab is not coming in: it goes back to the screen they were on)
+  const [welcome, setWelcome] = useState(() => readPlace() === null)
   // when this person was last here, kept in this browser only, so my Sym can say what came in since then
   const [since] = useState(() => {
     try {
@@ -144,6 +166,8 @@ export default function App() {
   const [landed, setLanded] = useState({ n: 0, sum: 0, meet: false })
   // a reward a screen has just handed to my Sym to say, such as what a checked job paid
   const [flash, setFlash] = useState<{ say: string; go: string; act: () => void } | null>(null)
+  // on My Money the Sym's one line is about the money: the screen hands it up, so it is said once, in the Sym's panel
+  const [moneyCue, setMoneyCue] = useState<MoneyCue | null>(null)
   const walletAt = useRef({ start: -1, mark: -1, latest: 0, told: 0 })
   const lastPlace = useRef('')
   const [pulse, setPulse] = useState(0)
@@ -264,6 +288,10 @@ export default function App() {
   }, [dock, playing, frameCount, seatName])
   const [speed, setSpeed] = useState(readSpeed)
   const [group, setGroup] = useState<string | null>(null)
+  // the group a crew just came back from: it is held in the light on the seat's sphere for a few seconds
+  const [lit, setLit] = useState<string | null>(null)
+  const litTimer = useRef(0)
+  useEffect(() => () => window.clearInterval(litTimer.current), [])
   const [plan, setPlan] = useState<PlanOption[]>([])
 
   function changeSpeed(next: number) {
@@ -347,6 +375,15 @@ export default function App() {
     }
   }, [signedIn, purse, since, refresh])
 
+  useEffect(() => {
+    try {
+      if (welcome || !signedIn) sessionStorage.removeItem(PLACE_KEY)
+      else sessionStorage.setItem(PLACE_KEY, JSON.stringify({ name: screen.name === 'gate' || screen.name === 'world' ? 'journey' : screen.name, view: 'view' in screen ? screen.view : undefined }))
+    } catch {
+      // no storage: a reload starts at the welcome
+    }
+  }, [screen, welcome, signedIn])
+
   // a reward line is said once: when the person moves on from a page that showed it, it is done
   const place = screen.name
   useEffect(() => {
@@ -388,6 +425,11 @@ export default function App() {
   const seat: { name: 'agency' | 'creator'; view: SeatView | '' } | null =
     screen.name === 'agency' || screen.name === 'creator' ? screen : want ? { name: want, view: '' } : null
   const purseOf = (name: string) => purses.find((p) => p.seat === name)?.balance
+  // a seat spent or added credits: the wallet in the header is read again at once, so it agrees with the screen
+  const syncPurses = () => {
+    api.wallets().then((w) => setPurses(w.wallets.map((p) => ({ seat: p.seat, balance: p.balance })))).catch(() => undefined)
+  }
+  const held = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2))
   const go = (id: string) => {
     if (id.startsWith('gate:')) setScreen({ name: 'gate', gateId: id.slice(5) })
     else if (id.startsWith('retry:')) {
@@ -411,10 +453,11 @@ export default function App() {
           ? { say: me.gates_done === 0 ? `I know nothing about you yet. ${next.total} quick picks calibrate me: they write the first blocks of my code, and no other Sym will have the same.` : `I am ${percent} percent formed. Next up: ${stop(next.title)} It is ${next.total} taps, and I will know you better.`,
               go: `Start: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
           : top
-            ? { say: `We finished every gate together. ${top.why}`, go: top.title, act: () => go(top.id) }
-            : { say: 'We finished every gate together. Come and play me: I have been studying how you throw.', go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
+            ? { say: `We finished all ${me.gates_total} gates of the journey. ${top.why}`, go: top.title, act: () => go(top.id) }
+            : { say: `We finished all ${me.gates_total} gates of the journey. Come and play me: I have been studying how you throw.`, go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
   const told = flash ? flash
+    : screen.name === 'money' && moneyCue ? moneyCue
     : cue && landed.n > 0
     ? { ...cue, say: `Just now I earned you ${credits(landed.sum)} ${landed.sum === 1 ? 'credit' : 'credits'}${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} ${cue.say}` }
     : cue && gain.n > 0
@@ -464,6 +507,24 @@ export default function App() {
       {(playing || at !== null) && <span className="story-label">{at === null ? 'Now' : at === 0 ? 'The start' : `After: ${frames[at].label}`}</span>}
     </div>
   )
+  /** A crew came back from a group: hold that group in the light on the seat's sphere, then let it go.
+   * A question to every Sym, or to Syms from many groups, lights each group in turn. */
+  const light = (asked: string) => {
+    const keys = nowAreas.filter((a) => !a.hidden && a.count !== null && a.key !== 'agencies' && a.key !== 'creators').map((a) => a.key)
+    const turn = keys.includes(asked) ? [asked] : keys
+    window.clearInterval(litTimer.current)
+    if (turn.length === 0) return
+    let i = 0
+    setGroup(null)
+    setLit(turn[0])
+    litTimer.current = window.setInterval(() => {
+      i += 1
+      if (i >= turn.length) {
+        window.clearInterval(litTimer.current)
+        setLit(null)
+      } else setLit(turn[i])
+    }, turn.length === 1 ? 6000 : 1400)
+  }
   const twin = (
     <TwinForm
       coherence={seat ? 0.9 : 0.14 + 0.86 * formed}
@@ -478,7 +539,7 @@ export default function App() {
       time={at === null || frames.length < 2 ? 1 : at / (frames.length - 1)}
       onSize={dock === 'mini' ? undefined : sizeTwin}
       areas={shown}
-      focus={dock === 'mini' ? undefined : group ?? undefined}
+      focus={dock === 'mini' ? undefined : group ?? lit ?? undefined}
       motion={motion}
       speed={speed}
       sky={me?.twins ?? 0}
@@ -506,10 +567,10 @@ export default function App() {
             <div><dt>Credits</dt><dd>{me?.credits ?? 0}</dd></div>
             <div><dt>Certificates</dt><dd>{me?.certs ?? 0}</dd></div>
             <div><dt>Jobs ready</dt><dd>{me?.jobs_open ?? 0}</dd></div>
-            <div><dt>Syms</dt><dd>{me?.twins ?? 0}</dd></div>
+            <div><dt>Syms</dt><dd>{me?.twins ?? 0}</dd><dd className="muted">{me?.people ?? 0} {me?.people === 1 ? 'person' : 'people'}</dd></div>
           </dl>
         </div>
-        <button className="link ambient-exit" onClick={() => setDisplay('full')}>Full view</button>
+        <button className="secondary ambient-exit" onClick={() => setDisplay('full')}>Back to full view</button>
         <p className="sr-only" aria-live="polite">{live}</p>
       </div>
     )
@@ -541,6 +602,7 @@ export default function App() {
       onLook={toggleLook}
       motion={motion}
       onMotion={toggleMotion}
+      seat={!!seat}
       story={story}
       speed={speed}
       onSpeed={changeSpeed}
@@ -578,7 +640,7 @@ export default function App() {
           </ul>
         )
       }
-      read={seat ? `You are in the ${seat.name === 'agency' ? 'Agency' : 'Creator'} seat` : `My Sym · ${Math.round(formed * 100)} percent formed · ${Math.round((me?.together ?? 0) * 100)} percent in color · ${me?.twins ?? 0} Syms in the sky`}
+      read={seat ? `You are in the ${seat.name === 'agency' ? 'Agency' : 'Creator'} seat` : `My Sym · ${Math.round(formed * 100)} percent formed · ${Math.round((me?.together ?? 0) * 100)} percent in color · ${me?.twins ?? 0} Syms (${me?.people ?? 0} ${me?.people === 1 ? 'person' : 'people'})`}
       onAbout={() => setScreen({ name: 'about' })}
       onHome={() => setWelcome(true)}
       nav={
@@ -612,8 +674,8 @@ export default function App() {
         </nav>
       }
       status={!me ? '' : seat && purseOf(seat.name) !== undefined
-        ? `${me.nickname} · ${seat.name === 'agency' ? 'Agency' : 'Studio'} wallet ${credits(purseOf(seat.name) ?? 0)} credits`
-        : `${me.nickname} · My wallet ${credits(me.credits)} credits · ${me.certs} ${me.certs === 1 ? 'certificate' : 'certificates'}`}
+        ? `${me.nickname} · ${seat.name === 'agency' ? 'Agency' : 'Studio'} wallet ${held(purseOf(seat.name) ?? 0)} credits`
+        : `${me.nickname} · My wallet ${held(me.credits)} credits · ${me.certs} ${me.certs === 1 ? 'certificate' : 'certificates'}`}
     >
       {me && screen.name !== 'gate' && screen.name !== 'about' && (
         <Signal tick={`${me.credits}|${me.jobs_open}|${screen.name}|${seat?.view ?? ''}`} jobs={screen.name === 'work' ? 0 : me.jobs_open}
@@ -635,42 +697,54 @@ export default function App() {
         <section aria-labelledby="journey-h">
           <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>
           <p className="muted">Gates are short, and you only tap. Each gate you finish helps your Sym form.</p>
-          {!next && gates.length > 0 && <p className="notice">You finished every gate in the game. More gates will come later.</p>}
-          {plan.some((o) => !next || o.id !== `gate:${next.id}`) && (
-            <>
-              <h2>Where your time counts most now</h2>
-              <ul className="plan">
-                {plan.filter((o) => !next || o.id !== `gate:${next.id}`).map((o) => (
-                  <li key={o.id + o.title}>
-                    <button className="plan-go" onClick={() => go(o.id)}>
-                      <span className="plan-n">{o.credits > 0 ? `+${o.credits}` : `${o.minutes} min`}</span>
-                      <span className="plan-what">{o.title}</span>
-                      <span className="muted">{o.why}</span>
+          {!next && gates.length > 0 && <p className="notice">You finished all {gates.length} gates of the journey. More gates will come later. An extra skill step that a creator built is listed here when one is open.</p>}
+          {(() => {
+            const todo = plan.filter((o) => !next || o.id !== `gate:${next.id}`)
+            const left = gates.filter((g) => g.done < g.total).length
+            const shown = todo.length > 0 ? way : 'gates'
+            return (
+              <>
+                {todo.length > 0 && (
+                  <Tabs label="My journey" value={shown} onChange={(id) => { setWay(id); setOpenBin(null) }}
+                    tabs={[{ id: 'next', label: 'Do next' }, { id: 'gates', label: left === 0 ? `Gates: all ${gates.length} done` : 'Gates to play', n: left }]} />
+                )}
+                {shown === 'next' && (
+                  <ul className="plan" aria-label="Where your time counts most now">
+                    {todo.slice(0, 3).map((o) => (
+                      <li key={o.id + o.title}>
+                        <button className="plan-go" onClick={() => go(o.id)}>
+                          <span className="plan-n">{o.credits > 0 ? `+${o.credits}` : `${o.minutes} min`}</span>
+                          <span className="plan-what">{o.title}</span>
+                          <span className="muted">{o.why}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {shown === 'gates' && (
+                  <div className="bins" role="group" aria-label="Kinds of gates">
+                    {bins.map((b) => {
+                      const mine = gates.filter((g) => g.bin === b.id)
+                      const cleared = mine.filter((g) => g.done === g.total).length
+                      return (
+                        <button key={b.id} className="bin" aria-expanded={openBin === b.id} aria-controls="bin-panel"
+                          onClick={() => setOpenBin(openBin === b.id ? null : b.id)}>
+                          <span className="bin-name">{b.name}</span>
+                          <span className="bin-count">{mine.length - cleared}</span>
+                          <span className="muted">{mine.length - cleared === 1 ? 'gate' : 'gates'} to play · {cleared} done</span>
+                        </button>
+                      )
+                    })}
+                    <button className="bin" onClick={() => setScreen({ name: 'arena' })}>
+                      <span className="bin-name">Arena</span>
+                      <span className="bin-count" aria-hidden="true">&#9675;</span>
+                      <span className="muted">rock, paper, scissors against my Sym</span>
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <div className="bins" role="group" aria-label="Kinds of gates">
-            {bins.map((b) => {
-              const mine = gates.filter((g) => g.bin === b.id)
-              const cleared = mine.filter((g) => g.done === g.total).length
-              return (
-                <button key={b.id} className="bin" aria-expanded={openBin === b.id} aria-controls="bin-panel"
-                  onClick={() => setOpenBin(openBin === b.id ? null : b.id)}>
-                  <span className="bin-name">{b.name}</span>
-                  <span className="bin-count">{mine.length - cleared}</span>
-                  <span className="muted">{mine.length - cleared === 1 ? 'gate' : 'gates'} to play · {cleared} done</span>
-                </button>
-              )
-            })}
-            <button className="bin" onClick={() => setScreen({ name: 'arena' })}>
-              <span className="bin-name">Arena</span>
-              <span className="bin-count" aria-hidden="true">&#9675;</span>
-              <span className="muted">rock, paper, scissors against my Sym</span>
-            </button>
-          </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
           <div id="bin-panel">
             {openBin && gates.every((g) => g.bin !== openBin || g.done === g.total) && (
               <p className="muted">You finished every gate here. You can see your answers on the "My Sym" screen. More gates will come later.</p>
@@ -730,12 +804,13 @@ export default function App() {
       {screen.name === 'work' && <Work announce={setLive} onChange={refresh} onReward={setFlash} />}
 
       {screen.name === 'agency' && (
-        <AgencyDesk key={screen.ask ?? 'desk'} announce={setLive} view={screen.view} ask={screen.ask} onView={(view) => setScreen({ name: 'agency', view })} />
+        <AgencyDesk key={screen.ask ?? 'desk'} announce={setLive} view={screen.view} ask={screen.ask} onView={(view) => setScreen({ name: 'agency', view })}
+          syms={me?.twins ?? 0} people={me?.people ?? 0} onAsked={light} onMoney={syncPurses} />
       )}
 
-      {screen.name === 'creator' && <CreatorDesk view={screen.view} announce={setLive} onView={(view) => setScreen({ name: 'creator', view })} />}
+      {screen.name === 'creator' && <CreatorDesk view={screen.view} announce={setLive} onView={(view) => setScreen({ name: 'creator', view })} onMoney={syncPurses} />}
 
-      {screen.name === 'money' && <MoneyView onChange={refresh} onMove={go} />}
+      {screen.name === 'money' && <MoneyView onChange={() => { refresh(); syncPurses() }} onMove={go} onCue={setMoneyCue} />}
 
       {screen.name === 'arena' && <Rps announce={setLive} />}
 
@@ -761,7 +836,7 @@ export default function App() {
       )}
 
       {screen.name === 'about' && (
-        <section aria-labelledby="about-h">
+        <section aria-labelledby="about-h" className="about">
           <h1 id="about-h">About BYT</h1>
           <p>Beat your Sym. Benefit from your Sym. Be everywhere.</p>
           <p>Color comes from other people. A Sym on its own is black and white.</p>
@@ -787,7 +862,7 @@ export default function App() {
   )
 }
 
-function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; onHome?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; alone?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void }) {
+function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?: React.ReactNode; status?: string; live: string; onAbout?: () => void; onHome?: () => void; seats?: React.ReactNode; read?: string; legend?: React.ReactNode; story?: React.ReactNode; motion?: boolean; onMotion?: () => void; speed?: number; onSpeed?: (next: number) => void; groupCard?: React.ReactNode; compact?: boolean; alone?: boolean; dock?: Dock; onDock?: (next: Dock) => void; hint?: boolean; onDisplay?: (next: Display) => void; look?: Look; onLook?: () => void; seat?: boolean }) {
   const dock = props.dock ?? 'stage'
   const wall = dock === 'wall'
   return (
@@ -797,9 +872,10 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         <span className="brand-row">
           {props.onHome ? <button className="brand brand-home" onClick={props.onHome} aria-label="BYT: back to the welcome">BYT</button> : <span className="brand">BYT</span>}
           {dock === 'mini' && (
-            <button className="twin-home" onClick={() => props.onDock?.('stage')} title="Bring my Sym down">
-              {props.twin}
-              <span className="sr-only">Bring my Sym down</span>
+            // small: the Sym sits beside the mark, inside the one button that brings it back, and the button says so
+            <button className="twin-home" aria-label={props.seat ? 'Show the sphere' : 'Show my Sym'} onClick={() => props.onDock?.('stage')}>
+              <span className="twin-home-eye" aria-hidden="true">{props.twin}</span>
+              <span className="twin-home-say"><span aria-hidden="true">+ </span>{props.seat ? 'Show the sphere' : 'Show my Sym'}</span>
             </button>
           )}
         </span>
@@ -811,12 +887,15 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
       <div className={`stage ${props.compact ? 'compact' : ''} ${wall ? 'stage-wall' : ''}`} role={wall ? 'dialog' : undefined} aria-label={wall ? 'My Sym, full screen' : undefined}>
         {props.onDock && (
           <div className="dock" role="group" aria-label="The size of my Sym">
-            <button className="link" aria-label="Make my Sym smaller" title="Smaller" onClick={() => props.onDock?.(wall ? 'stage' : 'mini')}>
-              <span aria-hidden="true">&minus;</span>
+            {/* three sizes, and each button says where its tap leads */}
+            <button className="secondary dock-go" onClick={() => props.onDock?.(wall ? 'stage' : 'mini')}>
+              <span aria-hidden="true">&minus; </span>{wall ? 'Back to the page' : 'Small'}
             </button>
-            <button className="link" aria-label="Make my Sym bigger" title="Bigger" disabled={wall} onClick={() => props.onDock?.('wall')}>
-              <span aria-hidden="true">+</span>
-            </button>
+            {!wall && (
+              <button className="secondary dock-go" onClick={() => props.onDock?.('wall')}>
+                <span aria-hidden="true">+ </span>Full screen
+              </button>
+            )}
           </div>
         )}
         {props.onDock && props.hint && <p className="dock-hint">Drag the sphere to turn it. Drag the space around it down to grow it, or up to put it away.</p>}
@@ -835,7 +914,7 @@ function Shell(props: { children: React.ReactNode; nav?: React.ReactNode; twin?:
         <p className="muted">BYT by Symbolon. This is a class project. It uses play money only. It is for adults only.</p>
         <span className="foot-links">
           {props.onMotion && <button className="link" aria-pressed={props.motion} onClick={props.onMotion}>Motion: {props.motion ? 'on' : 'off'}</button>}
-          {props.onLook && <button className="link" onClick={props.onLook}>Look: {props.look}</button>}
+          {props.onLook && <button className="link" onClick={props.onLook}>Look: {LOOK_NAME[props.look ?? 'mono']}</button>}
           {props.onDisplay && <button className="link" onClick={() => props.onDisplay?.('glance')}>Glance</button>}
           {props.onAbout && <button className="link" onClick={props.onAbout}>About</button>}
         </span>

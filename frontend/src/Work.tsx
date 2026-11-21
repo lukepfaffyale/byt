@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Readout } from './Readout'
 import { api, type Job, type JobResult, type JobsOut } from './api'
 import { Tabs } from './Deck'
@@ -8,6 +9,8 @@ import { jobScript } from './crewScripts'
 import { More } from './More'
 import { Failed } from './Retry'
 import { Worth } from './Worth'
+import { credits as amount } from './words'
+import './play.css'
 
 type Stage = { name: 'list' } | { name: 'running'; job: Job; done?: Job } | { name: 'review'; job: Job; correcting: boolean } | { name: 'result'; result: JobResult }
 
@@ -34,10 +37,12 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
   const [stage, setStage] = useState<Stage>({ name: 'list' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [detail, setDetail] = useState(false) // the pop-out that shows how the group answered and how the answer is used
   // jobs the twin can act on come first, then locked ones, then finished ones
   const order = { review: 0, open: 1, locked: 2, done: 3 } as Record<string, number>
   const sorted = [...(jobs ?? [])].sort((a, b) => (order[a.state] ?? 9) - (order[b.state] ?? 9))
-  const { rows: jobPage, pager } = usePager(sorted, 3, 'jobs')
+  // two jobs at a time, so the list, its tabs and its arrows share one page of the screen
+  const { rows: jobPage, pager } = usePager(sorted, 2, 'jobs')
 
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'There was a problem. Please try again.')
@@ -101,8 +106,14 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         onChange()
         // my Sym closes the loop: what the check did, what it paid, and one tap to the next job
         const more = sorted.find((j) => j.id !== job.id && (j.state === 'open' || j.state === 'review'))
+        // the outcome is said by my Sym, first and kindly: a wrong answer is the Sym's miss, never the person's
+        const paid = result.credits_earned > 0
+          ? (verdict === 'approved'
+            ? `That job paid us ${result.credits_earned} credits${result.certified ? ', double for my certificate' : ''}. You hold ${amount(result.credits)} now.`
+            : `A wrong answer of mine still paid us ${result.credits_earned} credits. You hold ${amount(result.credits)} now.`)
+          : 'That one paid nothing this time.'
         onReward({
-          say: `${verdict === 'approved' ? 'You said I got it right.' : 'You set me right, and I learned from it.'} ${result.credits_earned > 0 ? `That job paid us ${result.credits_earned} credits, and you hold ${result.credits} now.` : 'That one paid nothing this time.'} ${more ? 'Another job is waiting.' : 'That was the last job for now. More will come.'}`,
+          say: `${verdict === 'approved' ? 'You said I got it right.' : 'I got that one wrong. Thank you for setting me right: I learned from it.'} ${paid} ${more ? 'Another job is waiting.' : 'That was the last job for now. More will come.'}`,
           go: more ? (more.state === 'open' ? 'Send my Sym again' : 'Check the next answer') : 'Back to my jobs',
           act: more ? () => send(more) : back,
         })
@@ -111,6 +122,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
   }
 
   function back() {
+    setDetail(false)
     onReward(null)
     setStage({ name: 'list' })
     load()
@@ -151,8 +163,11 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         )}
         {(stage.correcting || !answer) && (
           <>
-            <p className="muted">{answer ? 'Tap the answer you would give. Your Sym learns from it.' : 'Your Sym did not know. Tap your answer, and your Sym will learn from it.'}</p>
-            <div className="options">
+            <div className="twin-line">
+              <span className="line-top">My Sym</span>
+              <p>{answer ? 'I got that one wrong. Which one is right? Tap it, and I learn from you.' : 'I did not know this one. Which one is right? Tap it, and I learn from you.'}</p>
+            </div>
+            <div className="options" role="group" aria-label="Which one is right?">
               {job.options.filter((o) => o.id !== job.answer).map((o) => (
                 <button key={o.id} className="option" disabled={busy} onClick={() => review(job, 'corrected', o.id)}>
                   {o.label}
@@ -167,47 +182,61 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
 
   if (stage.name === 'result') {
     const r = stage.result
+    const mine = r.split.find((row) => row.yours)
     return (
-      <section aria-labelledby="work-h" className="mine">
+      <section aria-labelledby="work-h" className="mine job-done">
         <h1 id="work-h" className="sr-only">Your Sym was paid</h1>
-        <p className="stat">+{r.credits_earned}</p>
-        <p className="stat-label">credits your Sym earned · {r.credits} in total</p>
-        <p className="fine">{r.note}</p>
+        <p className="job-pay"><strong className="stat">+{r.credits_earned}</strong> <span className="stat-label">credits your Sym earned · {amount(r.credits)} in total</span></p>
         {r.insight && (
-          <p className="cert">
+          <p className="cert job-cert">
             <span className="cert-kind">Insight certificate</span>
             <strong>{r.insight.level}</strong>
             <span>{Math.round(r.insight.accuracy * r.insight.n)} of {r.insight.n} other Syms answer as you do</span>
           </p>
         )}
-
-        <h2>From your taps to the whole group</h2>
-        <ol className="lines chain">
-          <li><span className="line-top">You</span><span>{r.taps} taps. Each tap tells your Sym something.</span></li>
-          <li><span className="line-top">Your Sym</span><span>{r.beliefs} {r.beliefs === 1 ? 'belief' : 'beliefs'} about you, made from those taps</span></li>
-          <li><span className="line-top">The job</span><span>1 answer for {r.job.requester}, given as you would give it</span></li>
-          <li>
-            <span className="line-top">The whole group · {r.twins} Syms answered</span>
-            <ul className="bars split-bars">
-              {r.split.map((row) => (
-                <li key={row.label} className={`bar ${row.yours ? 'leading' : ''}`}>
-                  <span className="bar-head as-row">
-                    <span className="bar-name">{row.label}{row.yours ? ' (you)' : ''}</span>
-                    <span className="bar-n">{Math.round(row.share * 100)}</span>
-                    <span className="meter" aria-hidden="true"><span style={{ width: `${row.share * 100}%` }} /></span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </li>
-          <li><span className="line-top">How it is used</span><span>{r.job.feeds}</span></li>
-        </ol>
-        <p className="fine">
-          {r.sample_twins} of the {r.twins} Syms are BOT Syms: made up, with no person behind them. So these numbers are only an example
-          until more people play. Credits are play money.
-        </p>
-        <Worth seat="player" moment="job" />
-        <button className="link" onClick={back}>See all jobs</button>
+        {mine && !r.insight && <p className="job-group">{mine.count} of the {r.twins} Syms that answered gave your answer.</p>}
+        <div className="done-foot">
+          <Worth seat="player" moment="job" />
+          <span className="job-foot">
+            <button className="link" aria-haspopup="dialog" onClick={() => setDetail(true)}>How the group answered</button>
+            <button className="link" onClick={back}>See all jobs</button>
+          </span>
+        </div>
+        {detail && createPortal(
+          <div className="pick-pop" role="dialog" aria-modal="true" aria-label="How the group answered"
+            onKeyDown={(e) => { if (e.key === 'Escape') setDetail(false) }} onClick={(e) => { if (e.target === e.currentTarget) setDetail(false) }}>
+            <div className="pick-pop-box">
+              <h2 className="job-pop-h">How the whole group answered · {r.twins} Syms</h2>
+              <ul className="bars split-bars">
+                {r.split.map((row) => (
+                  <li key={row.label} className={`bar ${row.yours ? 'leading' : ''}`}>
+                    <span className="bar-head as-row">
+                      <span className="bar-name">{row.label}{row.yours ? ' (you)' : ''}</span>
+                      <span className="bar-n">{Math.round(row.share * 100)}%</span>
+                      <span className="meter" aria-hidden="true"><span style={{ width: `${row.share * 100}%` }} /></span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <h2 className="job-pop-h">From your taps to the whole group</h2>
+              <ol className="lines chain">
+                <li><span className="line-top">You</span><span>{r.taps} taps. Each tap tells your Sym something.</span></li>
+                <li><span className="line-top">Your Sym</span><span>{r.beliefs} {r.beliefs === 1 ? 'belief' : 'beliefs'} about you, made from those taps</span></li>
+                <li><span className="line-top">The job</span><span>1 answer for {r.job.requester}, given as you would give it</span></li>
+                <li><span className="line-top">How it is used</span><span>{r.job.feeds}</span></li>
+              </ol>
+              <p className="fine">
+                {r.sample_twins} of the {r.twins} Syms are BOT Syms: made up, with no person behind them. So these numbers are only an example
+                until more people play. Credits are play money.
+              </p>
+              <div className="pick-pop-foot">
+                <span />
+                <button className="primary" autoFocus onClick={() => setDetail(false)}>Close</button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
       </section>
     )
   }
@@ -218,11 +247,18 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
       {tab === 'jobs' && <Readout value={credits} label={<>credits your Sym holds{certified ? ' · it has a certificate, so it earns double' : ''}</>} />}
       {error && (jobs ? <p className="error" role="alert">{error}</p> : <Failed error={error} />)}
       {!jobs && !error && <p className="muted" aria-live="polite">Loading.</p>}
-      <Tabs label="Work" value={tab} onChange={setTab}
-        tabs={[
-          { id: 'jobs', label: 'Jobs to do', n: sorted.filter((j) => j.state === 'open' || j.state === 'review').length },
-          { id: 'away', label: 'While I am away', n: [data.on, meet.on, auto.per_day > 0].filter(Boolean).length + ' on' },
-        ]} />
+      <div className="results-head work-head">
+        <Tabs label="Work" value={tab} onChange={setTab}
+          tabs={[
+            { id: 'jobs', label: 'Jobs to do', n: sorted.filter((j) => j.state === 'open' || j.state === 'review').length },
+            { id: 'away', label: 'While I am away', n: [data.on, meet.on, auto.per_day > 0].filter(Boolean).length + ' on' },
+          ]} />
+        {tab === 'jobs' && pager}
+        <More>
+          Your Sym answers as you would. You say if the answer is right, or you correct it. A Sym with a certificate
+          earns double. The companies that ask are made up, and credits are play money.
+        </More>
+      </div>
       {jobs && tab === 'jobs' && (
         <ul className="lines">
           {jobPage.map((j) => (
@@ -238,7 +274,6 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
           ))}
         </ul>
       )}
-      {tab === 'jobs' && pager}
       {tab === 'away' && (
         <>
       <ul className="lines">
@@ -280,10 +315,6 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
       </ul>
         </>
       )}
-      <More>
-        Your Sym answers as you would. You say if the answer is right, or you correct it. A Sym with a certificate
-        earns double. The companies that ask are made up, and credits are play money.
-      </More>
     </section>
   )
 }

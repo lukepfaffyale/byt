@@ -333,8 +333,8 @@ export function Arrival(props: {
           <dl className="arrival-read">
             <div><dt>People</dt><dd><Tick to={data.people} calm={calm} /></dd></div>
             <div><dt>Syms</dt><dd><Tick to={data.people + data.bots} calm={calm} /></dd></div>
-            <div><dt>Known</dt><dd><Tick to={data.known} calm={calm} /></dd></div>
-            <div><dt>From you</dt><dd><Tick to={data.known_mine} calm={calm} /></dd></div>
+            <div><dt>Known by all</dt><dd><Tick to={data.known} calm={calm} /></dd></div>
+            <div><dt>Known from you</dt><dd><Tick to={data.known_mine} calm={calm} /></dd></div>
           </dl>
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>

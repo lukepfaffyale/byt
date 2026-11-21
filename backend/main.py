@@ -417,7 +417,7 @@ def me(background: BackgroundTasks, player: Player = Depends(current_player)) ->
     states = gate_state(db.answered_card_ids(player.id))
     return Me(nickname=player.nickname, points=player.points, level=player.level,
               gates_done=gates_done(states), gates_total=len(GATES), certs=len(db.certs_for(player.id)),
-              credits=db.credits_for(player.id), twins=db.twin_count(),
+              credits=db.credits_for(player.id), twins=db.twin_count(), people=db.people_count(),
               together=market.together(sum(1 for w in db.work_for(player.id) if w.verdict),
                                        sum(1 for e in db.earnings_for(player.id) if e.kind != market.STEP_KIND),
                                        db.data_income_on(player.id)),
@@ -470,9 +470,11 @@ def pattern_bet(player_id: str, card: Card) -> tuple[bool, int]:
     return p >= 0.5, round(max(p, 1 - p) * 100)
 
 
-def sure_record(player_id: str) -> list[SureRow]:
-    """How often the player was right at each level of sureness they tapped: 3 sure, 2 think so, 1 a guess."""
-    rows = [r for r in db.responses_for(player_id) if r.sure is not None and r.is_correct is not None]
+def sure_record(player_id: str, card_ids: list[str] | None = None) -> list[SureRow]:
+    """How often the player was right at each level of sureness they tapped: 3 sure, 2 think so, 1 a guess.
+    With card_ids it covers those cards only (one gate); without, every gate the player has played."""
+    rows = [r for r in db.responses_for(player_id) if r.sure is not None and r.is_correct is not None
+            and (card_ids is None or r.card_id in card_ids)]
     return [SureRow(level=level, right=sum(1 for r in rows if r.sure == level and r.is_correct),
                     total=sum(1 for r in rows if r.sure == level)) for level in (3, 2, 1)]
 
@@ -588,8 +590,11 @@ def respond(body: ResponseIn, request: Request, background: BackgroundTasks,
         out.others_right, out.others_total = sum(1 for c in others if c in card.winning), len(others)
         if bet is not None:
             out.twin_bet, out.twin_bet_sure = bet
+        # the pick is stored and cannot be changed, so the right square may now be shown on the board
+        out.right_choice = card.board.answer if card.board is not None else None
     if body.sure is not None and is_correct is not None:
-        out.sure_record = sure_record(player.id)
+        out.sure_record = sure_record(player.id)  # every gate so far
+        out.sure_gate = sure_record(player.id, made.get(gate.id, gate.card_ids))  # this gate, this run
     if battle is None and complete and gate.kind in RIGHT_KINDS:
         ids = made.get(gate.id, gate.card_ids)
         mine = {r.card_id: r for r in db.responses_for(player.id)}
@@ -1324,7 +1329,12 @@ def sphere_at(picks: list[tuple[str, str]]) -> list[Vertical]:
                 done += 1 if g is not None and g.done == g.total else 0
         level = round(min(1.0, read[f["id"]].chances / mirror_rules.FULL_EVIDENCE), 3)
         count = read[f["id"]].picks
-        details = [f"This area is {round(level * 100)} percent filled, from {count} {'pick' if count == 1 else 'picks'}."]
+        # two different numbers, each named for what it counts. The first is the one the Brain tab shows.
+        seen = read[f["id"]].chances
+        details = ([f"You picked this area {count} of the {seen} times you could: {round(100 * count / seen)} percent. The Brain tab shows the same number."]
+                   if seen else ["No card for this area has come up yet."])
+        details.append(f"I have seen {min(seen, mirror_rules.FULL_EVIDENCE)} of the {mirror_rules.FULL_EVIDENCE} cards I need here, "
+                       f"so this part of me is {round(level * 100)} percent drawn.")
         if total:
             details.append(f"{done} of {total} skill steps {'is' if done == 1 else 'are'} done.")
         if best is None:
@@ -1354,6 +1364,9 @@ def frame(label: str, at, areas: list[Vertical]) -> SphereFrame:
     return SphereFrame(label=label, at=db.iso(at), levels=[a.level for a in areas], earned=[a.earned for a in areas])
 
 
+JOURNEY_IDS = frozenset(g.id for g in GATES)
+
+
 def plan_for(player: Player) -> list[PlanOption]:
     """Where the player's next few minutes count most, best first. Plain counting: work that is waiting, work that
     is open, a skill step, the least filled area, the next gate, and earning while away."""
@@ -1373,13 +1386,15 @@ def plan_for(player: Player) -> list[PlanOption]:
                               credits=open_jobs[0].pay, minutes=1))
     step = next((g for g in step_state(answered).values() if g.unlocked and g.done < g.total), None)
     if step is not None:
-        out.append(PlanOption(id=f"gate:{step.id}", title=f"Play: {step.title}", why="A skill step a creator built. Passing it gives a certificate.",
+        out.append(PlanOption(id=f"gate:{step.id}", title=f"Extra step: {step.title}",
+                              why=f"An extra skill step a creator built. It is not one of the {len(GATES)} gates of the journey. Passing it gives a certificate.",
                               credits=market.STEP_BONUS, minutes=2))
     areas = [a for a in sphere_at([(r.card_id, r.choice) for r in db.responses_for(player.id)]) if a.next_gate]
     if areas:
         weak = min(areas, key=lambda a: a.level)
-        out.append(PlanOption(id=f"gate:{weak.next_gate}", title=f"Play: {weak.next_title}",
-                              why=f"It fills {weak.name}, your least filled area ({round(weak.level * 100)} percent).",
+        # a step a creator built is extra: it is not one of the journey's gates, and the words say so
+        out.append(PlanOption(id=f"gate:{weak.next_gate}", title=f"{'Play' if weak.next_gate in JOURNEY_IDS else 'Extra step'}: {weak.next_title}",
+                              why=f"It adds cards to {weak.name}, the part of me that is least drawn ({round(weak.level * 100)} percent).",
                               credits=market.STEP_BONUS if weak.next_gate in STEP_GATES else 0, minutes=2))
     if nxt is not None and all(o.id != f"gate:{nxt.id}" for o in out):
         out.append(PlanOption(id=f"gate:{nxt.id}", title=f"Play: {nxt.title}", why="The next gate on your journey. It opens the one after it.",
@@ -1466,7 +1481,9 @@ JUDGE_TRUST = 0.8  # right this often when sure: the feeling can be trusted
 @app.get("/me/judgment", response_model=Judgment)
 def my_judgment(player: Player = Depends(current_player)) -> Judgment:
     """How sure the caller said they were against how often they were right. Their own rows only. Plain counting."""
-    taps = [r for r in db.responses_for(player.id) if r.sure is not None and r.is_correct is not None]
+    marked = [r for r in db.responses_for(player.id) if r.is_correct is not None]
+    taps = [r for r in marked if r.sure is not None]
+    unsaid = len(marked) - len(taps)  # right-or-wrong answers given with no "how sure" tap: they are in no row
     rows = sure_record(player.id)
     sure, guess = rows[0], rows[2]
     if not taps:
@@ -1474,13 +1491,15 @@ def my_judgment(player: Player = Depends(current_player)) -> Judgment:
     elif sure.total < JUDGE_MIN:
         says = f"I have {len(taps)} answers where you said how sure you were. I need {JUDGE_MIN} where you said Sure before I can judge that feeling."
     elif sure.right / sure.total >= JUDGE_TRUST:
-        says = f"When you say you are sure, you are right {sure.right} of {sure.total} times. That feeling can be trusted."
+        says = f"Over all your gates, when you say you are sure, you are right {sure.right} of {sure.total} times. That feeling can be trusted."
     else:
-        says = (f"When you say you are sure, you are right {sure.right} of {sure.total} times. "
+        says = (f"Over all your gates, when you say you are sure, you are right {sure.right} of {sure.total} times. "
                 "You feel sure more often than you are right. Check once more before a choice that is hard to undo.")
     if guess.total >= JUDGE_MIN and guess.right / guess.total >= 0.6:
         says += f" When you call it a guess, you are still right {guess.right} of {guess.total} times. You know more than you think."
-    return Judgment(rows=rows, says=says,
+    if taps and unsaid:  # say what the numbers cover, so they are not read as every answer
+        says += f" Only answers with a how sure tap are counted: {len(taps)} of {len(marked)}."
+    return Judgment(rows=rows, says=says, unsaid=unsaid,
                     taps=[SureTap(at=db.iso(r.created_at), level=r.sure, right=bool(r.is_correct)) for r in taps[-40:]])
 
 
@@ -1724,13 +1743,19 @@ def forget_fact(fact_id: str, player: Player = Depends(current_player)) -> Facts
 CODE_SHOWN = 160  # the newest blocks drawn; the counts cover all of them
 CODE_SHARED = 8  # another Sym is compared only once it has answered this many of the same cards (or all of them, if fewer)
 FACULTY_COLOR = {f["id"]: f["color"] for f in ONTOLOGY["faculties"]}
+# what a creator block was, in plain words, by the kind of brief behind it
+CODE_BRIEF = {"survey": "A survey", "test": "A skill test", "skill": "A step claimed", "build": "A step built"}
 
 
 @app.get("/me/code", response_model=SymCode)
 def sym_code(player: Player = Depends(current_player)) -> SymCode:
     """The Sym's code: one block for each thing its person did, oldest first. T is a tap as a player, G is growth
     that was proved, A is an act as an agency, C is an act as a creator. Read from the person's own rows."""
-    blocks: list[tuple[datetime, str, str, bool]] = []
+    blocks: list[tuple[datetime, CodeBase]] = []
+
+    def add(at: datetime, letter: str, what: str, area: str = "", **facts) -> None:
+        blocks.append((at, CodeBase(letter=letter, area=area, color=FACULTY_COLOR.get(area, ""), what=what, **facts)))
+
     taps = db.responses_for(player.id)
     mine = {r.card_id: r.choice for r in taps}
     # how this person's picks differ from every other Sym's. A Sym is compared only once it shares enough cards,
@@ -1745,24 +1770,36 @@ def sym_code(player: Player = Depends(current_player)) -> SymCode:
         trait = next((o.trait for o in card.options if o.id == r.choice), None) if card else None
         area = next((fid for fid, _, traits in FACULTY_GROUPS if trait in traits), "")
         gave = [theirs[r.card_id] for theirs in crowd if r.card_id in theirs]
-        apart = len(gave) >= market.MIN_TWINS and sum(1 for ch in gave if ch == r.choice) * 2 < len(gave)
-        blocks.append((r.created_at, "T", area, apart))
-    blocks += [(f.created_at, "T", TOPIC_AREA.get(topic_id(f.topic), ""), False) for f in db.facts_for(player.id)]
-    blocks += [(b.created_at, "G", "", False) for b in db.battles_for(player.id)]
-    blocks += [(c.issued_at, "G", "", False) for c in db.certs_for(player.id)]
-    blocks += [(w.reviewed_at, "G", "", False) for w in db.work_for(player.id) if w.reviewed_at is not None]
+        counted = len(gave) >= market.MIN_TWINS  # under the minimum, no count about the others is given
+        same = sum(1 for ch in gave if ch == r.choice)
+        gate = GATE_BY_ID.get(card.gate_id) if card else None
+        add(r.created_at, "T", "A pick you made", area, apart=counted and same * 2 < len(gave),
+            gate=gate.title if gate else "", prompt=card.prompt if card else "",
+            picked=choice_label(card, r.choice) if card else "", same=same if counted else 0, of=len(gave) if counted else 0)
+    for f in db.facts_for(player.id):
+        add(f.created_at, "T", "Something you told me", TOPIC_AREA.get(topic_id(f.topic), ""))
+    for b in db.battles_for(player.id):
+        add(b.created_at, "G", "A gate finished" if b.twin_matches is not None else "A gate started")
+    for c in db.certs_for(player.id):
+        add(c.issued_at, "G", "A certificate")
+    for w in db.work_for(player.id):
+        if w.reviewed_at is not None:
+            add(w.reviewed_at, "G", "A job checked")
     agency, studio = db.org_for(player.id, "agency"), db.org_for(player.id, "creator")
     if agency is not None:
-        for rows in (db.campaigns_for(agency.id), db.postings_for(agency.id), db.sponsorships_for(agency.id), db.meets_for(agency.id)):
-            blocks += [(row.created_at, "A", "", False) for row in rows]
+        for what, rows in (("A question asked", db.campaigns_for(agency.id)), ("A job posted", db.postings_for(agency.id)),
+                           ("A skill backed", db.sponsorships_for(agency.id)), ("A meeting", db.meets_for(agency.id))):
+            for row in rows:
+                add(row.created_at, "A", what)
     if studio is not None:
-        blocks += [(b.created_at, "C", "", False) for b in db.briefs_for(studio.id)]
+        for b in db.briefs_for(studio.id):
+            add(b.created_at, "C", CODE_BRIEF.get(b.kind, "A creator act"))
     blocks.sort(key=lambda b: b[0])
-    counts = {k: sum(1 for b in blocks if b[1] == k) for k in "TGAC"}
-    have = {b[2] for b in blocks if b[2]}
+    counts = {k: sum(1 for _, b in blocks if b.letter == k) for k in "TGAC"}
+    have = {b.area for _, b in blocks if b.area}
     same = sum(1 for hit, of in agree if hit == of)
     near = max(agree, key=lambda a: a[0] / a[1]) if agree else None
-    apart = sum(1 for b in blocks if b[3])
+    apart = sum(1 for _, b in blocks if b.apart)
     gaps = [f["name"] for f in ONTOLOGY["faculties"] if f["id"] not in have]
     total = len(blocks)
     if total == 0:
@@ -1781,7 +1818,7 @@ def sym_code(player: Player = Depends(current_player)) -> SymCode:
         line = f"I am made of {total} blocks. I have none yet in {gaps[0]}. A gate that feeds it fills that gap."
     else:
         line = f"I am made of {total} blocks, from every seat you have sat in. No other Sym has this code."
-    return SymCode(bases=[CodeBase(letter=letter, area=area, color=FACULTY_COLOR.get(area, ""), apart=odd) for _, letter, area, odd in blocks[-CODE_SHOWN:]],
+    return SymCode(bases=[b for _, b in blocks[-CODE_SHOWN:]],
                    total=total, counts=counts, gaps=gaps, line=line, others=len(crowd), same=same, apart=apart,
                    near=list(near) if near else [])
 
@@ -2025,7 +2062,7 @@ def wallets_out(player: Player) -> Wallets:
             if kind == "data" and amount > 0 and _other == "creator":
                 detail = "From a creator. The creator saw only totals."
             if kind == "data" and amount < 0:
-                detail = f"For one question, to {moves} {'twin' if moves == 1 else 'twins'}"
+                detail = f"For one question, to {moves} {'Sym' if moves == 1 else 'Syms'}"
             if kind == "work" and amount > 0 and _other == "escrow":
                 detail = "From an agency's job, after you checked the answer"
             if kind == "maker" and moves > 1:

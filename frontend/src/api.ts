@@ -18,7 +18,7 @@ export type Bin = { id: string; name: string; about: string }
 export type Option = { id: string; label: string }
 export type Board = { game: 'tictactoe' | 'connect4' | 'pattern' | 'reflex'; rows: string[]; to_move: string; seq: string[] }
 export type Card = { id: string; kind: string; prompt: string; options: Option[]; board: Board | null; bet_sure: number | null }
-export type Me = { nickname: string; points: number; level: number; gates_done: number; gates_total: number; certs: number; credits: number; jobs_open: number; twins: number; together: number; active_days: number; income_share: number }
+export type Me = { nickname: string; points: number; level: number; gates_done: number; gates_total: number; certs: number; credits: number; jobs_open: number; twins: number; people: number; together: number; active_days: number; income_share: number }
 export type Cert = { kind: string; topic: string; level: string; accuracy: number; baseline: number | null; n: number; issued_at: string }
 export type BattleResult = {
   gate_id: string
@@ -177,7 +177,7 @@ export type World = {
 }
 export type Commons = {
   nickname: string; people: number; people_today: number; stand_ins: number; bots: number; bot_agencies: number; bot_creators: number; agencies: number; creators: number
-  taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; has_agency: boolean; has_creator: boolean
+  taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; checks_mine: number; told_mine: number; lessons_mine: number; has_agency: boolean; has_creator: boolean
   happenings: { who: string; text: string; when: string; mine: boolean }[]
 }
 export type Ripple = { agency: boolean; creator: boolean; links: { src: string; dst: string; n: number; credits: number; text: string }[] }
