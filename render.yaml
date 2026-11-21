@@ -6,6 +6,8 @@ services:
     name: byt_backend
     runtime: python
     plan: free
+    # next to the database (Supabase, US East): a back end far from its database makes every screen slow
+    region: virginia
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
