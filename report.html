@@ -204,6 +204,7 @@
 </table>
 <p>The cost of an agency's question does not appear in that table because it is zero. Asking 194 Syms uses no tokens. That is the design choice that makes the economy work: the costly step (learning a person) happens once per gate, and the step that is sold (answering as that person) is free to run.</p>
 <p><strong>Hosting.</strong> The game runs today on free plans: the back end and the front end on Render, the database on Supabase. That costs nothing, with one price paid in time: the free back end sleeps after 15 minutes without visitors and takes up to a minute to wake.</p>
+<p>Render and Supabase are the first hosting choices, picked because they are quick to set up, not because they are the cheapest. The game is a plain web server, a folder of static files and a Postgres database, and it picks its database from one setting, so it can move to a single small server or a cheaper host with no change to the code.</p>
 <p>The free back end is small: a tenth of a CPU and 512 MB. The next Render compute plan, <code>0.5c-512mb</code>, costs 7 US dollars a month, has five times the CPU and never sleeps. Supabase's free plan holds 500 MB, and its Pro plan starts at 25 dollars a month with 8 GB.</p>
 <table>
   <tr><th>Scale</th><th>Back end (Render)</th><th>Database (Supabase)</th><th class="n">Hosting a month</th><th class="n">Agents a month</th><th class="n">All in</th></tr>
@@ -222,7 +223,15 @@
   <li><strong>A zero-token practice Sym</strong> is the fallback and the baseline.</li>
   <li><strong>Prompt caching</strong> worked for the Profiler (15 percent of its input was cached) and barely for the others, whose prompts are too short to qualify.</li>
 </ul>
-<div class="todo">The experiment that answers "did a cut hurt": run the Twin on the same held-back cards twice for the same players, once on beliefs and once on all raw picks, and report tokens and matches for both. Also compare the AI Twin to the zero-token practice Sym on real players.</div>
+<h3>An experiment: how far does zero tokens go?</h3>
+<p>For six test accounts with at least 30 picks, 10 picks each were held back and hidden from every method. Two methods that cost nothing were then asked to call those 60 picks.</p>
+<table>
+  <tr><th>Method</th><th>Tokens</th><th class="n">Right, of 60</th><th class="n">Share</th></tr>
+  <tr><td>The crowd's guess: what most other Syms picked</td><td class="n">0</td><td class="n">30</td><td class="n">50%</td></tr>
+  <tr><td>The practice Sym: plain code that counts which traits this person picks most</td><td class="n">0</td><td class="n">46</td><td class="n">77%</td></tr>
+</table>
+<p>So most of what a Sym knows about a person can be had for nothing: counting a person's own picks beats the crowd by 27 points. That is why the practice Sym is the fallback, and it sets the bar the AI Twin must clear to be worth its 0.0004 dollars a run. In the 12 real battles in section 7 the AI Twin was right on 74 percent of held-back picks, in the same range. These are test accounts, some of them played in a steady way, so the gap to the crowd is likely wider here than it will be for real people.</p>
+<div class="todo">The two AI arms of this experiment (the Twin on beliefs, and the Twin on every raw pick, on these same 60 picks) could not be run on 22 November: the course AI key was refused by the gateway. Run them when a working key is available, and report tokens and matches for both.</div>
 
 <!-- ===================== 6. SAFETY ===================== -->
 <h2><span>6</span>Safety</h2>
