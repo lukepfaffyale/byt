@@ -258,6 +258,18 @@ def responses_for(player_id: str) -> list[Response]:
         return list(s.exec(select(Response).where(Response.player_id == player_id).order_by(Response.created_at)))
 
 
+def picks_on(card_ids: set[str], but: str) -> dict[str, dict[str, str]]:
+    """What every other Sym picked on these cards: one dict of card to choice for each. No name leaves this function's caller."""
+    if not card_ids:
+        return {}
+    with Session(get_engine()) as s:
+        out: dict[str, dict[str, str]] = {}
+        for pid, cid, choice in s.exec(select(Response.player_id, Response.card_id, Response.choice)
+                                       .where(Response.card_id.in_(card_ids), Response.player_id != but)).all():
+            out.setdefault(pid, {})[cid] = choice
+        return out
+
+
 def answered_card_ids(player_id: str) -> set[str]:
     with Session(get_engine()) as s:
         return set(s.exec(select(Response.card_id).where(Response.player_id == player_id)))

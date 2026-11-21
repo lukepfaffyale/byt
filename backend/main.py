@@ -132,7 +132,7 @@ from models import (  # noqa: E402
     CardOut,
     Cert,
     CertOut,
-    Deleted,
+    Deleted, CodeBase, SymCode,
     Left,
     GateCards,
     GateOut,
@@ -1667,7 +1667,7 @@ async def ask_twin(body: AskIn, request: Request, player: Player = Depends(curre
 ROUTES: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
     (("credit", "money", "earn", "pay", "paid", "cost", "wallet", "spend", "income", "royalt"), ("money", "ways_to_earn", "work")),
     (("job", "work"), ("work", "ways_to_earn")),
-    (("know", "belie", "about me", "weak", "strong", "area", "brain", "learn"), ("beliefs", "areas", "weakest_area", "told_by_person")),
+    (("know", "belie", "about me", "weak", "grow", "strong", "area", "brain", "learn"), ("beliefs", "areas", "weakest_area", "told_by_person")),
     (("sure", "judg", "confiden", "risk", "decid"), ("how_sure_and_how_right", "beliefs")),
     (("next", "should", "what now", "play", "gate"), ("progress", "weakest_area")),
 )
@@ -1719,6 +1719,71 @@ def forget_fact(fact_id: str, player: Player = Depends(current_player)) -> Facts
     """Make the Sym forget one fact the caller told it."""
     db.remove_fact(player.id, fact_id)
     return facts_out(player)
+
+
+CODE_SHOWN = 160  # the newest blocks drawn; the counts cover all of them
+CODE_SHARED = 8  # another Sym is compared only once it has answered this many of the same cards (or all of them, if fewer)
+FACULTY_COLOR = {f["id"]: f["color"] for f in ONTOLOGY["faculties"]}
+
+
+@app.get("/me/code", response_model=SymCode)
+def sym_code(player: Player = Depends(current_player)) -> SymCode:
+    """The Sym's code: one block for each thing its person did, oldest first. T is a tap as a player, G is growth
+    that was proved, A is an act as an agency, C is an act as a creator. Read from the person's own rows."""
+    blocks: list[tuple[datetime, str, str, bool]] = []
+    taps = db.responses_for(player.id)
+    mine = {r.card_id: r.choice for r in taps}
+    # how this person's picks differ from every other Sym's. A Sym is compared only once it shares enough cards,
+    # and nothing is said unless the crowd is at least the minimum size.
+    need = min(len(mine), CODE_SHARED)
+    crowd = [theirs for theirs in db.picks_on(set(mine), player.id).values() if len(theirs) >= need > 0]
+    if len(crowd) < market.MIN_TWINS:
+        crowd = []
+    agree = [(sum(1 for cid, ch in theirs.items() if mine[cid] == ch), len(theirs)) for theirs in crowd]
+    for r in taps:
+        card = CARDS.get(r.card_id)
+        trait = next((o.trait for o in card.options if o.id == r.choice), None) if card else None
+        area = next((fid for fid, _, traits in FACULTY_GROUPS if trait in traits), "")
+        gave = [theirs[r.card_id] for theirs in crowd if r.card_id in theirs]
+        apart = len(gave) >= market.MIN_TWINS and sum(1 for ch in gave if ch == r.choice) * 2 < len(gave)
+        blocks.append((r.created_at, "T", area, apart))
+    blocks += [(f.created_at, "T", TOPIC_AREA.get(topic_id(f.topic), ""), False) for f in db.facts_for(player.id)]
+    blocks += [(b.created_at, "G", "", False) for b in db.battles_for(player.id)]
+    blocks += [(c.issued_at, "G", "", False) for c in db.certs_for(player.id)]
+    blocks += [(w.reviewed_at, "G", "", False) for w in db.work_for(player.id) if w.reviewed_at is not None]
+    agency, studio = db.org_for(player.id, "agency"), db.org_for(player.id, "creator")
+    if agency is not None:
+        for rows in (db.campaigns_for(agency.id), db.postings_for(agency.id), db.sponsorships_for(agency.id), db.meets_for(agency.id)):
+            blocks += [(row.created_at, "A", "", False) for row in rows]
+    if studio is not None:
+        blocks += [(b.created_at, "C", "", False) for b in db.briefs_for(studio.id)]
+    blocks.sort(key=lambda b: b[0])
+    counts = {k: sum(1 for b in blocks if b[1] == k) for k in "TGAC"}
+    have = {b[2] for b in blocks if b[2]}
+    same = sum(1 for hit, of in agree if hit == of)
+    near = max(agree, key=lambda a: a[0] / a[1]) if agree else None
+    apart = sum(1 for b in blocks if b[3])
+    gaps = [f["name"] for f in ONTOLOGY["faculties"] if f["id"] not in have]
+    total = len(blocks)
+    if total == 0:
+        line = "My code is empty. Your first tap writes my first block."
+    elif crowd and same == 0:
+        line = (f"I am made of {total} blocks. I looked at {len(crowd)} other Syms, and not one has your answers. "
+                f"The nearest matches you on {near[0]} of {near[1]}. What is yours alone is what you bring to everyone.")
+    elif crowd:
+        line = (f"I am made of {total} blocks. {same} of {len(crowd)} other Syms {'has' if same == 1 else 'have'} given the same answers as you so far. "
+                "Play one more gate, and I become the only one.")
+    elif counts["G"] == 0:
+        line = f"I am made of {total} blocks, all from your taps. Nothing is proved yet. Finish a gate, and I write my first G."
+    elif counts["A"] == 0 and counts["C"] == 0:
+        line = f"I am made of {total} blocks: {counts['T']} taps and {counts['G']} proofs. Open an agency or a studio, and my code gains a new letter."
+    elif gaps:
+        line = f"I am made of {total} blocks. I have none yet in {gaps[0]}. A gate that feeds it fills that gap."
+    else:
+        line = f"I am made of {total} blocks, from every seat you have sat in. No other Sym has this code."
+    return SymCode(bases=[CodeBase(letter=letter, area=area, color=FACULTY_COLOR.get(area, ""), apart=odd) for _, letter, area, odd in blocks[-CODE_SHOWN:]],
+                   total=total, counts=counts, gaps=gaps, line=line, others=len(crowd), same=same, apart=apart,
+                   near=list(near) if near else [])
 
 
 @app.get("/me/sphere", response_model=Sphere)

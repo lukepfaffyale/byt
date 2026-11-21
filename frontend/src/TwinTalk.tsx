@@ -12,10 +12,10 @@ type Recognizer = {
 type SpeechWindow = { SpeechRecognition?: new () => Recognizer; webkitSpeechRecognition?: new () => Recognizer }
 
 const QUICK: Record<string, string[]> = {
-  journey: ['What next?', 'How do I earn more?', 'Where am I weak?'],
+  journey: ['What next?', 'How do I earn more?', 'Where can I grow?'],
   money: ['Why did it change?', 'How do I earn more?', 'What do you cost?'],
   work: ['Which job first?', 'Work by yourself?', 'How do I earn more?'],
-  mine: ['What do you know?', 'Where am I weak?', 'Ask me one.'],
+  mine: ['What do you know?', 'Where can I grow?', 'Ask me one.'],
 }
 const VOICE_KEY = 'byt_voice'
 

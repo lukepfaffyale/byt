@@ -107,6 +107,7 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | GET /agency | | Agency (budget, the fixed questions, audiences, past results) | orgs, campaigns |
 | POST /agency | OrgCreate (name) | Agency | orgs |
 | POST /agency/campaigns | CampaignIn (question id, audience, pay; all from fixed lists) | Agency (counts per option) | orgs, campaigns, earnings, responses, certs, consents |
+| GET /me/code | | SymCode (one block for each thing the person did, oldest first: T a tap, G a proof, A an agency act, C a creator act; counts and the areas with no block). Built on each read, nothing stored | responses, facts, battles, certs, work, orgs, campaigns, postings, sponsorships, meets, briefs |
 | GET /me/sphere | | Sphere (one colored area per faculty: level from picks, share of skill steps finished) | responses |
 | GET /seats/{seat}/sphere | | Sphere for the agency or creator seat, with its history | orgs, campaigns |
 | GET /me/money | | Money (credits earned by source with each line, real AI cost by agent, the agency's spend) | work, earnings, usage, orgs, campaigns |

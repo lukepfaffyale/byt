@@ -7,6 +7,7 @@ import { Failed } from './Retry'
 import { SymLive } from './SymLive'
 import { SymCue } from './SymCue'
 import { Worth } from './Worth'
+import { CodeView } from './Code'
 import { credits, stop } from './words'
 
 // what my Sym says after a tap that has no right answer: short, and true of every tap
@@ -25,6 +26,9 @@ type Props = {
   nextUp?: { id: string; title: string }
   onNext?: (gateId: string) => void
 }
+
+/** the first gate: its picks write the first blocks of the Sym's code, so its finish shows that code */
+const CALIBRATOR = 'style-1'
 
 export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextUp, onNext }: Props) {
   const isBattle = gateKind === 'battle'
@@ -300,6 +304,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
     return (
       <section aria-labelledby="done-h" className="gate-done">
         <h1 id="done-h" tabIndex={-1}>Gate finished: {gate.title}</h1>
+        {gateId === CALIBRATOR && <CodeView brief />}
         <SymCue calm={still()} formed={1} go={onwardGo} act={onward}
           say={`That gate is mine to keep: ${cards.length} ${cards.length === 1 ? 'tap' : 'taps'}, and ${earned} points for you.${bonus > 0 ? ` You passed a skill step, so the growth fund paid us ${credits(bonus)} credits.` : ''}${sponsored > 0 ? ` An agency backs this skill, and paid us ${credits(sponsored)} more.` : ''}${cert ? ' And you earned a certificate.' : ''}${onwardSay}`} />
         {cert && (

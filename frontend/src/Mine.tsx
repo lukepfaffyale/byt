@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { api, type Activity, type Fact, type Judgment, type UsageSummary } from './api'
 import { Tabs } from './Deck'
 import { MirrorView } from './MirrorView'
+import { CodeView } from './Code'
 import { More } from './More'
 import { Rows, type Row } from './Rows'
 import { SkillsView } from './SkillsView'
 import { Failed } from './Retry'
 
-type TabId = 'type' | 'mind' | 'brain' | 'skills' | 'judgment' | 'beliefs' | 'proof' | 'data'
+type TabId = 'type' | 'code' | 'mind' | 'brain' | 'skills' | 'judgment' | 'beliefs' | 'proof' | 'data'
 const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Think so', 1: 'A guess' }
 const CERT_NAME: Record<string, string> = { twin: 'Sym', insight: 'Insight', skill: 'Skill' }
 
@@ -122,7 +123,7 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
       <h1 id="mine-h" className="sr-only">What my Sym knows</h1>
       <Tabs label="What my Sym knows" value={tab} onChange={setTab}
         tabs={[
-          { id: 'type', label: 'Type' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }, { id: 'skills', label: 'Skills' },
+          { id: 'type', label: 'Type' }, { id: 'code', label: 'Code' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }, { id: 'skills', label: 'Skills' },
           { id: 'judgment', label: 'Judgment', n: judged ? judged.taps.length : undefined },
           { id: 'beliefs', label: 'Beliefs', n: data ? beliefs.length : undefined },
           { id: 'proof', label: 'Proof', n: data ? data.certs.length : undefined },
@@ -131,6 +132,7 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
       {error && <Failed error={error} />}
 
       <div className="panel">
+        {tab === 'code' && <CodeView />}
         {mirrorTab && <MirrorView view={tab} onSkill={toSkill} open={area} />}
         {tab === 'skills' && <SkillsView key={focusTree ?? 'all'} focus={focusTree} onPlay={onPlay} />}
         {!mirrorTab && tab !== 'skills' && !data && !error && <p className="muted" aria-live="polite">Loading.</p>}

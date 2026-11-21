@@ -399,7 +399,7 @@ export default function App() {
       : next && next.done > 0
         ? { say: `We stopped ${next.done} of ${next.total} taps into this one: ${stop(next.title)} Give me ${next.total - next.done} more and I keep all of it.`, go: `Continue: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
         : next
-          ? { say: me.gates_done === 0 ? 'I know nothing about you yet. Tap once, and I start to form.' : `I am ${percent} percent formed. Next up: ${stop(next.title)} It is ${next.total} taps, and I will know you better.`,
+          ? { say: me.gates_done === 0 ? `I know nothing about you yet. ${next.total} quick picks calibrate me: they write the first blocks of my code, and no other Sym will have the same.` : `I am ${percent} percent formed. Next up: ${stop(next.title)} It is ${next.total} taps, and I will know you better.`,
               go: `Start: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
           : top
             ? { say: `We finished every gate together. ${top.why}`, go: top.title, act: () => go(top.id) }

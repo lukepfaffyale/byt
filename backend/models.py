@@ -1368,6 +1368,29 @@ class Sphere(Strict):
     balance: float | None = None  # agency and creator: how evenly they have reached across groups
 
 
+class CodeBase(Strict):
+    """One building block of a Sym: one thing its person did. The letter says in which seat."""
+    letter: Literal["T", "G", "A", "C"]  # T a tap as a player, G growth that was proved, A an agency act, C a creator act
+    area: str = ""  # the area of the mind a tap fell in; empty when the block has none
+    color: str = ""
+    apart: bool = False  # a tap where fewer than half of the other Syms picked the same
+
+
+class SymCode(Strict):
+    """The Sym's code: every input its person gave, in the order it was given, as four kinds of block.
+    It is built from the person's own rows each time it is asked for. Nothing new is stored."""
+    bases: list[CodeBase] = []  # oldest first; the newest blocks when there are more than fit
+    total: int = 0
+    counts: dict[str, int] = {}
+    gaps: list[str] = []  # areas of the mind with no block yet
+    # how this code differs from every other Sym's. Counts only, and only against a crowd of at least the minimum.
+    others: int = 0  # Syms it was compared with
+    same: int = 0  # of those, how many gave the same answer on every card both have answered
+    apart: int = 0  # taps where fewer than half of the others picked the same
+    near: list[int] = []  # the nearest other Sym: [answers the same, answers both gave]
+    line: str = ""  # what the code says, written by plain counting
+
+
 class Deleted(Strict):
     deleted: bool = True
 

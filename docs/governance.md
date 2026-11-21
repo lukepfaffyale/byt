@@ -799,3 +799,26 @@ report and inside the game, not there. What the welcome screen says stays true: 
 and "Syms" counts every Sym, people's and BOT. It never calls a BOT Sym a person. The BOT Syms are still named and
 marked on the Everyone screen and its feed, in group counts, on job results, in My Money and in one-to-one meetings,
 and the report must state them plainly.
+
+## 2026-11-21: the Sym's code
+
+Each Sym now shows its code: one block for each thing its person did, in order, in four letters. T is a tap as a player, G is growth that was proved (a gate finished, a job checked, a certificate), A is an act as an agency, C is an act as a creator. The four letters are the four bases of DNA, used as a picture only.
+
+- **No new data.** The code is read from rows the game already keeps, each time it is asked for. No table and no column were added.
+- **Who sees it.** Only the person, on My Sym. Agencies and creators still see counts over at least 5 Syms and never one Sym's code.
+- **What it is not.** It is a record of choices made in a game. It is not a biometric, it holds nothing about a body or health, and the game makes no claim that it measures a person. The lines beside it are written by plain counting, never by a model.
+
+### How a code differs from the others (2026-11-21)
+
+The Code tab also says how a person's picks differ from every other Sym's: how many other Syms gave the same answer on every card both have answered, how close the nearest one is (answers the same, of answers both gave), and how many of the person's picks went against most of the crowd.
+
+- These are counts. No other Sym is named, shown or reachable from them, and they are shown only to the person whose code it is.
+- Another Sym is compared only once it has answered at least 8 of the same cards, and nothing is said unless at least 5 Syms can be compared.
+- The crowd includes BOT Syms, whose picks are random. The screen says so. The report must not present these counts as evidence about real people.
+- The first gate is now named the Calibrator. Its picks are the first blocks, and its finish screen shows the code.
+
+### What the game rewards (the student's rule, 2026-11-21)
+
+- Being different is not the goal. The game shows how a code differs, but pay never depends on it. What is rewarded is what lifts the whole game: a Sym that is proved true to its person, skills finished, jobs checked, steps built for others.
+- Nothing in the game pays for, ranks or displays content meant to cause dread, anger or humiliation. Cards and questions come from fixed lists we wrote, and seats cannot type one. When a guess is wrong, the Sym is the one that was wrong and studies it; the person is never marked down.
+- A change that would pay for rarity must first show that it cannot be earned by random or hostile answers. The rule on the table: rare and proved by a certificate, never rare alone.

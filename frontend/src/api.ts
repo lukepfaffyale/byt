@@ -219,6 +219,7 @@ export type Money = {
   agency: { name: string; started_with: number; spent: number; left: number; twins_asked: number; lines: MoneyLine[] } | null
 }
 export type Vertical = { key: string; name: string; color: string; level: number; earned: number; picks: number; steps_done: number; steps_total: number; count: number | null; hidden: boolean; dots: number[]; details: string[]; next_gate?: string | null; next_title?: string | null }
+export type SymCode = { bases: { letter: 'T' | 'G' | 'A' | 'C'; area: string; color: string; apart: boolean }[]; total: number; counts: Record<string, number>; gaps: string[]; line: string; others: number; same: number; apart: number; near: number[] }
 export type FeedbackOut = { rows: { seat: string; moment: string; yes: number; unsure: number; no: number }[]; total: number }
 export type WalletLine = { at: string; kind: string; label: string; detail: string; credits: number }
 export type WalletOut = { seat: 'player' | 'agency' | 'creator'; balance: number; came_in: number; went_out: number; lines: WalletLine[] }
@@ -386,6 +387,7 @@ export const api = {
   feedbackTotals: () => call<FeedbackOut>('GET', '/feedback'),
   deposit: (seat: 'player' | 'agency' | 'creator', credits: number) => call<Wallets>('POST', '/wallets/deposit', { seat, credits }),
   sphere: () => call<Sphere>('GET', '/me/sphere'),
+  code: () => call<SymCode>('GET', '/me/code'),
   seatSphere: (seat: 'agency' | 'creator') => call<Sphere>('GET', `/seats/${seat}/sphere`),
   consent: (data_income: boolean) => call<JobsOut>('POST', '/me/consent', { data_income }),
   agency: () => call<Agency>('GET', '/agency'),
