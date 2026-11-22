@@ -90,7 +90,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
     return (
       <section aria-labelledby="creator-h" className="mine">
         <h1 id="creator-h">You can also be the one who makes skills.</h1>
-        <p className="lead">Open a creator seat. Send your crew to learn what Syms need. Keep this name, or type your own.</p>
+        <p className="lead">Open a studio. Send your crew to learn what Syms need. Keep this name, or type your own.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <form onSubmit={(e) => {
           e.preventDefault()
@@ -104,13 +104,13 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
             })
             .catch(fail)
         }}>
-          <label htmlFor="creator-name">Creator name (made up, not a real company). Tap it to change it.</label>
+          <label htmlFor="creator-name">Studio name (made up, not a real company). Tap it to change it.</label>
           <input id="creator-name" value={name} onChange={(e) => setName(e.target.value)} minLength={2} maxLength={30}
             pattern="[A-Za-z0-9][A-Za-z0-9 _\-&]*" required autoComplete="off" placeholder="Type a name here" />
-          <button className="primary big" disabled={busy || name.trim().length < 2}>Open my creator seat</button>
+          <button className="primary big" disabled={busy || name.trim().length < 2}>Open my studio</button>
         </form>
         <More>
-          The name is the only thing you type. After that, everything is a tap. Your wallet starts empty: add play
+          The name is the only thing you type. After that, everything is a tap. Your studio starts with play credits, and you can add more
           credits on My Money. Other seats see only how many creators there are, never a name.
         </More>
       </section>

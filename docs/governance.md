@@ -845,3 +845,7 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
 ## 2026-11-22: BOT Syms keep the hours of their place
 
 Each BOT Sym now acts only between 7 in the morning and 11 at night on the clock of the country it is named for, so the bots that play, ask and build move round the world with the sun. The clock for each name is one standard offset from UTC, taken at the capital, with no summer time (`backend/data/countries.json`, `utc_offset`). It is a label that sets when a bot is awake. It holds nothing about a person and says nothing about the people of any country. BOT Syms still use no AI: their moves are plain code.
+
+## 2026-11-22: A new studio starts with play credits
+
+A fresh-account walk through all three seats, judged from screenshots only, found that a new creator started with an empty wallet and was sent to My Money before it could do anything, while a new agency started with 2,000 play credits. A creator seat now starts with the same 2,000 play credits as an agency. They are play money from outside the game, as every deposit is, and the books still balance (the ledger tests pass). The same walk found the seat name box could not be seen, so each seat now opens with a made-up name filled in.

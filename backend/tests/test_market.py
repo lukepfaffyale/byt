@@ -163,7 +163,7 @@ def test_passing_a_skill_step_is_paid_once_from_the_growth_fund(client, auth):
 def test_one_login_can_open_both_other_seats(client, auth):
     assert client.get("/creator", headers=auth).json()["exists"] is False
     made = client.post("/creator", headers=auth, json={"name": "Bright Skills"}).json()
-    assert made["exists"] is True and made["name"] == "Bright Skills" and made["budget"] == 0
+    assert made["exists"] is True and made["name"] == "Bright Skills" and made["budget"] == market.START_BUDGET
     assert client.post("/creator", headers=auth, json={"name": "Other Name"}).json()["name"] == "Bright Skills"  # one seat each
     assert client.post("/creator", headers=auth, json={"name": "<b>"}).status_code == 422
     assert client.post("/agency", headers=auth, json={"name": "North Star Ads"}).json()["exists"] is True

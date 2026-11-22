@@ -7,13 +7,17 @@ from content import CARDS
 from tests.test_market import play_gates
 
 
+HELD = market.START_BUDGET + 1000  # what the studio holds after the helper below: its starting credits and 1000 more
+
+
 def creator(client, auth, credits=1000):
     client.post("/creator", json={"name": "Bright Skills"}, headers=auth)
     if credits:
         client.post("/wallets/deposit", json={"seat": "creator", "credits": credits}, headers=auth)
 
 
-def test_a_creator_job_needs_a_seat_credits_and_taps_from_the_lists(client, auth):
+def test_a_creator_job_needs_a_seat_credits_and_taps_from_the_lists(client, auth, monkeypatch):
+    monkeypatch.setattr(market, "START_BUDGET", 0)  # a studio whose credits ran out, to show an empty wallet stops a job
     ask = {"kind": "survey", "topic": market.QUESTIONS[0].id, "audience": "all"}
     assert client.post("/creator/briefs", json=ask, headers=auth).status_code == 404
     creator(client, auth, credits=0)
@@ -31,7 +35,7 @@ def test_a_survey_and_a_test_return_counts_only_and_every_credit_is_in_the_ledge
     survey = out["briefs"][0]
     assert survey["twins"] >= market.MIN_TWINS and sum(r["count"] for r in survey["split"]) == survey["twins"]
     assert survey["spent"] == survey["twins"] * market.CREATOR_PAY + market.CREW_FEE
-    assert out["budget"] == 1000 - survey["spent"] - db.share_of(survey["spent"] - market.CREW_FEE)
+    assert out["budget"] == HELD - survey["spent"] - db.share_of(survey["spent"] - market.CREW_FEE)
     out = client.post("/creator/briefs", json={"kind": "test", "topic": "logic", "audience": "all"}, headers=auth).json()
     test = out["briefs"][0]
     assert [r["label"] for r in test["split"]] == [label for _, label in market.BANDS]
@@ -48,7 +52,7 @@ def test_claiming_a_skill_step_takes_the_next_waiting_step_once(client, auth):
     out = client.post("/creator/briefs", json={"kind": "skill", "topic": "logic"}, headers=auth).json()
     logic = next(s for s in out["skills"] if s["id"] == "logic")
     assert len(logic["claimed"]) == 1 and logic["claimed"][0] not in logic["waiting"]
-    assert out["briefs"][0]["spent"] == market.CLAIM_FEE and out["budget"] == 1000 - market.CLAIM_FEE
+    assert out["briefs"][0]["spent"] == market.CLAIM_FEE and out["budget"] == HELD - market.CLAIM_FEE
     for _ in logic["waiting"]:
         client.post("/creator/briefs", json={"kind": "skill", "topic": "logic"}, headers=auth)
     assert client.post("/creator/briefs", json={"kind": "skill", "topic": "logic"}, headers=auth).status_code == 409
@@ -115,7 +119,7 @@ def test_a_built_step_is_playable_and_pays_the_player_first_then_a_royalty_to_it
     assert client.get(f"/gates/{pack['id']}/cards", headers=learner).status_code == 404
     out = build(chosen).json()
     assert out["packs"] == [] and out["made"][0]["passes"] == 0
-    assert out["budget"] == 1000 - market.CLAIM_FEE - market.CREW_FEE
+    assert out["budget"] == HELD - market.CLAIM_FEE - market.CREW_FEE
     assert build(chosen).status_code == 409  # built once
     assert step(learner) == {"name": pack["step"], "state": "open", "gate_id": pack["id"], "made": True}
 
@@ -150,7 +154,7 @@ def test_a_built_step_is_playable_and_pays_the_player_first_then_a_royalty_to_it
 
     seat = client.get("/creator", headers=auth).json()
     assert seat["made"][0]["passes"] == 1 and seat["made"][0]["earned"] == market.STEP_ROYALTY
-    assert seat["budget"] == 1000 - market.CLAIM_FEE - market.CREW_FEE + market.STEP_ROYALTY
+    assert seat["budget"] == HELD - market.CLAIM_FEE - market.CREW_FEE + market.STEP_ROYALTY
     purse = next(w for w in client.get("/wallets", headers=auth).json()["wallets"] if w["seat"] == "creator")
     assert purse["lines"][0]["label"] == "Skill royalty" and "Learner" not in str(purse)  # paid, and not told by whom
     assert db.ledger_total() == 0

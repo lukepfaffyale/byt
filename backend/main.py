@@ -1132,9 +1132,10 @@ def meet(seat: str, body: MeetIn, request: Request, player: Player = Depends(cur
 
 @app.post("/creator", response_model=CreatorSeat)
 def open_creator(body: OrgCreate, request: Request, player: Player = Depends(current_player)) -> CreatorSeat:
-    """Open the creator seat under a made-up name."""
+    """Open the creator seat under a made-up name. Like an agency, it starts with play credits, so the first
+    thing a new creator does is send its crew, not look for a way to pay."""
     rate_limit(request, "org", 10)
-    db.create_org(player.id, "creator", body.name.strip(), 0)
+    db.create_org(player.id, "creator", body.name.strip(), market.START_BUDGET)
     return creator_out(player)
 
 

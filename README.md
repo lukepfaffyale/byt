@@ -50,16 +50,30 @@ Checked on 2026-11-18 from a fresh clone in an empty folder, on Windows with Pyt
 installed and answered in about 80 seconds, the front end installed and built in under 10 seconds, sign-up worked
 with no key, all tests passed, and a `.env` one folder above the repo was found.
 
-## What to try in five minutes
+## A 10-minute tour
 
-1. The welcome screen shows everyone in the game. Tap **Player**.
-2. My Sym speaks at the top of each page and offers one button. Tap it: it starts the first gate.
-3. Finish a gate (about ten taps). My Sym says what it kept and offers the next gate.
-4. After the first gate, **My Work** has jobs. Send my Sym, then say if its answer was right. It is paid after you check.
-5. Play to the first battle gate: my Sym guesses your picks before you make them, and plain code decides the certificate.
-6. Tap **BYT** (top left) to return to the welcome screen, then **Agency**: open one and ask the Syms a question.
-   You get totals only, never a person.
-7. **My Money** shows every credit that moved and why. **My Sym**, Data tab: download or delete everything.
+Every page has one lit button at the top right. If you only ever tap that button, you see the whole game. This route
+shows the three parts in order. Nothing needs typing after the nickname.
+
+1. **Get in (1 minute).** Open the link, type a nickname, tick the two boxes, start. The welcome screen shows
+   everyone in the game as lights. Tap **Player**.
+2. **Teach your Sym (2 minutes).** Tap **Start: Calibrator**. It is 8 quick picks. At the end your Sym shows the
+   first blocks of its code and how many other Syms match it.
+3. **Be the one who asks (2 minutes).** Tap **Agency** (top right). A name is filled in: tap **Open my agency**,
+   then **Pick a question for me**, then **Ask**. Watch the crew go out and come back with each answer as a percent.
+   You get totals only, never one person. The wallet line at the top shows what it cost and who was paid.
+4. **Be the one who builds (2 minutes).** Tap **Creator**. Tap **Open my studio**. The Needs tab shows what agencies
+   pay for and what Syms lack. Tap **Ask**, pick a question and send the crew, or claim a skill step and build it.
+5. **See the world (2 minutes).** Tap **Everyone**. The Happening tab is live: BOT Syms play, ask and build round
+   the clock, and your own moves show with a YOU mark. The Economy tab shows where every credit goes.
+6. **See your side of it (1 minute).** Back on **Player**: **My Work** has jobs your Sym can do while you are away,
+   **My Money** shows every credit that moved and why, and **My Sym**, Data tab, lets you download or delete it all.
+
+The longer view (why this matters when work changes, and where it goes next) is in `slides.html` and in section 1
+and the last section of `report.html`.
+
+If your computer is set to reduce motion, the game starts still. The footer has **Motion: Off**: tap it once to see
+the game move.
 
 ## If something does not start
 
