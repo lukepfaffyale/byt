@@ -44,3 +44,23 @@ def test_bot_syms_are_one_per_country_labelled_and_alive(client):
     after = client.get("/commons", headers=who).json()
     said = " ".join(h["text"] for h in after["happenings"])
     assert "BOT" in said and after["people"] == before["people"]  # a bot is never counted as a person
+
+
+def test_a_bot_sym_keeps_the_hours_of_the_place_it_is_named_for(monkeypatch):
+    from datetime import datetime, timezone
+
+    import db
+
+    monkeypatch.delenv("BYT_AWAKE", raising=False)
+    assert set(db.CLOCK) == set(db.COUNTRIES) and all(-12 <= h <= 14 for h in db.CLOCK.values())
+    japan = db.COUNTRIES.index("Japan") + 1
+    mexico = db.COUNTRIES.index("Mexico") + 1
+    noon_utc = datetime(2026, 11, 22, 12, 0, tzinfo=timezone.utc)  # 21:00 in Japan, 06:00 in Mexico
+    assert db.bot_awake(japan, noon_utc) and not db.bot_awake(mexico, noon_utc)
+    evening_utc = datetime(2026, 11, 22, 18, 0, tzinfo=timezone.utc)  # 03:00 in Japan, 12:00 in Mexico
+    assert not db.bot_awake(japan, evening_utc) and db.bot_awake(mexico, evening_utc)
+    # at every hour of the day some bots are awake and some are asleep
+    for hour in range(24):
+        now = datetime(2026, 11, 22, hour, 0, tzinfo=timezone.utc)
+        up = sum(1 for i in range(1, 194) if db.bot_awake(i, now))
+        assert 0 < up < 193

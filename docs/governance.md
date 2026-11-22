@@ -711,7 +711,7 @@ to show the economy and its life, with one for each country so the world is bala
   drawn from its country, and nothing a bot answers says anything about the people who live there. One bot for each
   country is a choice for balance on the map; it is not weighted by how many people live in a country.
 - **How they act.** Plain code in `backend/life.py`. No model is called and no tokens are spent. While the server is
-  awake, about every 45 seconds one thing happens: a BOT Sym answers a few more cards, a BOT agency asks a group a
+  awake, about every 15 seconds one thing happens: a BOT Sym answers a few more cards, a BOT agency asks a group a
   fixed question, or a BOT creator asks a group what it needs. Six bots run agencies and four run creator seats.
 - **Same rules as people.** A BOT seat goes through the same routes as a person's seat: the same fixed questions, the
   same minimum group size, the same prices, and it sees totals only. It cannot type. When a BOT agency asks, real
@@ -841,3 +841,7 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
   1. A connection check printed a database driver's error message, which quoted part of the database password. The password was reset at once and the check now prints only "connected" or a plain reason.
   2. A test run aimed at a throwaway area of the hosted database wrote into the real tables instead, because the pooler ignored the setting that selects the area. It was caught the same hour, before any real person had played; the database was wiped and rebuilt (tables, row-level security, BOT Syms). Tests are no longer run against the hosted database.
 - **Free plan.** The back end sleeps after 15 minutes without visitors and takes up to a minute to wake. The README says so. No keep-alive trick is used.
+
+## 2026-11-22: BOT Syms keep the hours of their place
+
+Each BOT Sym now acts only between 7 in the morning and 11 at night on the clock of the country it is named for, so the bots that play, ask and build move round the world with the sun. The clock for each name is one standard offset from UTC, taken at the capital, with no summer time (`backend/data/countries.json`, `utc_offset`). It is a label that sets when a bot is awake. It holds nothing about a person and says nothing about the people of any country. BOT Syms still use no AI: their moves are plain code.

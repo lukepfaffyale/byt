@@ -776,7 +776,7 @@ def set_consent(body: ConsentIn, player: Player = Depends(current_player)) -> Jo
 
 # ---------- the agency seat ----------
 
-LIFE_SECONDS = 45  # how often one BOT Sym does one thing while the server is awake
+LIFE_SECONDS = 15  # how often one BOT Sym does one thing while the server is awake
 BOT_FACTS_SECONDS = 1200  # a free Sym changes slowly; the server refreshes these in the background, so no visitor waits
 SEAT_BOTS_SECONDS = 120
 _seat_bots: dict[bool, tuple[float, dict[str, list[dict]]]] = {}

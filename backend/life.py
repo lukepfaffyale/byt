@@ -1,6 +1,8 @@
 """The life of the BOT Syms. Plain code, no model, no tokens.
 
-The game ships with one BOT Sym for each United Nations country. They exist to show a working economy while few
+The game ships with one BOT Sym for each United Nations country. Each keeps the hours of the place it is named
+for: it plays, asks and builds only between 7 in the morning and 11 at night there, so the busy bots move round the
+world with the sun. They exist to show a working economy while few
 people play: some BOT Syms keep playing cards, a few run BOT agencies that ask questions, keep a job open and back
 a skill, and a few run BOT creator seats that ask groups what they need and build one skill step each. Every move goes through the same routes and the
 same rules as a person's move, so the books stay honest: a BOT agency pays real players exactly what a person's
@@ -48,11 +50,15 @@ def step(rng: random.Random | None = None) -> str:
 
     rng = rng or _rng
     agencies, creators = seats()
+    # a seat is busy only while it is day or evening where its BOT Sym is named for
+    awake = {pid for i, pid in db.bot_ids() if db.bot_awake(i)}
+    agencies = [pid for pid in agencies if pid in awake]
+    creators = [pid for pid in creators if pid in awake]
     roll = rng.random()
     try:
-        if roll < 0.5 or not agencies:
+        if roll < 0.5 or not (agencies or creators):
             return "play" if db.bot_play(rng) else "rest"
-        if roll < 0.85 or not creators:
+        if agencies and (roll < 0.85 or not creators):
             pid = rng.choice(agencies)
             if db.wallet_balance(pid, "agency") < LOW:
                 db.deposit(pid, "agency", max(market.DEPOSIT_CHOICES))

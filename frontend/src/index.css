@@ -173,6 +173,7 @@ input:not([type='checkbox']) {
   background: transparent; color: var(--text); border: none; border-bottom: 1px solid var(--text);
 }
 input:not([type='checkbox']):focus-visible { outline: none; box-shadow: 0 12px 24px -14px rgba(255, 222, 150, 0.9); border-bottom: 2px solid var(--gold); }
+input:not([type='checkbox'])::placeholder { color: var(--muted); opacity: 1; }
 select { width: 100%; font: inherit; font-size: 1.1rem; font-weight: 300; padding: 10px 0; border-radius: 0; background: var(--bg); color: var(--text); border: none; border-bottom: 1px solid var(--text); min-height: 44px; }
 select:focus-visible { outline: none; border-bottom: 2px solid var(--gold); }
 .check { display: flex; gap: 14px; align-items: flex-start; font-weight: 300; min-height: 44px; text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--text); margin: 12px 0 0; }

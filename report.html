@@ -216,22 +216,31 @@
 
 <h3>What was done to cut cost, and whether it hurt</h3>
 <ul>
-  <li><strong>The Twin reads beliefs, not raw picks.</strong> Eight short beliefs stand in for every pick the player made, so the Twin's input stays near 2,500 tokens however long the player has played.</li>
+  <li><strong>The Twin reads beliefs, not raw picks.</strong> A few short beliefs stand in for every pick the player made, so the Twin's input stays near 2,700 tokens however long the player has played. The experiment below measures what that costs in accuracy.</li>
   <li><strong>The Profiler runs once per finished gate</strong>, not per tap.</li>
   <li><strong>The Guide is sent only the part of the player's state its line is about.</strong> Code picks the part by matching words before the model is called.</li>
   <li><strong>Group questions use no model.</strong></li>
   <li><strong>A zero-token practice Sym</strong> is the fallback and the baseline.</li>
   <li><strong>Prompt caching</strong> worked for the Profiler (15 percent of its input was cached) and barely for the others, whose prompts are too short to qualify.</li>
 </ul>
-<h3>An experiment: how far does zero tokens go?</h3>
-<p>For six test accounts with at least 30 picks, 10 picks each were held back and hidden from every method. Two methods that cost nothing were then asked to call those 60 picks.</p>
+<h3>An experiment: did the cut hurt?</h3>
+<p>The game's main saving is that the Twin reads a few short beliefs and not every pick. To test whether that costs accuracy, 10 picks were held back for each of six test accounts and hidden from every method. Four methods then called the same 60 picks. The Profiler wrote fresh beliefs from the remaining picks only, so nothing it wrote had seen the answers.</p>
 <table>
-  <tr><th>Method</th><th>Tokens</th><th class="n">Right, of 60</th><th class="n">Share</th></tr>
-  <tr><td>The crowd's guess: what most other Syms picked</td><td class="n">0</td><td class="n">30</td><td class="n">50%</td></tr>
-  <tr><td>The practice Sym: plain code that counts which traits this person picks most</td><td class="n">0</td><td class="n">46</td><td class="n">77%</td></tr>
+  <tr><th>Method</th><th class="n">Tokens in</th><th class="n">Tokens out</th><th class="n">Cost, 6 runs</th><th class="n">Right, of 60</th><th class="n">Share</th></tr>
+  <tr><td>The crowd's guess: what most other Syms picked</td><td class="n">0</td><td class="n">0</td><td class="n">$0</td><td class="n">30</td><td class="n">50%</td></tr>
+  <tr><td>The practice Sym: plain code that counts a person's own picks</td><td class="n">0</td><td class="n">0</td><td class="n">$0</td><td class="n">46</td><td class="n">77%</td></tr>
+  <tr><td>The AI Twin on beliefs (the game's design)</td><td class="n">16,229</td><td class="n">3,720</td><td class="n">$0.0035</td><td class="n">34</td><td class="n">57%</td></tr>
+  <tr><td>The AI Twin on every raw pick</td><td class="n">25,371</td><td class="n">3,827</td><td class="n">$0.0045</td><td class="n">42</td><td class="n">70%</td></tr>
 </table>
-<p>So most of what a Sym knows about a person can be had for nothing: counting a person's own picks beats the crowd by 27 points. That is why the practice Sym is the fallback, and it sets the bar the AI Twin must clear to be worth its 0.0004 dollars a run. In the 12 real battles in section 7 the AI Twin was right on 74 percent of held-back picks, in the same range. These are test accounts, some of them played in a steady way, so the gap to the crowd is likely wider here than it will be for real people.</p>
-<div class="todo">The two AI arms of this experiment (the Twin on beliefs, and the Twin on every raw pick, on these same 60 picks) could not be run on 22 November: the course AI key was refused by the gateway. Run them when a working key is available, and report tokens and matches for both.</div>
+<p>The Profiler runs that wrote the six sets of beliefs cost a further 27,137 tokens in and 9,438 out, 0.0074 dollars.</p>
+<p><strong>What this shows, plainly.</strong></p>
+<ul>
+  <li><strong>The cut did hurt.</strong> Reading beliefs made each Twin run 22 percent cheaper than reading raw picks, and it lost 13 points of accuracy (57 percent against 70). Squeezing 50 picks into six sentences throws away detail the Twin could have used.</li>
+  <li><strong>On these picks, plain counting beat both AI arms.</strong> The practice Sym was right 77 percent of the time for nothing. The cards in this test each offer two options tagged with a trait, which is exactly what counting is good at.</li>
+  <li><strong>Every method that knew the person beat the crowd.</strong> That is the claim the game rests on, and it holds for all three.</li>
+  <li><strong>Beliefs still earn their place, for a different reason.</strong> They are what a person can read, correct and delete, and they are the only thing the Worker and the Guide are given, so no raw pick ever leaves the server for those jobs. That is a privacy and trust choice, and this experiment prices it: about 13 points on this kind of card.</li>
+</ul>
+<p class="note">Limits of this experiment. Six test accounts and 60 picks is small, and one account had only 22 picks to learn from (both AI arms got 1 of 10 there). Some test accounts were played in a steady way, which flatters counting. The 12 battles in section 7, played inside the game on different cards, gave the AI Twin 74 percent. The honest reading is that the AI Twin has not yet been shown to beat the zero-token Sym, and the next version should let the Twin see counted traits beside its beliefs.</p>
 
 <!-- ===================== 6. SAFETY ===================== -->
 <h2><span>6</span>Safety</h2>

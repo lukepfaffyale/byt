@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { madeUpName } from './names'
 import { api, type Agency, type Meets } from './api'
 import { SplitBars, type SeatView } from './CreatorDesk'
 import { CrewStage } from './CrewStage'
@@ -29,7 +30,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   const { announce, view, onView, ask, syms = 0, people = 0, onAsked, onMoney } = props
   const [agency, setAgency] = useState<Agency | null>(null)
   const [error, setError] = useState('')
-  const [name, setName] = useState('')
+  const [name, setName] = useState(() => madeUpName('Agency'))
   const [question, setQuestion] = useState<string | null>(null)
   const [audience, setAudience] = useState(ask && ask !== 'members' && ask !== 'certified' ? ask : 'all')
   const [depth, setDepth] = useState('blend')
@@ -141,12 +142,12 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     return (
       <section aria-labelledby="agency-h" className="mine">
         <h1 id="agency-h">You can also be the one who asks.</h1>
-        <p className="lead">Open an agency. Ask every Sym 1 question. Pay the Syms that answer.</p>
+        <p className="lead">Open an agency. Ask every Sym 1 question. Pay the Syms that answer. Keep this name, or type your own.</p>
         {error && <p className="error" role="alert">{error}</p>}
         <form onSubmit={open}>
-          <label htmlFor="agency-name">Agency name (made up, not a real company)</label>
+          <label htmlFor="agency-name">Agency name (made up, not a real company). Tap it to change it.</label>
           <input id="agency-name" value={name} onChange={(e) => setName(e.target.value)} minLength={2} maxLength={30}
-            pattern="[A-Za-z0-9][A-Za-z0-9 _\-&]*" required autoComplete="off" />
+            pattern="[A-Za-z0-9][A-Za-z0-9 _\-&]*" required autoComplete="off" placeholder="Type a name here" />
           <button className="primary big" disabled={busy || name.trim().length < 2}>Open my agency</button>
         </form>
         <More>

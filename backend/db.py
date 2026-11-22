@@ -28,7 +28,12 @@ FREE_PREFIX = "free-"  # a player who left: the login is gone, and the twin stay
 SAMPLE_PREFIX = "sample-"  # sample players carry this in place of a token hash, so nobody can sign in as one
 # One BOT Sym for each United Nations country. The country is a label for where the bot stands on the map; its
 # tastes are random and are not drawn from, or a claim about, the people of that country.
-COUNTRIES: list[str] = json.loads((Path(__file__).resolve().parent / "data" / "countries.json").read_text(encoding="utf-8"))["countries"]
+_PLACES = json.loads((Path(__file__).resolve().parent / "data" / "countries.json").read_text(encoding="utf-8"))
+COUNTRIES: list[str] = _PLACES["countries"]
+# The clock of the place each BOT Sym is named for, in hours ahead of UTC. A bot acts only while it is awake there,
+# so at any moment the bots that are busy are the ones for whom it is day or evening.
+CLOCK: dict[str, float] = _PLACES["utc_offset"]
+WAKE_HOUR, SLEEP_HOUR = 7, 23
 SAMPLE_COUNT = len(COUNTRIES)
 # The game's own income: on top of everything a seat spends (a question, a job, a meeting, a skill it backs), the
 # seat pays this share to the game. Credits held for a job or a skill and later returned get their share back.
@@ -103,6 +108,16 @@ def _bot_answer(i: int, card, lean: dict[str, float]) -> Response:
     return Response(player_id="", card_id=card.id, choice=choice, response_ms=pick.randint(700, 4000), held_out=card.kind == "battle")
 
 
+def bot_awake(i: int, now: datetime | None = None) -> bool:
+    """Is it between 7 in the morning and 11 at night where BOT Sym number i is named for? BYT_AWAKE=all keeps
+    every bot awake (the tests use it, so they do not depend on the hour they run at)."""
+    if os.getenv("BYT_AWAKE") == "all":
+        return True
+    now = now or utcnow()
+    hour = (now.hour + now.minute / 60 + CLOCK.get(COUNTRIES[i - 1], 0)) % 24
+    return WAKE_HOUR <= hour < SLEEP_HOUR
+
+
 def bot_name(i: int) -> str:
     return f"BOT Sym {COUNTRIES[i - 1]}"
 
@@ -148,7 +163,8 @@ def bot_play(rng: random.Random, most: int = 6) -> bool:
     """One BOT Sym answers a few more cards, as a person who came back to play would. False when every bot is done."""
     cards = _bot_cards()
     with Session(get_engine()) as s:
-        bots = list(s.exec(select(Player).where(Player.token_hash.startswith(SAMPLE_PREFIX))))
+        bots = [b for b in s.exec(select(Player).where(Player.token_hash.startswith(SAMPLE_PREFIX)))
+                if bot_awake(int(b.token_hash[len(SAMPLE_PREFIX):]))]  # only the bots for whom it is day play
         rng.shuffle(bots)
         for player in bots[:12]:
             done = set(s.exec(select(Response.card_id).where(Response.player_id == player.id)))
