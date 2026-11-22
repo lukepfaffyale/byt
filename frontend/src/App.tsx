@@ -811,7 +811,7 @@ export default function App() {
           syms={me?.twins ?? 0} people={me?.people ?? 0} onAsked={light} onMoney={syncPurses} />
       )}
 
-      {screen.name === 'creator' && <CreatorDesk view={screen.view} announce={setLive} onView={(view) => setScreen({ name: 'creator', view })} onMoney={syncPurses} />}
+      {screen.name === 'creator' && <CreatorDesk view={screen.view} announce={setLive} onView={(view) => setScreen({ name: 'creator', view })} onMoney={syncPurses} onAsked={light} />}
 
       {screen.name === 'money' && <MoneyView onChange={() => { refresh(); syncPurses() }} onMove={go} onCue={setMoneyCue} />}
 

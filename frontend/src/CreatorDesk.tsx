@@ -44,8 +44,8 @@ export function SplitBars({ rows }: { rows: { label: string; share: number }[] }
 }
 
 /** The seat for people who make skills. Everything is a tap: pick a job, pick from the lists, send the crew. */
-export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) => void; announce: (text: string) => void; onMoney?: () => void }) {
-  const { view, onView, announce, onMoney } = props
+export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) => void; announce: (text: string) => void; onMoney?: () => void; onAsked?: (group: string) => void }) {
+  const { view, onView, announce, onMoney, onAsked } = props
   const [seat, setSeat] = useState<Creator | null>(null)
   const [meets, setMeets] = useState<Meets | null>(null)
   const [error, setError] = useState('')
@@ -60,6 +60,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const [cards, setCards] = useState<string[]>([])
   const [picking, setPicking] = useState(false)  // the pop-out where the creator taps the cards
   const [replay, setReplay] = useState<CrewScript | null>(null)
+  const [sentTo, setSentTo] = useState<string | null>(null)  // the group the crew is out asking now
 
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'There was a problem. Please try again.')
@@ -117,7 +118,13 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   }
 
   if (replay) {
-    return <CrewStage script={replay} doneLabel="See what came back" onDone={() => { setReplay(null); onView('results') }} />
+    return <CrewStage script={replay} doneLabel="See what came back" onDone={() => {
+      setReplay(null)
+      onView('results')
+      // the group that was asked lights up on the sphere while the answers are read, as it does for an agency
+      if (sentTo) onAsked?.(sentTo)
+      setSentTo(null)
+    }} />
   }
 
   function sent(out: Creator, script: (b: Brief) => CrewScript) {
@@ -143,10 +150,11 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
         .catch(fail)
       return
     }
+    const to = group
     api.brief(task, topic, group)
-      .then((out) => sent(out, (b) => groupScript({
-        boss, what: b.title, group: b.audience, twins: b.twins, samples: b.sample_twins, spent: b.spent, fee: b.fee, extra: 0, min: seat.min_twins, test: b.kind === 'test',
-      })))
+      .then((out) => { setSentTo(to); sent(out, (b) => groupScript({
+        boss, what: b.title, group: b.audience, twins: b.twins, samples: b.sample_twins, spent: b.spent, fee: b.fee, extra: 0, min: seat.min_twins, test: b.kind === 'test', split: b.split,
+      })) })
       .catch(fail)
   }
 
