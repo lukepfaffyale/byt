@@ -48,11 +48,11 @@ You need Python 3.12 or newer and Node 20 or newer.
 4. Open http://localhost:5173, pick a nickname and play.
 
 The local database is a small SQLite file created on first start, with 193 made-up BOT Syms (one for each United Nations country) so that
-"the crowd guess" exists and the economy has life in it. They are plain code, use no AI tokens, and every screen marks them as bots. Tests: `venv\Scripts\python -m pytest` from `backend` (99 tests).
+"the crowd guess" exists and the economy has life in it. They are plain code, use no AI tokens, and every screen marks them as bots. Tests: `venv\Scripts\python -m pytest` from `backend` (100 tests).
 
 Checked on 2026-11-23 from a fresh clone in an empty folder, on Windows with Python 3.14 and Node 24: the back end
 installed in about 75 seconds and answered 5 seconds after starting, the front end installed and built in under 10
-seconds, sign-up worked with no key (the game then plays on the practice Sym), and all 99 tests passed. Not checked
+seconds, sign-up worked with no key (the game then plays on the practice Sym), and all 100 tests passed. Not checked
 from the clone: a run with a model key, and macOS or Linux.
 
 ## A 10-minute tour
@@ -60,7 +60,7 @@ from the clone: a run with a model key, and macOS or Linux.
 It works on a phone and on a computer. Every page has one lit button from my Sym. If you only ever tap that button,
 you see the whole game. This route shows the three parts in order. Nothing needs typing after the nickname.
 
-1. **Get in (1 minute).** Open the link (or http://localhost:5173 if you run it locally), type a nickname, tick the two boxes, start. The welcome screen shows
+1. **Get in (1 minute).** Short on time? On the first screen, **Try a mid-way Sym** starts you with 23 sample taps already in, at the first Sym battle (skip to step 3). Otherwise: open the link (or http://localhost:5173 if you run it locally), type a nickname, tick the two boxes, start. The welcome screen shows
    everyone in the game as lights. Tap **Player**.
 2. **Calibrate your Sym (1 minute).** Three short parts. Part 1 is 8 quick picks: two tiles, tap one. Your Sym shows
    the first blocks of its code and asks one thing: **Let my Sym earn**. Tap it, and agencies can ask your Sym.
@@ -122,7 +122,7 @@ backend/
   data/cards/        the card decks, one file for each gate
   data/jobs.json     jobs from made-up requesters
   data/questions.json the six fixed questions an agency may ask
-  tests/             99 tests; test_governance.py keeps the records and the code in step
+  tests/             100 tests; test_governance.py keeps the records and the code in step
 frontend/            React, TypeScript, Vite
 docs/
   governance.md      data, privacy, security, intellectual property, AI and agents

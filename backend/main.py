@@ -465,6 +465,31 @@ def create_player(body: PlayerCreate, request: Request) -> PlayerCreated:
     return PlayerCreated(token=token, nickname=player.nickname)
 
 
+MIDWAY_GATES = 5  # a mid-way Sym starts with this many gates answered: the next one is the first Sym battle
+
+
+@app.post("/players/midway", response_model=PlayerCreated, status_code=201)
+def create_midway_player(body: PlayerCreate, request: Request, background: BackgroundTasks) -> PlayerCreated:
+    """A new account that starts mid-way, so a visitor can see a formed Sym without the first minutes of taps.
+    Code answers the first gates with sample taps: the first choice on a taste card, the right move on a board, a
+    tap in time on a ring. Every answer goes through the same route as a person's tap, so points, blocks and skill
+    certificates follow the same rules. The Sym battles are left for the person. The screen says the taps are a
+    sample, and the account is the visitor's own, to keep or delete."""
+    rate_limit(request, "signup", 10)
+    player, token = db.create_player(body.nickname.strip())
+    quiet = BackgroundTasks()  # the answer route asks for the Sym to be profiled after each gate: once, at the end, is enough
+    for gate in GATES[:MIDWAY_GATES]:
+        for card_id in gate.card_ids:
+            card = CARDS[card_id]
+            right = next((o.id for o in card.options if score(card, o.id)[0]), None)
+            choice = "hit" if gate.kind == "reflex" else right or card.options[0].id
+            respond(ResponseIn(card_id=card_id, choice=choice, response_ms=350 if gate.kind == "reflex" else 1500,
+                               sure=3 if gate.kind in ("strategy", "pattern") else None), None, quiet, player)
+    db.set_data_income(player.id, True)  # earning is on, so agencies can ask this Sym at once; it is turned off on My Work
+    background.add_task(agents.profile_player, player.id)
+    return PlayerCreated(token=token, nickname=player.nickname)
+
+
 @app.get("/me", response_model=Me)
 def me(background: BackgroundTasks, player: Player = Depends(current_player)) -> Me:
     background.add_task(auto_work, player)  # a twin that may work by itself starts a job now, if its owner said so

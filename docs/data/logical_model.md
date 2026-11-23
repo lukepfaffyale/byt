@@ -91,6 +91,7 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | POST /twin/facts | no body | FactsOut. Keeps the one fact the Sym last offered; a request cannot carry text | facts |
 | DELETE /twin/facts/{fact_id} | | FactsOut | facts |
 | GET /rps | | RpsOut (the score against the Sym, the last rounds, the habits the Sym found, and the league of Syms, each other Sym as a number) | throws |
+| POST /players/midway | PlayerCreate (the same body as sign-up) | PlayerCreated. A new account whose first five gates are answered by code with sample taps (the same rules as a person's taps), with earning switched on | players, responses, certs, consents |
 | POST /rps | RpsIn (throw: r, p or s) | RpsOut, with the round just played and why the Sym threw what it did | throws |
 | GET /duel/{game} | | RpsOut (one duel against the Sym: hide, sync or keeper; the score, the last rounds and the habits it found; no league) | throws |
 | POST /duel/{game} | DuelIn (pick: one letter of that duel) | RpsOut, with the round just played and why the Sym moved as it did | throws |

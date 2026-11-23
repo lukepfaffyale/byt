@@ -3,6 +3,11 @@ import { api, type Commons } from './api'
 import { Tick } from './Future'
 import { TAU, along, body, clamp, deepSpace, ease, makeDust, seeded, shoot, trace, wander, type V, type Wander } from './neural'
 
+/** Did this account start as a mid-way Sym, from sample taps? Kept on this device only. */
+function sample(): boolean {
+  try { return localStorage.getItem('byt.sample') === '1' } catch { return false }
+}
+
 type Kind = 'you' | 'person' | 'hold' | 'agency' | 'creator'
 type Role = 'player' | 'agency' | 'creator'
 const HUE: Record<Kind, string> = { you: '255, 244, 222', person: '255, 226, 188', hold: '150, 168, 196', agency: '255, 191, 122', creator: '134, 211, 230' }
@@ -415,7 +420,9 @@ export function Arrival(props: {
           </dl>
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>
-            <p className="arrival-said">{data.taps_mine === 0
+            <p className="arrival-said">{sample()
+              ? 'This Sym starts with 23 sample taps, not yours. Battle it, and each tap you add makes it more you.'
+              : data.taps_mine === 0
               ? 'Firms earn from your data. Here, you do. Start your Sym: a digital version of how you choose.'
               : data.known_mine > 0
                 ? `${data.known_mine.toLocaleString()} of these lights came from you. Here, your data pays you.`

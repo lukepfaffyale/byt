@@ -356,8 +356,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 
 export const api = {
   hasToken: () => memoryToken !== null,
-  async start(nickname: string): Promise<void> {
-    const out = await call<{ token: string; nickname: string }>('POST', '/players', {
+  async start(nickname: string, midway = false): Promise<void> {
+    const out = await call<{ token: string; nickname: string }>('POST', midway ? '/players/midway' : '/players', {
       nickname,
       consent: true,
       adult: true,

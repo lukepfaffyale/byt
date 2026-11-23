@@ -94,3 +94,18 @@ def test_players_only_see_their_own(client, auth):
     client.post("/responses", headers=auth, json={"card_id": GATES[0].card_ids[0], "choice": "a", "response_ms": 700})
     act = client.get("/me/activity", headers={"Authorization": f"Bearer {other}"}).json()
     assert act["responses"] == []
+
+
+def test_a_midway_sym_starts_at_the_first_battle_with_real_rules(client):
+    made = client.post("/players/midway", json={"nickname": "Midway", "consent": True, "adult": True})
+    assert made.status_code == 201
+    auth = {"Authorization": f"Bearer {made.json()['token']}"}
+    gates = client.get("/journey", headers=auth).json()["gates"]
+    done = [g for g in gates if g["done"] == g["total"]]
+    assert len(done) == 5 and all(g["kind"] != "battle" for g in done)  # five gates by sample taps, no battle among them
+    nxt = next(g for g in gates if g["done"] < g["total"])
+    assert nxt["kind"] == "battle" and nxt["unlocked"] and nxt["done"] == 0  # the first Sym battle is the next thing to play
+    assert client.get("/jobs", headers=auth).json()["data_income"] is True  # earning is on
+    assert client.get("/me", headers=auth).json()["certs"] >= 1  # the boards were scored by code, like anyone's
+    # the account is the visitor's own: it can be deleted like any other
+    assert client.delete("/me", headers=auth).status_code in (200, 204)

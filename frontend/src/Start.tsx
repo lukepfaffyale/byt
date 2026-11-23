@@ -13,13 +13,19 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
 
   const ready = nickname.trim().length >= 2 && agree && adult && !busy
 
-  async function submit(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault()
+    void begin(false)
+  }
+
+  async function begin(midway: boolean) {
     if (!ready) return
     setBusy(true)
     setError('')
     try {
-      await api.start(nickname.trim())
+      await api.start(nickname.trim(), midway)
+      // a mid-way Sym starts from sample taps: the welcome says so, once, on this device
+      try { if (midway) localStorage.setItem('byt.sample', '1'); else localStorage.removeItem('byt.sample') } catch { /* storage is off */ }
       onStarted('player')  // the welcome that follows offers the three seats
     } catch (err) {
       setError(err instanceof Error ? err.message : 'There was a problem. Please try again.')
@@ -73,6 +79,10 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
         <button className="primary big" type="submit" disabled={!ready}>
           {busy ? 'Starting' : 'Start the game'}
         </button>
+        <button className="secondary" type="button" disabled={!ready} onClick={() => void begin(true)}>
+          Short on time? Try a mid-way Sym
+        </button>
+        <p className="fine">A mid-way Sym starts with 23 sample taps, not yours, so you begin at the first Sym battle.</p>
       </form>
     </section>
   )
