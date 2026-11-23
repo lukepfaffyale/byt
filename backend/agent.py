@@ -1,6 +1,6 @@
 """The BYT agents inside the class safe harness (PydanticAI).
 
-Two agents, each with its own prompt file and one read-only tool:
+Four agents, each with its own prompt file and one read-only tool (the Worker and the Guide are described where they run, below):
 - Profiler: reads a player's picks (get_picks) and writes the tendencies, which are the Sym's knowledge.
 - Sym: reads the tendencies and the cards to predict (get_brief) and returns one prediction per card.
 

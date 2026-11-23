@@ -212,8 +212,8 @@ def matches(twin: TwinFacts, audience: str) -> bool:
 
 def knows(question: Question, twin: TwinFacts) -> bool:
     """Does this Sym have a real answer? Yes when its human has shown one of the answers' traits more often than
-    any other. With nothing shown, or a tie at the top, the Sym does not know: it says so, it is not counted and
-    it is not paid. Its person is told, so they can teach it. (Before this rule, a Sym with no evidence gave the
+    any other. With nothing shown, or a tie at the top, the Sym does not know: it says so and it is not counted.
+    Tonight it is still paid (see main.py); not paying it is the next step. (Before this rule, a Sym with no evidence gave the
     first option, which made a total look like agreement.)"""
     seen = sorted((twin.trait_counts.get(o.trait or "", 0) for o in question.card.options), reverse=True)
     return bool(seen) and seen[0] > 0 and (len(seen) == 1 or seen[0] > seen[1])

@@ -39,7 +39,7 @@ which. The local file ships with made-up players only and is created on first st
 
 ## Data handling
 
-- Columns collected: `docs/data/data_dictionary.md`, every one classified. Fourteen tables: players, responses,
+- Columns collected: `docs/data/data_dictionary.md`, every one classified. 27 tables as of 2026-11-22 (a test fails if one is missing from the dictionary). The first fourteen: players, responses,
   tendencies, battles, predictions, certs, self_reports, work, active_days, consents, orgs, campaigns, earnings, usage.
 - What is deliberately not collected: email, real name, password, photo, location, IP address, device id, birth date.
   The only typed text is the nickname and an agency name. Decks avoid sensitive categories (health, politics,
@@ -99,12 +99,12 @@ Three kinds of thing, three owners.
 
 The full record is `output/harness.md`. The rules in short:
 
-- Three agents, all serving the player: Profiler, Sym, Worker. Each has one read-only tool and its own prompt file.
+- Four agents, all serving the player: Profiler, Twin, Worker and Guide. Each has one read-only tool and its own prompt file.
   The register (job, tool, what it reads, what it never reads, how its output is checked) is in the ontology and is
   tested against the code.
 - An agent never learns who the person is: no nickname, token or id reaches a model. It never sees another player,
   or picks held back for a battle. It does read the short facts a player told their Sym and chose to keep: the
-  Profiler and the Twin get them, after the prompt guard, with no name on them. (An earlier line here said those
+  Profiler and the Twin get them, and the Guide gets them on a line about what the Sym knows, after the prompt guard, with no name on them. (An earlier line here said those
   facts never reach a model. The code sent them. The record is corrected, 2026-11-22.)
 - An agent never writes. Code stores what an agent returns, after checking it.
 - A model never decides a certificate, a payment, what an agency sees, the suggested letters or the sphere. Those

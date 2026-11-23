@@ -20,7 +20,7 @@ The register of agents and every rule number below also live in `backend/data/on
 | Agent | Serves | Job | Tool | Never reads | Output | Checked by |
 |---|---|---|---|---|---|---|
 | Profiler | Player | Writes short beliefs from the player's picks | `get_picks` | Identity, held-out picks, self report, other players | Up to 8 beliefs with pick counts | Prompt guard, length cap, stored by code, shown to the player |
-| Sym | Player | Guesses picks on cards the player has not seen | `get_brief` | Identity, raw picks, right answers, other players | One guess for each card, or none | Each guess must be a real option; scored by code against the real picks |
+| Twin (the Sym's guessing part) | Player | Guesses picks on cards the player has not seen | `get_brief` | Identity, raw picks, right answers, other players | One guess for each card, or none | Each guess must be a real option; scored by code against the real picks |
 | Worker | Player | Answers one job question as the player, with a one-line reason | `get_job` | Identity, the requester's name, other players | One option or none, and one sentence | Option must exist; reason guarded; then the player approves or corrects |
 
 Planned, not built: a Coach (player: what to play next and why); the agency's own Sym (the Analyst: a plain reading
@@ -173,6 +173,8 @@ There is no free-text channel from any user to a model in this build.
 - Not done: no live run of the agents since the plain-words rule was added to the shared prompt, so how well the
   model follows it is unmeasured. The audit trail has not been re-read since the Worker's live run.
 
-## 2026-11-22: the four-method test, rerun from the repo
+## 2026-11-22: the four-method test, rerun from the repo (2026-11-23 00:43 UTC)
 
 `backend/experiments/cost_experiment.py` was run on the local database with a real model key. It holds back 10 picks from each of 6 test accounts (4 scripted, 2 played by hand) and scores four ways of guessing them. The AI methods ran through this harness, so the limits, the audit trail and the usage table applied. The output is `output/cost_experiment.json`: counts, 95 percent ranges, tokens and dollars, with no name and no player id. The same evening `pytest` gave 94 passed.
+
+On 21 and 22 November the course key was refused: 68 runs in the committed trail stopped with ModelHTTPError before using a token, and the practice Sym took over each time. With a working key the runs complete again.

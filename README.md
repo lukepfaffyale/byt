@@ -71,7 +71,7 @@ you see the whole game. This route shows the three parts in order. Nothing needs
    SYM tag lands on the tile it guessed: "Called it." or "You surprised me." The finish shows your Sym against the
    crowd's guess, and plain code decides the certificate.
 4. **Be the one who asks (2 minutes).** Tap **Agency** (top right). A name is filled in: tap **Open my agency**,
-   then **Pick a question for me**, then **Ask**. Watch the crew go out and come back with each answer as a percent.
+   then **Pick a question for me**, then the **Ask ... Syms** button (it shows how many Syms and the price). Watch the crew go out and come back with each answer as a percent.
    You get totals only, never one person. The result says what it cost and who was paid.
 5. **Be the one who builds (1 minute).** Tap **Creator**, then **Open my studio**. The Needs tab shows what agencies
    pay for and what Syms lack. Tap **Ask a group**, pick a question and send the crew.
@@ -95,6 +95,7 @@ The footer has **Motion: off**: tap it once to see the game move.
 - **No key, or the key is refused**: the game still runs. The Sym is then a practice Sym that uses rules, not AI,
   and the screen says so.
 - **The model name is refused**: the course key allows `gpt-6-luna` only. Leave `OPENAI_MODEL` unset or set it to that.
+- **A battle or a job says "practice Sym, no AI"**: the key was refused or its budget is spent. The game still plays, but only the AI Sym can earn a certificate. Check the key, then play the battle gate again.
 - **Start again from nothing**: stop the back end and delete `backend/data/local.db`. It is made again on the next start.
 
 ## Where things are
@@ -112,6 +113,8 @@ backend/
   mirror.py          plain code: letters, thinking styles, areas, growth paths
   db.py              the only module that touches the database
   content.py         gates and cards, the board rules, the ontology loader
+  prompt_guard.py    the guard on the one typed line and on text a model wrote
+  life.py            the 193 BOT Syms: plain code, no AI tokens
   data/ontology.json the one map: taps, skills, seats, incomes, agents, rule numbers
   data/cards/        the card decks, one file for each gate
   data/jobs.json     jobs from made-up requesters
@@ -122,8 +125,9 @@ docs/
   governance.md      data, privacy, security, intellectual property, AI and agents
   ontology.md        how to read and extend the ontology
   accessibility.md   the design rules and the checklist
+  SOURCES.md         every outside paper and price page, with the date it was read
   data/              data dictionary, conceptual and logical models, changelog
-output/              harness.md (how every agent is run and checked), audit_trail.json
+output/              harness.md (how every agent is run and checked), audit_trail.json, cost_experiment.json
 ```
 
 The agent is `backend/agent.py`, `tools.py`, `models.py` and `prompts/`. The other modules are the game around it.
