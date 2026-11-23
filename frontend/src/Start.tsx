@@ -19,7 +19,12 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
   }
 
   async function begin(midway: boolean) {
-    if (!ready) return
+    if (busy) return
+    if (!ready) {
+      // say what is missing, so the button never looks dead
+      setError(nickname.trim().length < 2 ? 'First type a nickname: 2 letters or more.' : 'First tick the two boxes above.')
+      return
+    }
     setBusy(true)
     setError('')
     try {
@@ -79,10 +84,10 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
         <button className="primary big" type="submit" disabled={!ready}>
           {busy ? 'Starting' : 'Start the game'}
         </button>
-        <button className="secondary" type="button" disabled={!ready} onClick={() => void begin(true)}>
+        <button className="secondary" type="button" disabled={busy} onClick={() => void begin(true)}>
           Short on time? Try a mid-way Sym
         </button>
-        <p className="fine">A mid-way Sym starts with 23 sample taps, not yours, so you begin at the first Sym battle.</p>
+        <p className="fine">A mid-way Sym starts with 23 sample taps, not yours, so you begin at the first Sym battle. Type a nickname and tick both boxes first.</p>
       </form>
     </section>
   )
