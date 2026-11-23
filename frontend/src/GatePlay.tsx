@@ -46,6 +46,11 @@ const PART: Record<string, string> = {
   'strategy-easy': 'Part 2 of 3. Win in one move.',
   'quick-hands': 'Part 3 of 3. Tap the ring fast.',
 }
+/** Part 2 of the calibration is played from memory: the board shows for this long, then its pieces are covered.
+ * The server still scores the move. With motion off the board stays in view. */
+const GLANCE_GATE = 'strategy-easy'
+const GLANCE_MS = 2200
+
 /** Baseline: the cues of the first gate that come again at the end, with the sides swapped. The second answers are
  * kept in the browser only: they are never sent, they add no blocks, and they change no score. */
 const ECHO = ['style-01', 'style-04', 'style-07']
@@ -635,7 +640,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
         : card.board?.game === 'pattern' && card.bet_sure !== null
           ? 'My bet is in.'
           : echoing ? (echo === 0 ? 'Again. Three cues. Sides swapped.' : '')
-          : index === 0 ? (PART[gateId] ?? 'Tap. I learn.')
+          : index === 0 ? (gateId === GLANCE_GATE && !still() ? 'Part 2 of 3. Look once. Then win from memory.' : PART[gateId] ?? 'Tap. I learn.')
+          : gateId === GLANCE_GATE && !still() ? 'Look once.'
             : last ? 'Last one.'
               : index === Math.ceil(cards.length / 2) ? 'Half way.' : ''
   // a board gate says its rule once. From the second card on, the same words are a small line.
@@ -671,9 +677,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
       {card.board ? (
         <div className={`play-row game-${card.board.game}`}>
           {card.board.game === 'reflex' ? (
-            <ReflexView key={card.id} board={card.board} disabled={busy || result !== null} onDone={(outcome, ms) => void pick(outcome, undefined, ms)} />
+            <ReflexView key={card.id} board={card.board} disabled={busy || result !== null} mark={hits.current.length > 0 ? Math.min(...hits.current) : null} onDone={(outcome, ms) => void pick(outcome, undefined, ms)} />
           ) : (
-            <BoardView board={card.board} options={card.options.map((o) => o.id)} disabled={busy || result !== null} chosen={chosen}
+            <BoardView key={card.id} board={card.board} glance={gateId === GLANCE_GATE && !still()} options={card.options.map((o) => o.id)} disabled={busy || result !== null} chosen={chosen}
               answer={result?.right_choice ?? null} onPick={askSure ? setChosen : (move) => void pick(move)} />
           )}
           {/* what comes next sits beside the board, so a card is one page: how sure, then how it went */}
@@ -740,11 +746,21 @@ function TBlock() {
   return <span ref={ref} className="t-block">T</span>
 }
 
-function BoardView(props: { board: Board; options: string[]; disabled: boolean; chosen?: string | null; answer?: string | null; onPick: (choice: string) => void }) {
+function BoardView(props: { board: Board; options: string[]; disabled: boolean; chosen?: string | null; answer?: string | null; glance?: boolean; onPick: (choice: string) => void }) {
   const { board, options, disabled, onPick } = props
   const name = (mark: string) => (mark === '.' ? 'empty' : mark)
   const chosen = props.chosen ?? null
   const answer = props.answer ?? null
+  // played from memory: after a look the pieces are covered, and they show again with the answer. A screen reader
+  // still hears every square, so the board can always be played without sight of it.
+  const glance = !!props.glance && board.game === 'tictactoe'
+  const [covered, setCovered] = useState(false)
+  useEffect(() => {
+    if (!glance) return
+    const t = window.setTimeout(() => setCovered(true), GLANCE_MS)
+    return () => window.clearTimeout(t)
+  }, [glance])
+  const veil = glance && covered && answer === null
 
   if (board.game === 'pattern') return <PatternView key={board.seq.join('|')} board={board} disabled={disabled} chosen={props.chosen ?? null} answer={props.answer ?? null} onPick={onPick} />
 
@@ -763,7 +779,7 @@ function BoardView(props: { board: Board; options: string[]; disabled: boolean; 
                 {mine || wins ? board.to_move || 'X' : ''}
               </button>
             ) : (
-              <span key={move} className={`cell mark-${mark}`} role="img" aria-label={label}>{mark}</span>
+              <span key={move} className={veil ? 'cell veiled' : `cell mark-${mark}`} role="img" aria-label={label}>{veil ? '' : mark}</span>
             )
           }),
         )}
@@ -870,13 +886,15 @@ const MISS: Record<string, string> = { slow: 'Just late.', early: 'Early. Wait f
  * "side" shows two rings and fills one. "wait" may flash an empty ring first, which must not be tapped.
  * The time from the signal to the tap is measured here, in the browser. Nothing moves or flashes more than once.
  */
-function ReflexView(props: { board: Board; disabled: boolean; onDone: (outcome: string, ms: number) => void }) {
+function ReflexView(props: { board: Board; disabled: boolean; mark?: number | null; onDone: (outcome: string, ms: number) => void }) {
   const { board, disabled, onDone } = props
+  // the person's own best tap in this visit: the next ring is raced against it. It is theirs alone, on this device.
+  const mark = props.mark ?? null
   const mode = board.rows[0]
   const limit = Number(board.to_move)
   const [stage, setStage] = useState<'wait' | 'decoy' | 'go' | 'done'>('wait')
   const [side, setSide] = useState(0)
-  const [said, setSaid] = useState('Wait for the ring to fill.')
+  const [said, setSaid] = useState(mark ? `Wait for the ring. Your mark: ${(mark / 1000).toFixed(2)} s.` : 'Wait for the ring to fill.')
   const goAt = useRef(0)
   const over = useRef(false)
   const report = useRef(onDone)
@@ -917,7 +935,7 @@ function ReflexView(props: { board: Board; disabled: boolean; onDone: (outcome: 
     setStage('done')
     // seconds on this device only: a phone or laptop adds its own delay, so no normal time is ever shown beside it
     const secs = (ms / 1000).toFixed(2)
-    setSaid(outcome === 'hit' ? `${secs} s on this device.` : outcome === 'slow' ? `${secs} s. ${MISS.slow}` : MISS[outcome])
+    setSaid(outcome === 'hit' ? `${secs} s on this device.${mark ? (ms < mark ? ' Inside your mark.' : ' Your mark holds.') : ''}` : outcome === 'slow' ? `${secs} s. ${MISS.slow}` : MISS[outcome])
     report.current(outcome, ms)
   }
 

@@ -80,6 +80,60 @@ def found(mine: str, twin: str) -> str:
     return "twin" if mine == twin else "you"
 
 
+# ---------- one small engine for every duel of this kind ----------
+# Each duel keeps its own letters in the same rows, so their habits never mix. In each, the Sym's move is sealed
+# from the person's earlier moves in THAT duel alone, and the words say why, so the person can check it.
+DUELS: dict[str, dict] = {
+    # the Sym hunts: it wins a round when it looks where the person hid the light
+    "hide": {"symbols": CUPS, "names": CUP, "rule": "find"},
+    # they play as one: both win a round when they pick the same sign
+    "sync": {"symbols": ("d", "e", "f"), "names": {"d": "the sun", "e": "the moon", "f": "the star"}, "rule": "together"},
+    # the Sym shoots where the person dives least: the person wins a round by diving the right way
+    "keeper": {"symbols": ("g", "h", "i"), "names": {"g": "left", "h": "the middle", "i": "right"}, "rule": "dodge"},
+}
+
+
+def duel_move(game: str, history: list[str]) -> tuple[str, str]:
+    """The Sym's sealed move in one duel, and why, from the person's earlier moves in that duel."""
+    rules = DUELS[game]
+    symbols, names = rules["symbols"], rules["names"]
+    if rules["rule"] == "find":
+        return find_guess(history)
+    if rules["rule"] == "together":
+        for depth in (2, 1):
+            if len(history) <= depth:
+                continue
+            last = history[-depth:]
+            after = Counter(history[i + depth] for i in range(len(history) - depth) if history[i:i + depth] == last)
+            seen = sum(after.values())
+            if seen >= MIN_SEEN:
+                top, n = after.most_common(1)[0]
+                said = " then ".join(names[t] for t in last)
+                return top, f"After {said}, you picked {names[top]} {n} of {seen} times. So I picked it too."
+        if history:
+            top, n = Counter(history).most_common(1)[0]
+            return top, f"You pick {names[top]} most: {n} of {len(history)} times. So I picked it too."
+        return symbols[1], "I have not seen you pick yet, so I guessed."
+    # dodge: shoot where the person has dived least. A tie goes to the next side in turn, so the shots do not repeat.
+    if not history:
+        return symbols[1], "I have not seen you dive yet, so I guessed."
+    counts = Counter(history)
+    least = min(counts.get(sym, 0) for sym in symbols)
+    open_sides = [sym for sym in symbols if counts.get(sym, 0) == least]
+    shot = open_sides[len(history) % len(open_sides)]
+    return shot, f"You dive {names[shot]} least: {least} of {len(history)} times. So I shot there."
+
+
+def duel_outcome(game: str, mine: str, sym: str) -> str:
+    """Who took the round. "you" is always the person's good result, so the score reads the same in every duel."""
+    rule = DUELS[game]["rule"]
+    if rule == "find":
+        return "twin" if mine == sym else "you"
+    if rule == "together":
+        return "you" if mine == sym else "draw"
+    return "you" if mine == sym else "twin"
+
+
 def tells(history: list[str], symbols: tuple[str, ...] = THROWS) -> list[tuple[str, str, int, int]]:
     """The habits the Sym leans on most: (after this throw, you throw this, how often, out of how many)."""
     out = []

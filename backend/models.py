@@ -907,8 +907,8 @@ class RpsIn(Strict):
     throw: Literal["r", "p", "s"]
 
 
-class HideIn(Strict):
-    cup: Literal["a", "b", "c"]  # where the person hid the light: left, middle or right
+class DuelIn(Strict):
+    pick: str = PField(min_length=1, max_length=1)  # one letter of the duel being played; checked against its letters
 
 
 class RpsRound(Strict):

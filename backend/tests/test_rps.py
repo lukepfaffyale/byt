@@ -174,9 +174,25 @@ def test_reaction_drills_load_as_a_pack_and_a_missed_gate_can_be_tried_again_aft
 
 def test_hide_the_light_rounds_are_stored_apart_from_rock_paper_scissors(client, auth):
     assert client.get("/duel/hide", headers=auth).json()["rounds"] == 0
-    assert client.post("/duel/hide", headers=auth, json={"cup": "x"}).status_code == 422
+    assert client.post("/duel/hide", headers=auth, json={"pick": "x"}).status_code == 422
+    assert client.get("/duel/chess", headers=auth).status_code == 404
     for _ in range(4):
-        out = client.post("/duel/hide", headers=auth, json={"cup": "a"}).json()
+        out = client.post("/duel/hide", headers=auth, json={"pick": "a"}).json()
     # the person always hides it on the left: by now the Sym looks there and finds it
     assert out["rounds"] == 4 and out["round"]["twin"] == "a" and out["round"]["outcome"] == "twin" and out["draws"] == 0
     assert client.get("/rps", headers=auth).json()["rounds"] == 0  # the first duel does not see these rows
+
+
+def test_think_alike_and_keeper_each_keep_their_own_rounds(client, auth):
+    # think alike: the person always picks the sun, so the Sym learns to pick it too, and they match
+    for _ in range(4):
+        out = client.post("/duel/sync", headers=auth, json={"pick": "d"}).json()
+    assert out["round"]["twin"] == "d" and out["round"]["outcome"] == "you" and out["rounds"] == 4
+    # keeper: the person always dives left, so the Sym shoots somewhere else and scores
+    for _ in range(4):
+        shot = client.post("/duel/keeper", headers=auth, json={"pick": "g"}).json()
+    assert shot["round"]["twin"] != "g" and shot["round"]["outcome"] == "twin" and "least" in shot["round"]["why"]
+    assert rps.duel_outcome("keeper", "g", "g") == "you" and rps.duel_outcome("sync", "d", "e") == "draw"
+    # a letter of one duel is refused in another, and no duel sees another's rows
+    assert client.post("/duel/keeper", headers=auth, json={"pick": "a"}).status_code == 422
+    assert client.get("/duel/hide", headers=auth).json()["rounds"] == 0

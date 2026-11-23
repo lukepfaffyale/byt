@@ -85,7 +85,7 @@ from models import (  # noqa: E402
     SureRow,
     SureTap,
     RpsIn,
-    HideIn,
+    DuelIn,
     RpsOut,
     RpsRival,
     RpsRound,
@@ -1578,29 +1578,37 @@ def my_judgment(player: Player = Depends(current_player)) -> Judgment:
                     taps=[SureTap(at=db.iso(r.created_at), level=r.sure, right=bool(r.is_correct)) for r in taps[-40:]])
 
 
-def hide_out(player: Player, just: RpsRound | None = None) -> RpsOut:
-    """Hide the light: the score, the last rounds and the hiding habits the Sym has found. No league in this duel."""
-    rows = db.throws_for(player.id, rps.CUPS)
+def duel_out(player: Player, game: str, just: RpsRound | None = None) -> RpsOut:
+    """One duel against the caller's own Sym: the score, the last rounds and the habits the Sym has found."""
+    symbols = rps.DUELS[game]["symbols"]
+    rows = db.throws_for(player.id, symbols)
     mine = [t.mine for t in rows]
-    results = [rps.found(t.mine, t.twin) for t in rows]
-    return RpsOut(rounds=len(rows), you=results.count("you"), twin=results.count("twin"), draws=0, round=just,
-                  last=[RpsRound(mine=t.mine, twin=t.twin, outcome=rps.found(t.mine, t.twin)) for t in rows[-12:]][::-1],
-                  tells=[RpsTell(after=a, then=b, n=n, of=of) for a, b, n, of in rps.tells(mine, rps.CUPS)[:3]])
+    results = [rps.duel_outcome(game, t.mine, t.twin) for t in rows]
+    return RpsOut(rounds=len(rows), you=results.count("you"), twin=results.count("twin"), draws=results.count("draw"), round=just,
+                  last=[RpsRound(mine=t.mine, twin=t.twin, outcome=rps.duel_outcome(game, t.mine, t.twin)) for t in rows[-12:]][::-1],
+                  tells=[RpsTell(after=a, then=b, n=n, of=of) for a, b, n, of in rps.tells(mine, symbols)[:3]])
 
 
-@app.get("/duel/hide", response_model=RpsOut)
-def hide_state(player: Player = Depends(current_player)) -> RpsOut:
-    """Hide the light against the caller's own Sym: the score and the habits the Sym has found."""
-    return hide_out(player)
+@app.get("/duel/{game}", response_model=RpsOut)
+def duel_state(game: str, player: Player = Depends(current_player)) -> RpsOut:
+    """A duel against the caller's own Sym (hide, sync or keeper): the score and the habits the Sym has found."""
+    if game not in rps.DUELS:
+        raise HTTPException(404, "We could not find that duel.")
+    return duel_out(player, game)
 
 
-@app.post("/duel/hide", response_model=RpsOut)
-def hide_play(body: HideIn, request: Request, player: Player = Depends(current_player)) -> RpsOut:
-    """One round. The Sym's guess is worked out from the earlier rounds alone, then both are stored together."""
+@app.post("/duel/{game}", response_model=RpsOut)
+def duel_play(game: str, body: DuelIn, request: Request, player: Player = Depends(current_player)) -> RpsOut:
+    """One round. The Sym's move is worked out from the earlier rounds of this duel alone, then both are stored."""
+    if game not in rps.DUELS:
+        raise HTTPException(404, "We could not find that duel.")
+    symbols = rps.DUELS[game]["symbols"]
+    if body.pick not in symbols:
+        raise HTTPException(422, "Please tap one of the choices.")
     rate_limit(request, "rps", 120)
-    guess, why = rps.find_guess([t.mine for t in db.throws_for(player.id, rps.CUPS)])
-    db.add_throw(player.id, body.cup, guess)
-    return hide_out(player, RpsRound(mine=body.cup, twin=guess, outcome=rps.found(body.cup, guess), why=why))
+    move, why = rps.duel_move(game, [t.mine for t in db.throws_for(player.id, symbols)])
+    db.add_throw(player.id, body.pick, move)
+    return duel_out(player, game, RpsRound(mine=body.pick, twin=move, outcome=rps.duel_outcome(game, body.pick, move), why=why))
 
 
 @app.get("/rps", response_model=RpsOut)

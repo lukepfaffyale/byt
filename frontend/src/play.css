@@ -253,3 +253,6 @@
 @media (prefers-reduced-motion: reduce) { .cue-bar > span { animation: none; } }
 /* on a phone the tiles are tall and narrow, so the drawing sits above the words */
 @media (max-width: 999px) { .option .glyph { display: block; width: 2em; height: 2em; margin: 0 auto 8px; } }
+
+/* a board played from memory: after a look its pieces are covered until the answer shows */
+.cell.veiled { color: transparent; text-shadow: none; border: 1px dashed var(--line); background: var(--glass); }
