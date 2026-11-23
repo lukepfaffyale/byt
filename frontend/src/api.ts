@@ -180,7 +180,7 @@ export type Commons = {
   taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; checks_mine: number; told_mine: number; lessons_mine: number; has_agency: boolean; has_creator: boolean
   happenings: { who: string; text: string; when: string; mine: boolean }[]
 }
-export type Ripple = { agency: boolean; creator: boolean; links: { src: string; dst: string; n: number; credits: number; text: string }[] }
+export type Ripple = { agency: boolean; creator: boolean; links: { src: string; dst: string; n: number; credits: number; text: string }[]; counts?: Record<string, number> }
 export type Posting = {
   id: string; kind: string; question: string; pay: number; seats: number; taken: number; checked: number; held: number; open: boolean
   sample_twins: number; split: { label: string; count: number; share: number }[]; created_at: string

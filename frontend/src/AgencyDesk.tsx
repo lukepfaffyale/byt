@@ -230,14 +230,14 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
   // when the crew is back it says where the money went, then asks for the next question
   const last = agency.campaigns[0]
   const cameBack = last
-    ? { say: `${many(last.twins, 'Sym')} answered. Meet the best fit: ${meetTotal} credits.`,
+    ? { say: `${(() => { const top = [...last.split].sort((a, b) => b.share - a.share)[0]; return top ? `Most said: ${top.label}, ${Math.round(top.share * 100)}%.` : `${many(last.twins, 'Sym')} answered.` })()} Meet the best fit: ${meetTotal} credits.`,
         go: 'Meet the best fit', act: () => { onView('desk'); setMode('one'); setAudience(last.group || 'all') } }
     : { say: 'Nothing back yet. Ask one question.', go: fresh ? 'Pick a question for me' : undefined, act: pickFresh }
   const checked = agency.postings.reduce((n, p) => n + p.checked, 0)
   const resultCue = got === 'asks' ? cameBack
     : got === 'jobs' ? { say: note || `${agency.postings.length} ${agency.postings.length === 1 ? 'job' : 'jobs'} posted. ${checked} ${checked === 1 ? 'answer' : 'answers'} checked.`, go: 'Post a job', act: () => { onView('desk'); setMode('job') } }
     : got === 'skills' ? { say: note || `You back ${agency.sponsorships.length} ${agency.sponsorships.length === 1 ? 'skill' : 'skills'}. Each pass pays player and creator.`, go: 'Back a skill', act: () => { onView('desk'); setMode('skill') } }
-    : { say: `You met ${meets?.met.length ?? 0} ${meets?.met.length === 1 ? 'Sym' : 'Syms'}. Each meeting paid its owner.`, go: 'Meet one Sym', act: () => { onView('desk'); setMode('one') } }
+    : { say: `You met ${meets?.met.length ?? 0} ${meets?.met.length === 1 ? 'Sym' : 'Syms'}. A meeting pays the Sym's owner.`, go: 'Meet one Sym', act: () => { onView('desk'); setMode('one') } }
 
   return (
     <section aria-labelledby="agency-h" className="mine">
@@ -357,7 +357,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                 ))}
                 <span className="pick-note">to put behind it</span>
               </div>
-              <p className="pick-note alone">Creators see that the skill is wanted.</p>
+              <p className="pick-note alone">Creators see this now, under Paying now.</p>
             </>
           )}
 
@@ -384,7 +384,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       {view === 'results' && (
         <div className="results-head">
           <Tabs label="What came back" value={got} onChange={setGot}
-            tabs={[{ id: 'asks', label: 'Questions', n: agency.campaigns.length }, { id: 'jobs', label: 'Jobs', n: agency.postings.length },
+            tabs={[{ id: 'asks', label: agency.campaigns.length === 1 ? 'Question' : 'Questions', n: agency.campaigns.length }, { id: 'jobs', label: 'Jobs', n: agency.postings.length },
               { id: 'skills', label: 'Skills', n: agency.sponsorships.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
           {got === 'asks' ? asks.pager : got === 'jobs' ? jobsBack.pager : got === 'skills' ? backed.pager : metBack.pager}
         </div>
@@ -432,7 +432,9 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
                 </li>
               ))}
             </ul>
-            <span className="muted">{c.sample_twins} of the {c.twins} {c.sample_twins === 1 ? 'is a free Sym' : 'are free Syms'}, mostly BOT Syms.</span>
+            <span className="muted">{c.twins - c.sample_twins > 0
+              ? `You paid the owners of ${c.twins - c.sample_twins} member ${c.twins - c.sample_twins === 1 ? 'Sym' : 'Syms'}. ${c.sample_twins} ${c.sample_twins === 1 ? 'was a free Sym' : 'were free Syms'}, mostly BOT Syms.`
+              : `All ${c.sample_twins} were free Syms, mostly BOT Syms. No person was paid this time.`}</span>
           </li>
         ))}
       </ul>

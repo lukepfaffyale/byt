@@ -34,7 +34,7 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
 - **Plain words:** every word a player reads is fifth-grade plain English with no idioms, slang or contractions.
 - **Layout:** one column on a phone, usable at 320px wide with no horizontal scroll, and at 200% zoom. From 1000px
   wide the Sym holds the left and the content the right. The phone layout and the zoom are not yet checked in the
-  second-pass style; on a phone the legend and the story control are hidden, and the Brain tab gives the same content.
+  second-pass style; on a phone the legend and the story control are hidden, and the Areas tab gives the same content.
 - **Screens of every size:** from 1000px wide, two columns. Below that, one column with the menu fixed at the bottom
   and safe-area padding for notched screens; no sideways scroll at 390px wide (checked in a 390 by 800 frame; the
   legend strip scrolls sideways inside itself by design). Glance mode (`?view=glance`, or automatic when the screen

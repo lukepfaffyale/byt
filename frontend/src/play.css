@@ -227,3 +227,18 @@
   :root .pages-flow .play-row.game-connect4 .c4 { width: min(100%, 20rem); max-width: none; }
   :root .pages-flow .play-row .c4 .drop { min-height: 40px; }
 }
+
+/* the end of a part of the calibration: one true line about the person, then small facts */
+.done-fact { text-align: center; font-size: 1.15rem; font-weight: 300; margin: 2px 0 6px; }
+.done-facts { display: grid; gap: 2px; justify-items: center; text-align: center; margin: 0 0 6px; }
+.gate-done > .link { display: block; margin: 4px auto 0; min-height: 40px; }
+/* while my Sym asks its one question, the page holds that question and nothing else */
+.gate-done.asking .done-foot { display: none; }
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow .gate-done .done-hero { margin: 0 0 2px; }
+  :root .pages-flow .gate-done .done-num strong { font-size: 2.6rem; }
+  :root .pages-flow .gate-done .done-fact { font-size: 1.05rem; margin: 2px 0; }
+  :root .pages-flow .gate-done .done-facts { margin: 0 0 4px; }
+  :root .pages-flow .gate-done > .fine { margin: 2px 0; line-height: 1.35; }
+}
+

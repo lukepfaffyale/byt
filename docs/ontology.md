@@ -10,7 +10,7 @@
 | `bins` | Which kind of gate sits in which bin on the journey | `content.py`, the journey screen |
 | `axes` | Which pair of traits gives which letter | `mirror.py`, the Type tab |
 | `styles` | The four thinking styles: traits, a definition, a strength, a caution, the skills that help | `mirror.py`, the Mind tab, the agency's groups |
-| `faculties` | The seven areas of the mind: traits, a color, a loosely associated brain region, a definition, a fact, the skills that help | `mirror.py`, the Brain tab, the sphere |
+| `faculties` | The seven areas of the mind: traits, a color, a loosely associated brain region, a definition, a fact, the skills that help | `mirror.py`, the Areas tab, the sphere |
 | `skills` | Each skill tree and its steps; a step with a gate exists, a step without one is waiting for a maker | `main.py` (`GET /skills`), the Skills tab, the creator seat |
 | `seats` | Player, agency, creator: what each gives, gets, sees and never sees; the agency's sphere slices | `market.py`, the seat spheres, this record |
 | `incomes` | Work income and data income: who answers, whether a person checks, who pays, what decides | This record; the rules live in `work.py` and `market.py` |

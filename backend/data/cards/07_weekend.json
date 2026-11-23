@@ -2,12 +2,12 @@
   "gate": {"id": "weekend-1", "title": "Weekend", "kind": "preference", "deck": "weekend"},
   "cards": [
     {"id": "wknd-01", "prompt": "A planned weekend beats a free one.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "spontaneous"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
-    {"id": "wknd-02", "prompt": "Hosting beats being a guest.", "options": [{"id": "yes", "label": "Yes", "trait": "social"}, {"id": "no", "label": "No", "trait": "solo"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-02", "prompt": "A full house beats a quiet one.", "options": [{"id": "yes", "label": "Yes", "trait": "social"}, {"id": "no", "label": "No", "trait": "solo"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
     {"id": "wknd-03", "prompt": "A new place beats your favorite.", "options": [{"id": "yes", "label": "Yes", "trait": "novelty"}, {"id": "no", "label": "No", "trait": "loyal"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
-    {"id": "wknd-04", "prompt": "Saturday starts before 8 a.m.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "comfort"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-04", "prompt": "A weekend needs a list.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "spontaneous"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
     {"id": "wknd-05", "prompt": "Big group beats one good friend.", "options": [{"id": "yes", "label": "Yes", "trait": "social"}, {"id": "no", "label": "No", "trait": "solo"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
     {"id": "wknd-06", "prompt": "A trip tomorrow, no plan. You go?", "options": [{"id": "yes", "label": "Yes", "trait": "spontaneous"}, {"id": "no", "label": "No", "trait": "plan"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
-    {"id": "wknd-07", "prompt": "Outside beats inside.", "options": [{"id": "yes", "label": "Yes", "trait": "novelty"}, {"id": "no", "label": "No", "trait": "comfort"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
+    {"id": "wknd-07", "prompt": "A new hobby beats an old one.", "options": [{"id": "yes", "label": "Yes", "trait": "novelty"}, {"id": "no", "label": "No", "trait": "loyal"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]},
     {"id": "wknd-08", "prompt": "By Sunday night, Monday is planned.", "options": [{"id": "yes", "label": "Yes", "trait": "plan"}, {"id": "no", "label": "No", "trait": "spontaneous"}, {"id": "half", "label": "Sometimes", "trait": "mixed"}]}
   ]
 }

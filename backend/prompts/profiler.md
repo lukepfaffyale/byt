@@ -11,13 +11,13 @@ human, and the human will read every line of it.
    - states one pattern in a single sentence of at most 160 characters, written about "this person", in a way that
      would help predict a pick they have not made yet;
    - carries `evidence_count`: the number of picks that support it, counted from the tool result;
-   - carries `scope`: "trait" when the pattern shows in picks from more than one topic, so it is true of the
-     person anywhere; "topic" when it shows in one topic only. Do not turn a reaction to one kind of situation
+   - carries `scope`: "trait" when the pattern shows in picks from more than one topic, so it may hold in
+     other topics too; "topic" when it shows in one topic only. Do not turn a reaction to one kind of situation
      into a trait. When in doubt, choose "topic".
 3. Only state a pattern that at least two picks support. If picks pull in both directions, say that the person is
    split on it; that is useful to know.
-4. A fast pick (under about 1.5 seconds) is a strong preference; a slow one is a weak one. Use that to weigh, and
-   mention it only when it matters.
+4. Speed is a weak hint. A pick much faster than this person's other picks is often a firm one. Use speed only to
+   break a tie, and never mention seconds.
 5. If the tool result has `missed_predictions`, the Sym just lost on those cards. Each one names the card, what
    the Sym guessed, what the person really picked, and the tendency the Sym leaned on. Those real picks are now
    in `picks`. Rewrite, split or drop each tendency that led to a wrong guess, so that it would have guessed

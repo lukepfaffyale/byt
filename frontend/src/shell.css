@@ -316,3 +316,21 @@
 
 /* a result (a question and its bars) may run on to the next page between two bars */
 @media (max-width: 999px) and (min-height: 560px) { :root .pages-flow .lines li:has(.split-bars), :root .pages-flow .split-bars { break-inside: auto; } :root .pages-flow .split-bars > li { break-inside: avoid; } }
+
+/* ---------- the circle: one line on the journey, and the whole picture under Everyone ---------- */
+:root .loop-line { display: flex; align-items: center; width: 100%; min-height: 44px; margin: 0 0 8px; padding: 0 2px; gap: 0; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: none; color: var(--text); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); white-space: nowrap; }
+:root .loop-line span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+:root .loop-line span + span::before { content: '\2192'; color: var(--gold); margin: 0 6px 0 2px; }
+:root .loop-line:hover, :root .loop-line:focus-visible { border-color: var(--gold); }
+@media (max-width: 400px) { :root .loop-line .loop-mid { display: none; } }
+.ripple-ghost line { stroke: var(--hair); stroke-width: 0.8; stroke-dasharray: 3 4; fill: none; }
+.ripple-ghost text { font-size: 7px; fill: var(--muted); letter-spacing: 0.04em; }
+:root .ripple-say { display: block; margin: 0 0 2px; text-align: center; color: var(--gold); letter-spacing: 0.06em; font-size: 0.6875rem; }
+.ripple-close { margin: 4px 0 0; text-align: center; }
+
+/* the idea of the game in four steps, over the welcome */
+.how-pop { z-index: 70; cursor: auto; }
+.how-pop .pick-pop-box { width: min(100%, 30rem); }
+:root .how-pop .how-h { margin: 0; font-size: 1.6rem; font-weight: 300; line-height: 1.2; letter-spacing: 0; text-transform: none; color: var(--gold); }
+.arrival-foot { display: flex; flex-wrap: wrap; gap: 4px 22px; }
+

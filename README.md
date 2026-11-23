@@ -6,9 +6,12 @@ BYT is the game. Symbolon is the working name for its maker. A symbolon was a to
 
 A machine can do the work. It cannot feel. BYT is a game in which people, by choice, teach a Sym the part only they have.
 
+Our mission: to help people earn passive income while building the platform and the connections that AGI will
+need from people. Today we show that potential with play money.
+
 A tap-only game. You clear short gates (picks, one-move strategy boards, quick reactions) and your taps build a
-Sym that belongs to you. The Sym then predicts picks it has never seen. If it beats the crowd guess, it
-earns a certificate.
+Sym that belongs to you. The Sym then guesses picks it has never seen. If it beats the crowd's guess, plain code
+gives it a certificate. Then it can answer agencies and do jobs while you rest.
 
 This is a class project (MGT 409, final project).
 
@@ -16,14 +19,15 @@ This is a class project (MGT 409, final project).
 
 The game is live at **https://byt-frontend.onrender.com**. Type a nickname, tick the two boxes and start. Nothing else is needed.
 
-- The back end runs on a free plan and sleeps after 15 minutes without visitors. The first visit after that can take up to a minute to wake: the page loads at once, and the first tap waits. After that it is quick.
+- The back end runs on a paid Render plan (0.5 CPU, 512 MB, 7 dollars a month), so it does not sleep.
 - The online game stores its data in a hosted Postgres database (Supabase). The copy you run locally below uses a local file and never touches the hosted one.
 - Online or local, credits are play money and the game is for adults.
 
 ## Deliverables
 
 - `report.html`: the report, eight sections. Open it in a browser.
-- `slides.html`: ten slides (reveal.js, loaded from a CDN, so it needs the internet). Open it in a browser and use the arrow keys.
+- `slides.html`: ten slides in one file (reveal.js is inside it, so it works offline). Open it in a browser and use the arrow keys.
+- `backend/experiments/cost_experiment.py` reruns the four-method test on test accounts; its output is `output/cost_experiment.json`.
 
 ## Run it locally
 
@@ -58,27 +62,30 @@ you see the whole game. This route shows the three parts in order. Nothing needs
 
 1. **Get in (1 minute).** Open the link, type a nickname, tick the two boxes, start. The welcome screen shows
    everyone in the game as lights. Tap **Player**.
-2. **Teach your Sym (1 minute).** The Calibrator is 8 quick picks: two tiles, tap one. At the end your Sym shows the
-   first blocks of its code.
-3. **Let it guess you (3 minutes).** Keep tapping **Next**: a one-move puzzle, a one-tap rating, 8 picks on
-   spending, then the first **Sym battle**. In the battle your Sym seals its guess before each card. Tap a tile and a
+2. **Calibrate your Sym (1 minute).** Three short parts. Part 1 is 8 quick picks: two tiles, tap one. Your Sym shows
+   the first blocks of its code and asks one thing: **Let my Sym earn**. Tap it, and agencies can ask your Sym.
+   Part 2 is 3 one-move boards. Part 3 is 3 reaction rings. It ends on "You gave 14 inputs. I kept every one."
+   (New here? **How it works** on the welcome screen tells the idea in four taps.)
+3. **Let it work, then let it guess you (3 minutes).** Tap **See the job**: your Sym answers, you check it, and it
+   is paid. Then keep tapping **Next**: a one-tap rating, 8 picks on spending, then the first **Sym battle**. In the battle your Sym seals its guess before each card. Tap a tile and a
    SYM tag lands on the tile it guessed: "Called it." or "You surprised me." The finish shows your Sym against the
    crowd's guess, and plain code decides the certificate.
 4. **Be the one who asks (2 minutes).** Tap **Agency** (top right). A name is filled in: tap **Open my agency**,
    then **Pick a question for me**, then **Ask**. Watch the crew go out and come back with each answer as a percent.
-   You get totals only, never one person. The wallet line at the top shows what it cost and who was paid.
+   You get totals only, never one person. The result says what it cost and who was paid.
 5. **Be the one who builds (1 minute).** Tap **Creator**, then **Open my studio**. The Needs tab shows what agencies
    pay for and what Syms lack. Tap **Ask a group**, pick a question and send the crew.
 6. **See the world and your side of it (2 minutes).** Tap **Everyone**: the Now tab is live (BOT Syms play, ask and
-   build round the clock, and your own moves show with a YOU mark), and Economy shows where every credit goes. Back
+   build, each from 7:00 to 23:00 on its own country's clock, so some are always awake; your own moves show with a
+   YOU mark), **My circle** shows what your own taps set moving, and Economy shows where every credit goes. Back
    on **Player**, **My Work** has jobs your Sym can do while you are away, **My Money** shows every credit that
-   moved and why, and **My Sym**, Data tab, lets you download or delete it all.
+   moved and why, and **My Sym**, under **Proof and data**, lets you download or delete it all.
 
-The longer view (why this matters when work changes, and where it goes next) is in `slides.html` and in section 1
-and the last section of `report.html`.
+The longer view (why this matters when work changes, and where it goes next) is in `slides.html` and in sections 1, 2
+and 8 of `report.html`.
 
-If your device is set to reduce motion, the game starts still, and each result waits for a tap on **Next card**.
-The footer has **Motion: Off**: tap it once to see the game move.
+If your device is set to reduce motion, the game starts still, and each result waits for a tap on **Next**.
+The footer has **Motion: off**: tap it once to see the game move.
 
 ## If something does not start
 
@@ -138,7 +145,7 @@ Every outside paper that was read while this was built is listed in `docs/SOURCE
 | Piece | Where | Notes |
 |---|---|---|
 | Front end | Render static site `byt_frontend` | Built with `npm ci && npm run build`. Its one setting, `VITE_API_URL`, is the back end's address. |
-| Back end | Render web service `byt_backend`, region Virginia, on the free compute plan (0.1 CPU, 512 MB) | `uvicorn main:app`. Settings entered in the dashboard only: `PORTKEY_API_KEY`, `DATABASE_URL`, `CORS_ORIGINS` (the front end's address). |
+| Back end | Render web service `byt_backend`, region Virginia, on the `0.5c-512mb` compute plan (0.5 CPU, 512 MB, 7 dollars a month) | `uvicorn main:app`. Settings entered in the dashboard only: `PORTKEY_API_KEY` (or `OPENAI_API_KEY`), `DATABASE_URL`, `CORS_ORIGINS` (the front end's address). |
 | Database | Supabase (Postgres), US East | Reached only by the back end, through the session pooler. Row-level security is on for every table, with no policy for any outside role, so nothing can be read through Supabase's own data API. |
 
 With no `DATABASE_URL` the back end uses the local file `backend/data/local.db`, which is what a fresh clone does.

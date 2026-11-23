@@ -14,12 +14,12 @@ type TabId = 'type' | 'code' | 'mind' | 'brain' | 'skills' | 'judgment' | 'belie
 type GroupId = 'who' | 'know' | 'proof'
 // nine views in three groups: the groups are pinned above the page, the views of one group are the sub-tabs on it
 const GROUPS: { id: GroupId; label: string; tabs: { id: TabId; label: string }[] }[] = [
-  { id: 'who', label: 'Who I am', tabs: [{ id: 'type', label: 'Type' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Brain' }] },
+  { id: 'who', label: 'Who I am', tabs: [{ id: 'type', label: 'Type' }, { id: 'mind', label: 'Mind' }, { id: 'brain', label: 'Areas' }] },
   { id: 'know', label: 'What I know', tabs: [{ id: 'code', label: 'Code' }, { id: 'skills', label: 'Skills' }, { id: 'beliefs', label: 'Beliefs' }] },
   { id: 'proof', label: 'Proof and data', tabs: [{ id: 'judgment', label: 'Judgment' }, { id: 'proof', label: 'Proof' }, { id: 'data', label: 'Data' }] },
 ]
 const SIZE = 4  // rows shown at a time, so a list, its tabs and its arrows share one page
-const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Think so', 1: 'A guess' }
+const SURE_NAME: Record<number, string> = { 3: 'Sure', 2: 'Maybe', 1: 'Guess' }
 const CERT_NAME: Record<string, string> = { twin: 'Sym', insight: 'Insight', skill: 'Skill' }
 
 /**
@@ -113,7 +113,7 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
   const beliefs = [...(data?.tendencies ?? [])].sort((a, b) => b.evidence_count - a.evidence_count)
   const beliefRows: Row[] = beliefs.map((t, i) => ({
     id: `b${i}`, top: t.scope === 'topic' ? `About ${t.topic}` : 'Trait', label: t.statement, n: String(t.evidence_count),
-    detail: <>I think this because of {t.evidence_count} of your {t.evidence_count === 1 ? 'pick' : 'picks'}. {t.scope === 'topic' ? `I use it only for ${t.topic.toLowerCase()}, not for other things.` : 'I use it for any choice.'}</>,
+    detail: <>I think this because of {t.evidence_count} of your {t.evidence_count === 1 ? 'pick' : 'picks'}. {t.scope === 'topic' ? `I use it only for ${t.topic.toLowerCase()}, not for other things.` : 'I try it on any choice.'}</>,
   }))
   const certRows: Row[] = (data?.certs ?? []).map((c, i) => ({
     id: `c${i}`, top: CERT_NAME[c.kind] ?? c.kind, gold: true,
@@ -128,14 +128,14 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
     detail: <>For {w.requester}. Your Sym said: {w.twin_answer}. You said: {w.your_answer}.</>,
   }))
   const battleRows: Row[] = (data?.battles ?? []).map((b, i) => ({
-    id: `k${i}`, top: b.twin_matches === null ? 'Open' : b.twin_matches > (b.baseline_matches ?? 0) ? 'Won' : 'Lost', label: b.topic,
+    id: `k${i}`, top: b.twin_matches === null ? 'Open' : b.twin_matches > (b.baseline_matches ?? 0) ? 'Sym ahead' : 'Not yet', label: b.topic,
     n: b.twin_matches === null ? '' : `${b.twin_matches}/${b.n}`,
     detail: b.twin_matches === null
       ? <>Not finished yet.</>
       : <>Your Sym guessed {b.twin_matches} of {b.n}. The crowd's guess got {b.baseline_matches} of {b.n}. {b.twin_kind === 'model' ? 'The AI Sym played.' : 'The practice Sym played. It does not use AI.'}</>,
   }))
   const tapRows: Row[] = (data?.responses ?? []).map((r) => ({
-    id: r.card_id, top: `${(r.response_ms / 1000).toFixed(1)} s`, label: r.prompt, n: r.is_correct === null ? '' : r.is_correct ? 'Right' : 'Wrong',
+    id: r.card_id, top: `${(r.response_ms / 1000).toFixed(1)} s`, label: r.prompt, n: r.is_correct === null ? '' : r.is_correct ? 'Right' : 'Miss',
     detail: <>You picked: {r.choice}. Gate: {r.gate}.</>,
   }))
   const won = (data?.battles ?? []).filter((b) => b.twin_matches !== null && b.twin_matches > (b.baseline_matches ?? 0)).length
@@ -172,7 +172,7 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
         {tab === 'judgment' && judged && (
           <>
             <Tools slot={slot}>
-              <More>My Sym: {judged.says} Each mark is one answer, oldest on the left. A full mark was right. An empty one was wrong. A sure answer that was wrong is the one to watch.</More>
+              <More>My Sym: {judged.says} Each mark is one answer, oldest on the left. A full mark was right. An empty one was wrong. A sure answer that was wrong is the one to watch. This is about these puzzles only. It is not advice for life.</More>
             </Tools>
             <p className="mine-says"><span className="line-top">My Sym</span> {judged.says}</p>
             {judged.taps.length > 0 && (

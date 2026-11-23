@@ -672,7 +672,7 @@ def told_out(row: SelfReport | None) -> Told:
 
 MIRROR_NOTE = (
     "Simple code counts your own taps. It does not use AI. We wrote these cards ourselves. This is not the "
-    "official test of any publisher. A letter stays open until at least 3 picks point the same way."
+    "official test of any publisher. A letter shows only after at least 6 picks on that line, with 5 of every 6 on one side."
 )
 
 
@@ -1349,9 +1349,9 @@ def sphere_at(picks: list[tuple[str, str]]) -> list[Vertical]:
                 done += 1 if g is not None and g.done == g.total else 0
         level = round(min(1.0, read[f["id"]].chances / mirror_rules.FULL_EVIDENCE), 3)
         count = read[f["id"]].picks
-        # two different numbers, each named for what it counts. The first is the one the Brain tab shows.
+        # two different numbers, each named for what it counts. The first is the one the Areas tab shows.
         seen = read[f["id"]].chances
-        details = ([f"You picked this area {count} of the {seen} times you could: {round(100 * count / seen)} percent. The Brain tab shows the same number."]
+        details = ([f"You picked this area {count} of the {seen} times you could: {round(100 * count / seen)} percent. The Areas tab shows the same number."]
                    if seen else ["No card for this area has come up yet."])
         details.append(f"I have seen {min(seen, mirror_rules.FULL_EVIDENCE)} of the {mirror_rules.FULL_EVIDENCE} cards I need here, "
                        f"so this part of me is {round(level * 100)} percent drawn.")
@@ -1494,14 +1494,16 @@ def retry_gate(gate_id: str, request: Request, player: Player = Depends(current_
     return RetryOut(gate_id=gate.id, cards=db.clear_answers(player.id, ids))
 
 
-JUDGE_MIN = 3  # answers at one level of sureness before the game says anything about it
+JUDGE_MIN = 5  # answers at one level of sureness before the game says anything about it (2 of 3 is too few to call)
 JUDGE_TRUST = 0.8  # right this often when sure: the feeling can be trusted
 
 
 @app.get("/me/judgment", response_model=Judgment)
 def my_judgment(player: Player = Depends(current_player)) -> Judgment:
     """How sure the caller said they were against how often they were right. Their own rows only. Plain counting."""
-    marked = [r for r in db.responses_for(player.id) if r.is_correct is not None]
+    # a ring is right or wrong but is never asked "how sure", so it is not one of the answers left unsaid
+    marked = [r for r in db.responses_for(player.id) if r.is_correct is not None
+              and not ((c := CARDS.get(r.card_id)) is not None and c.kind == "reflex")]
     taps = [r for r in marked if r.sure is not None]
     unsaid = len(marked) - len(taps)  # right-or-wrong answers given with no "how sure" tap: they are in no row
     rows = sure_record(player.id)
@@ -1511,10 +1513,9 @@ def my_judgment(player: Player = Depends(current_player)) -> Judgment:
     elif sure.total < JUDGE_MIN:
         says = f"I have {len(taps)} answers where you said how sure you were. I need {JUDGE_MIN} where you said Sure before I can judge that feeling."
     elif sure.right / sure.total >= JUDGE_TRUST:
-        says = f"Over all your gates, when you say you are sure, you are right {sure.right} of {sure.total} times. That feeling can be trusted."
+        says = f"In these puzzles, Sure was right {sure.right} of {sure.total}. You can trust it here."
     else:
-        says = (f"Over all your gates, when you say you are sure, you are right {sure.right} of {sure.total} times. "
-                "You feel sure more often than you are right. Check once more before a choice that is hard to undo.")
+        says = f"In these puzzles, Sure was right {sure.right} of {sure.total}. Worth one more look."
     if guess.total >= JUDGE_MIN and guess.right / guess.total >= 0.6:
         says += f" When you call it a guess, you are still right {guess.right} of {guess.total} times. You know more than you think."
     if taps and unsaid:  # say what the numbers cover, so they are not read as every answer
@@ -1593,7 +1594,7 @@ def ripple(player: Player = Depends(current_player)) -> Ripple:
     add("creator", "everyone", c["built"], f"Your studio built {times(c['built'], 'skill step')}. Anyone can play them.")
     add("everyone", "creator", c["passes"], f"Other people passed your steps {times(c['passes'], 'time')}. Each pass paid your studio.", c["royalties"])
     add("creator", "everyone", c["crew_asked"], f"Your studio asked {times(c['crew_asked'], 'Sym')} what to build next.")
-    return Ripple(agency=c["agency"], creator=c["creator"], links=links)
+    return Ripple(agency=c["agency"], creator=c["creator"], links=links, counts={key: float(value) for key, value in c.items() if isinstance(value, (int, float)) and not isinstance(value, bool)})
 
 
 def money_facts(player: Player) -> dict:

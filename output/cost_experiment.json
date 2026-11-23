@@ -1,0 +1,375 @@
+{
+ "what_this_is": "Test accounts, not real players. Scripted accounts pick by a fixed list of traits and are easy to predict.",
+ "run_at": "2026-11-23T00:43Z",
+ "model": "gpt-6-luna",
+ "seed": 409,
+ "hidden_picks": 60,
+ "all_accounts": {
+  "crowd": {
+   "right": 31,
+   "of": 60,
+   "range_95": [
+    39.3,
+    63.8
+   ]
+  },
+  "practice": {
+   "right": 46,
+   "of": 60,
+   "range_95": [
+    64.6,
+    85.6
+   ]
+  },
+  "beliefs": {
+   "right": 36,
+   "of": 60,
+   "range_95": [
+    47.4,
+    71.4
+   ]
+  },
+  "raw": {
+   "right": 45,
+   "of": 60,
+   "range_95": [
+    62.8,
+    84.2
+   ]
+  },
+  "chance": {
+   "right": 28.1,
+   "of": 60
+  }
+ },
+ "scripted_accounts": {
+  "crowd": {
+   "right": 18,
+   "of": 40,
+   "range_95": [
+    30.7,
+    60.2
+   ]
+  },
+  "practice": {
+   "right": 35,
+   "of": 40,
+   "range_95": [
+    73.9,
+    94.5
+   ]
+  },
+  "beliefs": {
+   "right": 30,
+   "of": 40,
+   "range_95": [
+    59.8,
+    85.8
+   ]
+  },
+  "raw": {
+   "right": 35,
+   "of": 40,
+   "range_95": [
+    73.9,
+    94.5
+   ]
+  },
+  "chance": {
+   "right": 19.2,
+   "of": 40
+  }
+ },
+ "hand_played_accounts": {
+  "crowd": {
+   "right": 13,
+   "of": 20,
+   "range_95": [
+    43.3,
+    81.9
+   ]
+  },
+  "practice": {
+   "right": 11,
+   "of": 20,
+   "range_95": [
+    34.2,
+    74.2
+   ]
+  },
+  "beliefs": {
+   "right": 6,
+   "of": 20,
+   "range_95": [
+    14.5,
+    51.9
+   ]
+  },
+  "raw": {
+   "right": 10,
+   "of": 20,
+   "range_95": [
+    29.9,
+    70.1
+   ]
+  },
+  "chance": {
+   "right": 8.8,
+   "of": 20
+  }
+ },
+ "cost_usd": {
+  "twin_on_beliefs": 0.003306,
+  "profiler_for_beliefs": 0.007392,
+  "twin_on_raw_picks": 0.004447
+ },
+ "tokens": {
+  "twin_on_beliefs": [
+   15914,
+   3428
+  ],
+  "profiler_for_beliefs": [
+   25014,
+   9781
+  ],
+  "twin_on_raw_picks": [
+   23452,
+   4204
+  ]
+ },
+ "notes": [
+  "The practice Sym sees each card's trait tags. The AI Twin sees only the card's words.",
+  "Each AI method ran once for each account. A card with no guess counts as wrong.",
+  "The crowd is the most common pick among the other Syms, nearly all of them BOT Syms with random tastes."
+ ],
+ "accounts": [
+  {
+   "account": 1,
+   "kind": "played by hand",
+   "picks_to_learn_from": 22,
+   "hidden_picks": 10,
+   "chance": 4.33,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 3249,
+    "output_tokens": 1043,
+    "usd": 0.000846,
+    "beliefs": 4
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2596,
+    "output_tokens": 664,
+    "usd": 0.000592,
+    "ms": 7058,
+    "answered": 10,
+    "right": 2
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 3131,
+    "output_tokens": 583,
+    "usd": 0.000605,
+    "ms": 5986,
+    "answered": 10,
+    "right": 5
+   },
+   "practice": {
+    "right": 4
+   },
+   "crowd": {
+    "right": 8
+   }
+  },
+  {
+   "account": 2,
+   "kind": "played by hand",
+   "picks_to_learn_from": 36,
+   "hidden_picks": 10,
+   "chance": 4.5,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 3765,
+    "output_tokens": 853,
+    "usd": 0.000803,
+    "beliefs": 6
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2648,
+    "output_tokens": 442,
+    "usd": 0.000486,
+    "ms": 4901,
+    "answered": 10,
+    "right": 4
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 3567,
+    "output_tokens": 737,
+    "usd": 0.000725,
+    "ms": 7953,
+    "answered": 10,
+    "right": 5
+   },
+   "practice": {
+    "right": 7
+   },
+   "crowd": {
+    "right": 5
+   }
+  },
+  {
+   "account": 3,
+   "kind": "scripted",
+   "picks_to_learn_from": 56,
+   "hidden_picks": 10,
+   "chance": 4.75,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 4466,
+    "output_tokens": 1690,
+    "usd": 0.001292,
+    "beliefs": 7
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2678,
+    "output_tokens": 481,
+    "usd": 0.000508,
+    "ms": 4963,
+    "answered": 10,
+    "right": 8
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 4202,
+    "output_tokens": 1006,
+    "usd": 0.000923,
+    "ms": 9626,
+    "answered": 10,
+    "right": 8
+   },
+   "practice": {
+    "right": 10
+   },
+   "crowd": {
+    "right": 4
+   }
+  },
+  {
+   "account": 4,
+   "kind": "scripted",
+   "picks_to_learn_from": 56,
+   "hidden_picks": 10,
+   "chance": 4.83,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 4472,
+    "output_tokens": 2172,
+    "usd": 0.001533,
+    "beliefs": 6
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2653,
+    "output_tokens": 519,
+    "usd": 0.000525,
+    "ms": 5643,
+    "answered": 10,
+    "right": 8
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 4185,
+    "output_tokens": 564,
+    "usd": 0.0007,
+    "ms": 5632,
+    "answered": 10,
+    "right": 9
+   },
+   "practice": {
+    "right": 10
+   },
+   "crowd": {
+    "right": 2
+   }
+  },
+  {
+   "account": 5,
+   "kind": "scripted",
+   "picks_to_learn_from": 56,
+   "hidden_picks": 10,
+   "chance": 4.83,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 4536,
+    "output_tokens": 1612,
+    "usd": 0.00126,
+    "beliefs": 7
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2663,
+    "output_tokens": 503,
+    "usd": 0.000518,
+    "ms": 5354,
+    "answered": 10,
+    "right": 8
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 4183,
+    "output_tokens": 601,
+    "usd": 0.000719,
+    "ms": 5893,
+    "answered": 10,
+    "right": 9
+   },
+   "practice": {
+    "right": 8
+   },
+   "crowd": {
+    "right": 6
+   }
+  },
+  {
+   "account": 6,
+   "kind": "scripted",
+   "picks_to_learn_from": 56,
+   "hidden_picks": 10,
+   "chance": 4.83,
+   "profiler": {
+    "stop": "completed",
+    "input_tokens": 4526,
+    "output_tokens": 2411,
+    "usd": 0.001658,
+    "beliefs": 7
+   },
+   "beliefs": {
+    "stop": "completed",
+    "input_tokens": 2676,
+    "output_tokens": 819,
+    "usd": 0.000677,
+    "ms": 7810,
+    "answered": 10,
+    "right": 6
+   },
+   "raw": {
+    "stop": "completed",
+    "input_tokens": 4184,
+    "output_tokens": 713,
+    "usd": 0.000775,
+    "ms": 6955,
+    "answered": 10,
+    "right": 9
+   },
+   "practice": {
+    "right": 7
+   },
+   "crowd": {
+    "right": 6
+   }
+  }
+ ]
+}

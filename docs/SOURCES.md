@@ -157,3 +157,19 @@ Foundation (the television series), Interstellar, Dune and The Terminator. They 
 only. No image, frame, design, name, character, music or text from any of them is used. Every drawing in the
 project is made by its own code. Each film belongs to its owners, and nothing here is official, licensed or for
 sale.
+
+## Prices and market figures (added 2026-11-22)
+
+These are the outside numbers the report and the slides use. Each was read on the date shown. A price can change, so
+the report gives the date beside each one.
+
+- DataReportal, *Digital 2026 Global Overview Report* (October 2025, from GWI data): online adults spend about 33 and
+  a half hours a week on online media. Read 2026-11-21.
+- Prolific, pricing and researcher help pages: researchers are advised to pay 12 US dollars an hour, and the
+  platform adds a fee of 42.8 percent for companies. Read 2026-11-21. An 8 dollar minimum and a university fee were
+  seen on other pages and could not be confirmed on Prolific's own, so the report does not use them.
+- Synthetic Users, its own site: its own words for its participants. Read 2026-11-21.
+- Render, compute plan list: free, and 0.5 CPU with 512 MB at 7 US dollars a month. Read 2026-11-21 and 2026-11-22.
+- Supabase, pricing page: the free plan holds 500 MB and pauses after a week without activity. Read 2026-11-21.
+- Model token prices for `gpt-6-luna`: the rates set in `backend/agent.py` (`PRICES`). Every dollar figure in the
+  report is token counts from real runs times those rates. It is not a bill.

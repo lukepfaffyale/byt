@@ -31,7 +31,7 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
     <section aria-labelledby="start-h" className="start">
       <p className="twin-says">I am not you yet. Teach me.</p>
       <h1 id="start-h">Meet your Sym. It works while you rest.</h1>
-      <p className="lead">Tap a few cards and your Sym learns you. Then it can answer and work for you, and you are paid.</p>
+      <p className="lead">A short tap game. Your Sym learns you, guesses you, then answers and works for you, and you are paid. Play money for now.</p>
 
       <form onSubmit={submit}>
         <div className="notice" id="notice">

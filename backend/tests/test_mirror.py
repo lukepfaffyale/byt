@@ -1,7 +1,7 @@
 """The mirror: suggested letters from picks, what the player told us, and the verdict between them."""
 import db
 import mirror
-from content import GATE_BY_ID, GATES
+from content import CARDS, GATE_BY_ID, GATES
 from sqlmodel import Session, select
 
 from models import SelfReport
@@ -11,12 +11,27 @@ def test_letters_stay_open_until_enough_picks():
     axes = mirror.read_axes([("thnk-03", "a"), ("thnk-07", "a")])
     assert axes[0].first_picks == 2 and axes[0].letter is None
     assert mirror.suggested_type(axes) == "...."
+    # 5 picks all on one side are still too few: a letter needs at least 6
+    five = [("thnk-03", "a"), ("thnk-07", "a"), ("thnk-13", "a"), ("wknd-02", "yes"), ("wknd-05", "yes")]
+    assert mirror.read_axes(five)[0].first_picks == 5 and mirror.read_axes(five)[0].letter is None
+    # a four-option card adds nothing to the letters (each option feeds a different axis)
+    assert mirror.read_axes(five + [("thnk-12", "d")])[0].first_picks == 5
+    assert mirror.read_axes([("thnk-11", "a"), ("thnk-12", "a")])[1].first_picks == 0
+    assert mirror.read_axes(five + [("food-08", "a")])[0].letter == "E"
 
 
-def test_letters_follow_the_picks_and_ties_stay_open():
-    picks = [(cid, "a") for cid in GATE_BY_ID["thinking-1"].card_ids]
+def test_letters_need_a_clear_lean_and_ties_stay_open():
+    # the first option on every deck of picks: Energy 6 to 0 and Plans 10 to 1 show a letter; facts and ideas,
+    # head and heart have only 3 two-option cards each, so those letters stay open
+    picks = [(cid, CARDS[cid].options[0].id) for g in GATES if g.kind == "preference" for cid in g.card_ids]
     axes = mirror.read_axes(picks)
-    assert mirror.suggested_type(axes) == "ESTJ"
+    assert mirror.suggested_type(axes) == "E..J"
+    assert (axes[0].first_picks, axes[0].second_picks) == (6, 0) and (axes[3].first_picks, axes[3].second_picks) == (10, 1)
+    social = [("thnk-03", "a"), ("thnk-07", "a"), ("thnk-13", "a"), ("wknd-02", "yes")]
+    four_two = mirror.read_axes(social + [("wknd-05", "no"), ("food-08", "b")])[0]  # a share of 0.67: too close to call
+    assert (four_two.first_picks, four_two.second_picks, four_two.letter) == (4, 2, None)
+    five_one = mirror.read_axes(social + [("wknd-05", "yes"), ("food-08", "b")])[0]  # a share of 0.83: a lean
+    assert (five_one.first_picks, five_one.second_picks, five_one.letter) == (5, 1, "E")
     even = mirror.read_axes([("thnk-03", "a"), ("thnk-07", "b"), ("wknd-02", "yes"), ("wknd-05", "no")])
     assert even[0].letter is None
 

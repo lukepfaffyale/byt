@@ -2,7 +2,7 @@
   "gate": {"id": "battle-taste", "title": "Sym battle: style and spending", "kind": "battle", "deck": "Style and spending"},
   "cards": [
     {"id": "bt-01", "prompt": "A jacket, new color. Buy?", "options": [{"id": "a", "label": "Yes, try it", "trait": "bold"}, {"id": "b", "label": "No, my usual", "trait": "classic"}]},
-    {"id": "bt-02", "prompt": "Which sneakers?", "options": [{"id": "a", "label": "The popular pair", "trait": "classic"}, {"id": "b", "label": "The rare pair", "trait": "bold"}]},
+    {"id": "bt-02", "prompt": "Which sneakers?", "options": [{"id": "a", "label": "Plain white", "trait": "classic"}, {"id": "b", "label": "Loud color", "trait": "bold"}]},
     {"id": "bt-03", "prompt": "Long flight. You dress:", "options": [{"id": "a", "label": "For comfort", "trait": "comfort"}, {"id": "b", "label": "To look neat", "trait": "look"}]},
     {"id": "bt-04", "prompt": "Watches. You pick:", "options": [{"id": "a", "label": "One for years", "trait": "quality"}, {"id": "b", "label": "Several cheap ones", "trait": "variety"}]},
     {"id": "bt-05", "prompt": "Friends call your style:", "options": [{"id": "a", "label": "Always steady", "trait": "classic"}, {"id": "b", "label": "Often surprising", "trait": "bold"}]},

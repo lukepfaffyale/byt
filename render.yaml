@@ -5,6 +5,8 @@ services:
   - type: web
     name: byt_backend
     runtime: python
+    # The dashboard is the source of truth for the plan: the owner moved this service to the 0.5 CPU, 512 MB
+    # compute plan (7 dollars a month) there. This line is the plan the blueprint first made it with.
     plan: free
     # next to the database (Supabase, US East): a back end far from its database makes every screen slow
     region: virginia

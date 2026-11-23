@@ -51,7 +51,7 @@ def test_rule_numbers_in_the_ontology_are_the_numbers_the_code_runs_on():
     assert rules["free_share"] == market.FREE_SHARE and rules["tier_times"] == market.TIER_TIMES
     assert rules["certified_pay_times"] == work.CERT_MULTIPLIER
     assert rules["corrected_pay"] == work.TEACHING_PAY
-    assert rules["letter_min_picks"] == mirror.MIN_PICKS
+    assert rules["letter_min_picks"] == mirror.LETTER_MIN_PICKS and rules["letter_min_share"] == mirror.LETTER_MIN_SHARE
     assert rules["area_full_cards"] == mirror.FULL_EVIDENCE
     assert rules["repeat_step"] == market.REPEAT_STEP and rules["repeat_cap"] == market.REPEAT_CAP
     assert rules["fund_start"] == market.FUND_START and rules["step_bonus"] == market.STEP_BONUS

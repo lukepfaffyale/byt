@@ -2,18 +2,18 @@
   "gate": {"id": "thinking-1", "title": "How you think", "kind": "preference", "deck": "thinking"},
   "cards": [
     {"id": "thnk-01", "prompt": "Friend's new business. You ask:", "options": [{"id": "a", "label": "Today's numbers", "trait": "facts"}, {"id": "b", "label": "Its future", "trait": "ideas"}]},
-    {"id": "thnk-02", "prompt": "A teammate is late. First:", "options": [{"id": "a", "label": "Fix the plan", "trait": "head"}, {"id": "b", "label": "Check on them", "trait": "heart"}]},
+    {"id": "thnk-02", "prompt": "Picking a gift. You choose:", "options": [{"id": "a", "label": "Something useful", "trait": "head"}, {"id": "b", "label": "Something touching", "trait": "heart"}]},
     {"id": "thnk-03", "prompt": "After a long week, rest:", "options": [{"id": "a", "label": "With people", "trait": "social"}, {"id": "b", "label": "By myself", "trait": "solo"}]},
     {"id": "thnk-04", "prompt": "Your to-do list is:", "options": [{"id": "a", "label": "Written down", "trait": "plan"}, {"id": "b", "label": "In my head", "trait": "spontaneous"}]},
-    {"id": "thnk-05", "prompt": "What do you trust more?", "options": [{"id": "a", "label": "What worked before", "trait": "facts"}, {"id": "b", "label": "My gut feeling", "trait": "ideas"}]},
+    {"id": "thnk-05", "prompt": "A new idea. First you ask:", "options": [{"id": "a", "label": "Has it worked before?", "trait": "facts"}, {"id": "b", "label": "What could it become?", "trait": "ideas"}]},
     {"id": "thnk-06", "prompt": "A hard choice. You:", "options": [{"id": "a", "label": "Weigh pros, cons", "trait": "head"}, {"id": "b", "label": "Ask who's affected", "trait": "heart"}]},
     {"id": "thnk-07", "prompt": "You think best:", "options": [{"id": "a", "label": "Talking with others", "trait": "social"}, {"id": "b", "label": "Quietly, then share", "trait": "solo"}]},
-    {"id": "thnk-08", "prompt": "Work due in a month.", "options": [{"id": "a", "label": "Start now", "trait": "plan"}, {"id": "b", "label": "Wait till ready", "trait": "spontaneous"}]},
+    {"id": "thnk-08", "prompt": "Work due in a month. You do it:", "options": [{"id": "a", "label": "Bit by bit", "trait": "plan"}, {"id": "b", "label": "In one big push", "trait": "spontaneous"}]},
     {"id": "thnk-09", "prompt": "A good explanation starts with:", "options": [{"id": "a", "label": "A real example", "trait": "facts"}, {"id": "b", "label": "The main idea", "trait": "ideas"}]},
-    {"id": "thnk-10", "prompt": "Nicer to hear:", "options": [{"id": "a", "label": "You are smart", "trait": "head"}, {"id": "b", "label": "You are kind", "trait": "heart"}]},
+    {"id": "thnk-10", "prompt": "A good film:", "options": [{"id": "a", "label": "Makes me think", "trait": "head"}, {"id": "b", "label": "Makes me feel", "trait": "heart"}]},
     {"id": "thnk-11", "prompt": "On a team, you mostly:", "options": [{"id": "a", "label": "Check the facts", "trait": "facts"}, {"id": "b", "label": "Lead the plan", "trait": "plan"}, {"id": "c", "label": "Bring unusual ideas", "trait": "ideas"}, {"id": "d", "label": "Keep people together", "trait": "heart"}]},
     {"id": "thnk-12", "prompt": "A new problem. First you:", "options": [{"id": "a", "label": "Study the data", "trait": "facts"}, {"id": "b", "label": "Write the steps", "trait": "plan"}, {"id": "c", "label": "Draw some options", "trait": "ideas"}, {"id": "d", "label": "Call someone", "trait": "social"}]},
     {"id": "thnk-13", "prompt": "At a party, you:", "options": [{"id": "a", "label": "Talk with many", "trait": "social"}, {"id": "b", "label": "One long talk", "trait": "solo"}]},
-    {"id": "thnk-14", "prompt": "Plans change last minute.", "options": [{"id": "a", "label": "It bothers me", "trait": "plan"}, {"id": "b", "label": "I enjoy it", "trait": "spontaneous"}]}
+    {"id": "thnk-14", "prompt": "Plans change last minute. You:", "options": [{"id": "a", "label": "Make a new plan", "trait": "plan"}, {"id": "b", "label": "Go with it", "trait": "spontaneous"}]}
   ]
 }

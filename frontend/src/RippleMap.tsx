@@ -11,16 +11,29 @@ const SAY: Record<Seat, string> = { player: 'me', agency: 'my agency', creator: 
  * What one person set moving, drawn between their own seats and everyone else. Each line is a real count from the
  * books: taps that became answers, answers that were paid for, steps that were built and passed. Tap a seat to read it.
  */
-export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'creator') => void }) {
-  const { calm, onSeat } = props
+/** The six ways the circle can turn. Each is drawn faint until a count from the books is drawn over it. */
+const PATHS: { src: Seat; dst: Seat; say: string; at?: number }[] = [
+  { src: 'player', dst: 'everyone', say: 'my taps' },
+  { src: 'everyone', dst: 'player', say: 'pay me' },
+  { src: 'agency', dst: 'everyone', say: 'asks, pays' },
+  { src: 'everyone', dst: 'creator', say: 'pass steps' },
+  { src: 'creator', dst: 'everyone', say: 'new steps' },
+  { src: 'agency', dst: 'creator', say: 'shows needs', at: 0.22 },
+]
+
+export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'creator') => void; agencies?: number; botAgencies?: number }) {
+  const { calm, onSeat, agencies = 0, botAgencies = 0 } = props
   const [data, setData] = useState<Ripple | null>(null)
   const [pick, setPick] = useState<Seat>('player')
+  const [earning, setEarning] = useState<boolean | null>(null)
+  const [turn, setTurn] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     api.ripple().then((r) => { if (!cancelled) setData(r) }).catch(() => undefined)
+    api.jobs().then((j) => { if (!cancelled) setEarning(j.data_income) }).catch(() => undefined)
     return () => { cancelled = true }
-  }, [])
+  }, [turn])
 
   if (!data) return <p className="muted" aria-live="polite">Following what you set moving.</p>
 
@@ -37,10 +50,25 @@ export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'cre
   const mine = data.links.filter((l) => l.src === pick || l.dst === pick)
   const said = data.links.map((l) => l.text).join(' ')
 
+  const asks = Math.round(data.counts?.asks ?? 0)
   return (
     <>
+      <p className="line-top ripple-say">People give the blocks. Agents make the links.</p>
       <svg className="commons-map ripple" viewBox="0 0 360 224" role="img"
-        aria-label={`What you set moving, drawn as lines between you, your agency, your studio and everyone else. ${said || 'Nothing has moved yet.'}`}>
+        aria-label={`The circle: your taps go to everyone, agencies ask and pay, creators build new steps, and it comes back to you. ${said || 'Nothing has moved yet.'}`}>
+        {PATHS.map((p) => {
+          const [x1, y1] = AT[p.src]
+          const [x2, y2] = AT[p.dst]
+          const len = Math.hypot(x2 - x1, y2 - y1) || 1
+          const ox = (-(y2 - y1) / len) * 4
+          const oy = ((x2 - x1) / len) * 4
+          return (
+            <g key={`${p.src}>${p.dst}`} className="ripple-ghost" aria-hidden="true">
+              <line x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy} />
+              <text x={x1 + (x2 - x1) * (p.at ?? 0.5) + ox * 3.4 + (p.at ? 22 : 0)} y={y1 + (y2 - y1) * (p.at ?? 0.5) + oy * 3.4 + 2} textAnchor="middle">{p.say}</text>
+            </g>
+          )
+        })}
         {flows.map((f) => {
           const [x1, y1] = AT[f.src]
           const [x2, y2] = AT[f.dst]
@@ -80,10 +108,17 @@ export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'cre
           <button className="link" onClick={() => onSeat(pick === 'agency' ? 'agency' : 'creator')}>Open {pick === 'agency' ? 'an agency' : 'a studio'}</button>
         </p>
       ) : (
-        <Rows pageKey={pick} size={3} wide empty="Nothing has moved here yet. One tap starts it."
+        <Rows pageKey={pick} size={3} wide
+          empty={pick !== 'player' ? 'Nothing has moved here yet. One tap starts it.'
+            : earning === false ? 'My Sym is not in the pool yet.'
+              : asks === 0 ? `I can be asked now. ${botAgencies} of ${agencies} agencies are BOT agencies.` : 'Nothing has moved here yet. One tap starts it.'}
           rows={mine.map((l, i) => ({ id: `${pick}${i}`, top: `${SAY[l.src as Seat]} to ${SAY[l.dst as Seat]}`, label: l.text,
             n: l.credits > 0 ? `${l.credits} cr` : '', gold: l.credits > 0 }))} />
       )}
+      {pick === 'player' && earning === false && (
+        <button className="secondary" onClick={() => { api.consent(true).then(() => setTurn((n) => n + 1)).catch(() => undefined) }}>Let my Sym earn</button>
+      )}
+      <p className="fine ripple-close">Alone a Sym is black and white. Color comes from other people.<br />Together we build toward something greater.</p>
     </>
   )
 }

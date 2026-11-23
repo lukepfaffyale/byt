@@ -1462,3 +1462,6 @@ class Ripple(Strict):
     agency: bool
     creator: bool
     links: list[RippleLink] = []
+    # the same counts as plain numbers (taps, asks, ask_credits, checks, check_credits, steps_passed), for the
+    # one line on the journey that shows the circle turning
+    counts: dict[str, float] = {}

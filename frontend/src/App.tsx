@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
+import { LoopLine } from './LoopLine'
 import { flushSync } from 'react-dom'
 import { AgencyDesk } from './AgencyDesk'
 import { CreatorDesk, type SeatView } from './CreatorDesk'
@@ -23,7 +24,7 @@ import { TwinForm } from './TwinForm'
 import { Work } from './Work'
 import './shell.css'
 
-type Screen = { name: 'journey' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number; tab?: 'beliefs' } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'commons' } | { name: 'about' }
+type Screen = { name: 'journey' } | { name: 'commons'; first?: 'mine' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number; tab?: 'beliefs' } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'commons' } | { name: 'about' }
 
 const PLAYER_MENU: [name: 'commons' | 'journey' | 'work' | 'mine' | 'money' | 'arena' | 'world', label: string][] = [
   ['commons', 'Everyone'],
@@ -451,11 +452,11 @@ export default function App() {
   const top = plan.find((o) => !next || o.id !== `gate:${next.id}`)
   const cue: { say: string; go: string; act: () => void } | null = !me ? null
     : me.jobs_open > 0 && screen.name !== 'work'
-      ? { say: `I did ${me.jobs_open} ${me.jobs_open === 1 ? 'job' : 'jobs'}. Each check pays you.`, go: 'Check my work', act: () => setScreen({ name: 'work' }) }
+      ? { say: `${me.jobs_open} ${me.jobs_open === 1 ? 'job is' : 'jobs are'} open. I answer, you check, we are paid.`, go: 'Send my Sym to work', act: () => setScreen({ name: 'work' }) }
       : next && next.done > 0
         ? { say: `${next.total - next.done} ${next.total - next.done === 1 ? 'tap' : 'taps'} left in this one.`, go: `Continue: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
         : next
-          ? { say: me.gates_done === 0 ? `I know nothing yet. ${next.total} taps.` : `I am ${percent} percent formed. ${next.total} taps.`,
+          ? { say: me.gates_done === 0 ? `I know nothing yet. First gate: ${next.total} taps.` : `I am ${percent} percent formed. Next gate: ${next.total} ${next.total === 1 ? 'tap' : 'taps'}.`,
               go: `Start: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
           : top
             ? { say: `All ${me.gates_total} gates done.`, go: top.title, act: () => go(top.id) }
@@ -698,6 +699,7 @@ export default function App() {
         <section aria-labelledby="journey-h">
           <h1 id="journey-h">{formed >= 1 ? 'My Sym is fully formed.' : 'My Sym is forming.'}</h1>
           <p className="muted">Gates are short, and you only tap. Each gate you finish helps your Sym form.</p>
+          <LoopLine pulse={pulse} onOpen={() => setScreen({ name: 'commons', first: 'mine' })} />
           {!next && gates.length > 0 && <p className="notice">You finished all {gates.length} gates of the journey. More gates will come later. An extra skill step that a creator built is listed here when one is open.</p>}
           {(() => {
             const todo = plan.filter((o) => !next || o.id !== `gate:${next.id}`)
@@ -794,6 +796,14 @@ export default function App() {
             setScreen({ name: 'journey' })
             refresh()
           }}
+          onWork={() => {
+            setScreen({ name: 'work' })
+            refresh()
+          }}
+          onCircle={() => {
+            setScreen({ name: 'commons', first: 'mine' })
+            refresh()
+          }}
           nextUp={next && next.id !== screen.gateId ? { id: next.id, title: next.title } : undefined}
           onNext={(gateId) => {
             setScreen({ name: 'gate', gateId })
@@ -833,7 +843,8 @@ export default function App() {
 
       {screen.name === 'commons' && (
         <CommonsView next={next} onPlay={(gateId) => setScreen({ name: 'gate', gateId })} onJourney={() => setScreen({ name: 'journey' })}
-          onSeat={(seat) => setScreen({ name: seat, view: 'desk' } as Screen)} plan={plan} onGo={go} intent={intent} />
+          onSeat={(seat) => setScreen({ name: seat, view: 'desk' } as Screen)} plan={plan} onGo={go} intent={intent}
+          key={'first' in screen && screen.first ? 'circle' : 'all'} first={'first' in screen ? screen.first : undefined} />
       )}
 
       {screen.name === 'about' && (
@@ -849,8 +860,11 @@ export default function App() {
             it believes counts until it fits.
           </p>
           <p>
-            BYT is a class project. You play short gates. Your taps build a Sym, and the Sym belongs to you. Soon,
-            your Sym will try to guess your picks. A Sym that guesses well enough earns a certificate.
+            BYT began as a class project. You play short gates. Your taps build a Sym, and the Sym belongs to you.
+            Your Sym tries to guess your picks, and a Sym that guesses well enough earns a certificate from plain
+            code. Then it can answer agencies and do jobs while you rest. Creators build the steps that help it
+            grow. Our mission: to help people earn passive income while building the platform and the connections
+            that AGI will need from people. Today we show that potential with play money.
           </p>
           <p>
             We made every drawing and every brand in this game for this project. Nothing here is official, licensed

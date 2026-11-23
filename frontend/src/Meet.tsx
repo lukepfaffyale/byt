@@ -50,7 +50,7 @@ export function MetList({ meets, rows: given }: { meets: Meets; rows?: Meets['me
       <ul className="lines met-list">
         {rows.map((m) => (
           <li key={m.at}>
-            <span className="line-top">{new Date(m.at).toLocaleDateString()} · {m.paid} credits to its owner</span>
+            <span className="line-top">{new Date(m.at).toLocaleDateString()} · {m.paid} credits {m.sample ? 'to the game (a BOT Sym has no owner)' : 'to its owner'}</span>
             {m.open ? (
               <>
                 <span><strong>{m.nickname}</strong>{m.sample ? ' (a BOT Sym: made up, not a person)' : ''}</span>

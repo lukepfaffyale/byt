@@ -15,10 +15,10 @@ const WHEN: Record<string, string> = { now: 'Now', today: 'Today', week: 'This w
  * Counts and nameless lines only: no one is named, and no answer is shown.
  */
 export function CommonsView(props: { next?: { id: string; title: string; done: number }; onPlay: (gateId: string) => void; onJourney: () => void; onSeat: (seat: 'agency' | 'creator') => void
-  plan: PlanOption[]; onGo: (id: string) => void; intent?: 'agency' | 'creator' }) {
-  const { next, onPlay, onJourney, onSeat, plan, onGo, intent } = props
+  plan: PlanOption[]; onGo: (id: string) => void; intent?: 'agency' | 'creator'; first?: 'mine' }) {
+  const { next, onPlay, onJourney, onSeat, plan, onGo, intent, first: firstTab } = props
   const [data, setData] = useState<Commons | null>(null)
-  const [tab, setTab] = useState('now')
+  const [tab, setTab] = useState<string>(firstTab ?? 'now')
   const calm = still()
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
         <button className="primary" onClick={lead.act}>{lead.go}</button>
       </div>
       <Tabs label="Read the game" value={tab} onChange={setTab}
-        tabs={[{ id: 'now', label: 'Now', n: fresh }, { id: 'known', label: 'Known', n: data.known }, { id: 'mine', label: 'Mine', n: `${share}%` }, { id: 'flow', label: 'Economy' }, { id: 'why', label: 'Roles' }]} />
+        tabs={[{ id: 'now', label: 'Now', n: fresh }, { id: 'known', label: 'Known', n: data.known }, { id: 'mine', label: 'My circle', n: `${share}%` }, { id: 'flow', label: 'Economy' }, { id: 'why', label: 'Roles' }]} />
       {tab !== 'mine' && tab !== 'flow' && <div className="commons-view"><EcoField people={data.people} standIns={data.stand_ins} today={data.people_today} agencies={data.agencies} creators={data.creators}
         known={data.known} knownMine={data.known_mine} fresh={fresh} calm={calm}
         label={`Everyone in the game, moving in space around a core of light. ${said} Together they know ${data.known} things, and ${data.known_mine} of those came from you.`} />
@@ -107,7 +107,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
         </p>
         </>
       )}
-      {tab === 'mine' && <RippleMap calm={calm} onSeat={onSeat} />}
+      {tab === 'mine' && <RippleMap calm={calm} onSeat={onSeat} agencies={data.agencies} botAgencies={data.bot_agencies} />}
       {tab === 'flow' && <WorldView split />}
       {tab === 'why' && (
         <>

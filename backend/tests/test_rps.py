@@ -1,6 +1,6 @@
 """Rock, paper, scissors against the Sym, the league of Syms, and the dot pattern gates. All plain code."""
 import rps
-from content import CARDS, GATE_BY_ID, pattern_cells
+from content import CARDS, GATE_BY_ID, GATES, pattern_cells
 
 from tests.conftest import signup
 
@@ -69,7 +69,20 @@ def test_judgment_counts_sure_against_right_on_any_card_with_a_right_answer(clie
     assert out["sure_record"][0] == {"level": 3, "right": 3, "total": 3}
     judged = client.get("/me/judgment", headers=auth).json()
     assert judged["rows"][0] == {"level": 3, "right": 3, "total": 3} and len(judged["taps"]) == 3
-    assert "can be trusted" in judged["says"]
+    assert "I need 5" in judged["says"]  # 3 Sure answers are too few to say anything about that feeling
+    # play on to the next strategy gate, tapping Sure on every card with a right answer, all right
+    ids = [g.id for g in GATES]
+    for g in GATES[ids.index("strategy-easy") + 1:ids.index("strategy-medium") + 1]:
+        if g.kind == "battle":
+            assert client.post("/battles", headers=auth, json={"gate_id": g.id}).status_code == 200
+        for c in client.get(f"/gates/{g.id}/cards", headers=auth).json()["cards"]:
+            board = CARDS[c["id"]].board
+            body = {"card_id": c["id"], "choice": sorted(CARDS[c["id"]].winning)[0] if board else c["options"][0]["id"], "response_ms": 800}
+            assert client.post("/responses", headers=auth, json=body | ({"sure": 3} if board else {})).status_code == 200
+    judged = client.get("/me/judgment", headers=auth).json()
+    sure = judged["rows"][0]
+    assert sure["total"] >= 5 and sure["right"] == sure["total"]
+    assert f"In these puzzles, Sure was right {sure['total']} of {sure['total']}. You can trust it here." in judged["says"]
 
 
 def test_the_sure_record_counts_wrong_answers_and_says_which_gates_it_covers(client, auth):
@@ -91,7 +104,8 @@ def test_the_sure_record_counts_wrong_answers_and_says_which_gates_it_covers(cli
     assert out["sure_record"] == [{"level": 3, "right": 4, "total": 4}, {"level": 2, "right": 0, "total": 2}, {"level": 1, "right": 1, "total": 1}]
     judged = client.get("/me/judgment", headers=auth).json()
     assert judged["rows"] == out["sure_record"] and len(judged["taps"]) == 7 and judged["unsaid"] == 0
-    assert "Over all your gates" in judged["says"] and "4 of 4" in judged["says"] and "are counted" not in judged["says"]
+    # 4 Sure answers are under the minimum of 5, so the line waits instead of judging the feeling
+    assert "I need 5" in judged["says"] and "are counted" not in judged["says"]
     # an answer given with no "how sure" tap is in no row, and the line says so instead of looking like a full count
     c = client.get("/gates/strategy-medium/cards", headers=auth).json()["cards"][0]
     bare = client.post("/responses", headers=auth, json={"card_id": c["id"], "choice": sorted(CARDS[c["id"]].winning)[0], "response_ms": 800}).json()

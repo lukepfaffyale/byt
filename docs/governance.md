@@ -408,8 +408,8 @@ Nothing is official, licensed or for sale. The same statement is on the About sc
 - The sureness tap is now asked on the strategy games as well as the pattern puzzles, and `responses.sure` is stored
   for any card that has a right answer.
 - `GET /me/judgment` gives the player their own record: right at each level of sureness, their taps in order, and
-  one line worked out by code from fixed cut-offs (3 answers before anything is said; right 8 times in 10 when sure
-  counts as a feeling to trust). No model writes it. It is advice about checking a choice, never about money or health.
+  one line worked out by code from fixed cut-offs (5 answers before anything is said; right 8 times in 10 when sure
+  counts as a feeling to trust). No model writes it. It speaks about these puzzles only, never about life, money or health (changed 2026-11-22 after a psychologist's review).
 
 ## A certificate is earned, never bought (the student's rule, 2026-11-15)
 
@@ -840,7 +840,7 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
 - **Two mistakes made while deploying, and what changed.**
   1. A connection check printed a database driver's error message, which quoted part of the database password. The password was reset at once and the check now prints only "connected" or a plain reason.
   2. A test run aimed at a throwaway area of the hosted database wrote into the real tables instead, because the pooler ignored the setting that selects the area. It was caught the same hour, before any real person had played; the database was wiped and rebuilt (tables, row-level security, BOT Syms). Tests are no longer run against the hosted database.
-- **Free plan.** The back end sleeps after 15 minutes without visitors and takes up to a minute to wake. The README says so. No keep-alive trick is used.
+- **Compute plan.** The back end was on the free plan (it slept after 15 minutes) until the owner moved it to `0.5c-512mb` (7 dollars a month) before the link went to players. No keep-alive trick is used.
 
 ## 2026-11-22: BOT Syms keep the hours of their place
 
@@ -864,3 +864,15 @@ The owner played the live game on a phone and reported two things: the screens d
 ## 2026-11-22: Either key works
 
 The agents were built to call the model through the Portkey gateway with the course key. The course key was refused twice in three days, and graders hold a Portkey key or an OpenAI key. The back end now takes either: a Portkey key sends every call through Portkey as before; with no Portkey key, an OpenAI key (`OPENAI_API_KEY`, or an OpenAI key saved under the Portkey name by mistake) asks OpenAI directly for the same model. Nothing else changes: the same harness, limits, guard and audit trail run on both routes, and what is sent is the same (beliefs and card text, never a nickname). On the direct route there is no Portkey log or cache between the game and OpenAI. With no key at all the game runs on the practice Sym, as before.
+
+## 2026-11-22 (late): a review panel, the loop, the calibration and the first outside tester
+
+Nine reviews were run as AI test passes by the engineer (game design, finance, strategy, data science, analysis, writing, psychology, marketing, and a second finance and strategy pass on value). They are not outside players and the report says so. What changed because of them:
+
+- **Evidence stated as it is.** The headline "74 percent against 39" came mostly from scripted test accounts that pick by a fixed list. The report and the slides now show scripted and hand-played accounts apart: on accounts played by hand, the Sym tied the crowd's guess. The four-method test is in the repository (`backend/experiments/cost_experiment.py`, output in `output/cost_experiment.json`).
+- **Money stated as it is.** Answers from BOT Syms are paid to a game wallet, not to people; asking a group again costs more; the cost for each player counts the Profiler. "Passive income" stays as the owner's phrase, shown as potential with play money, with a ladder of how a Sym earns more as it is used and every dollar figure marked as an estimate.
+- **Consent is asked where it becomes true.** After 8 picks a Sym can be asked, so the first gate ends by asking "May I earn?" with four plain facts beside the button. It is one tap, off by default, and can be turned off on My Work.
+- **A mirror, not a test.** A type letter now needs 6 picks with 5 on one side. The "Brain" tab is "Areas" and shows counts. Lines that judged the person were reworded. Fifteen cards were reworded or retagged (see docs/data/CHANGELOG.md).
+- **Calibration in about a minute.** A new third gate of three reaction rings joins the first two gates as a three-part calibration. Reaction time is shown as the person's own time "on this device", against no one, and earns no credits. There is no timer on taste picks.
+- **The idea, before the choice.** A first outside tester said an intro to the concept would help. The welcome now tells the idea in its four moving lines, and "How it works" tells it in four taps; it opens once by itself for a new player whose device has motion off.
+- **Not changed:** pay still halves after 7 days away. The psychologist called this a loss hook and advised 30 and 90 days. It is left for the owner to decide.

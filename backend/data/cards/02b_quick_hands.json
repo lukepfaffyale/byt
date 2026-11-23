@@ -1,0 +1,8 @@
+{
+  "gate": {"id": "quick-hands", "title": "Quick hands", "kind": "reflex", "deck": "reflex", "difficulty": "easy"},
+  "cards": [
+    {"id": "qh-1", "prompt": "Tap the ring when it fills. You have 1 second.", "board": {"game": "reflex", "rows": ["go"], "to_move": "1000"}},
+    {"id": "qh-2", "prompt": "Two rings. Tap the one that fills. You have 1.1 seconds.", "board": {"game": "reflex", "rows": ["side"], "to_move": "1100"}},
+    {"id": "qh-3", "prompt": "An empty ring may flash first. Wait for the full ring. You have 1.1 seconds.", "board": {"game": "reflex", "rows": ["wait"], "to_move": "1100"}}
+  ]
+}

@@ -10,9 +10,9 @@ const ANIMALS = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'go
 const BANDS = ['Very low', 'Low', 'Average', 'High', 'Very high']
 const LETTER_KEYS = ['ei', 'sn', 'tf', 'jp'] as const
 const VERDICT: Record<Axis['verdict'], string> = {
-  aligned: 'Same as what you told your Sym',
-  differs: 'Different from what you told your Sym',
-  open: 'Not clear yet: your Sym needs more picks',
+  aligned: 'Same as what you told your Sym.',
+  differs: 'Your picks and your own view differ here. Both can be true.',
+  open: 'Not clear yet: your Sym needs more picks.',
   'not told': '',
 }
 type Part = 'guess' | 'letters' | 'styles' | 'stars'
@@ -118,7 +118,7 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
             {mirror.paths.map((p) => (
               <li key={p.kind}>
                 <button className="mine-path" aria-haspopup="dialog" onClick={() => setOpenRow(`path-${p.kind}`)}>
-                  <span className="line-top">{p.kind === 'specialise' ? 'Your strong side' : 'Your side to grow'}</span>
+                  <span className="line-top">{p.kind === 'specialise' ? 'You pick most' : 'You pick least'}</span>
                   <span className="path-style">{p.style}</span>
                 </button>
               </li>
@@ -136,8 +136,9 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
             <p className="line-top">Thinking style · {Math.round(style.share * 100)} percent</p>
             <p className="mine-pop-title">{style.name}</p>
             <p>{style.about}</p>
-            <p><span className="line-top">At your best</span> {style.strength}</p>
-            <p><span className="line-top">Be careful of</span> {style.watch}</p>
+            <p className="line-top">From your picks in this game:</p>
+            <p><span className="line-top">What it helps with</span> {style.strength}</p>
+            <p><span className="line-top">The trade-off</span> {style.watch}</p>
             <p className="muted">
               You picked this {style.picks} of the {style.chances} times you could{style.told !== null ? `. You told your Sym: ${BANDS[style.told - 1].toLowerCase()}` : ''}.
             </p>
@@ -145,10 +146,10 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
           </Pop>
         )}
         {path && (
-          <Pop label={path.kind === 'specialise' ? 'Your strong side' : 'Your side to grow'} onClose={close}>
-            <p className="line-top">{path.kind === 'specialise' ? 'Your strong side' : 'Your side to grow'}</p>
+          <Pop label={path.kind === 'specialise' ? 'You pick most' : 'You pick least'} onClose={close}>
+            <p className="line-top">{path.kind === 'specialise' ? 'You pick most' : 'You pick least'}</p>
             <p className="mine-pop-title">{path.style}</p>
-            <p>{path.kind === 'specialise' ? 'You pick this style the most. These skills build on it.' : 'You pick this style the least. These skills help it grow.'}</p>
+            <p>{path.kind === 'specialise' ? 'You pick this style the most. These skills build on it.' : 'You pick this style the least. These games let you try it.'}</p>
             <SkillLinks skills={path.skills} onSkill={onSkill} />
           </Pop>
         )}
@@ -160,6 +161,7 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
     const f = mirror.faculties.find((x) => x.key === openRow)
     return (
       <div className="mirror mine-mirror">
+        <p className="fine" style={{ margin: 0 }}>These bars count your picks. They do not score ability or a brain.</p>
         <ul className="bars mine-bars">
           {mirror.faculties.map((x) => (
             <Bar key={x.key} name={x.name} share={x.share} onOpen={() => setOpenRow(x.key)} />
@@ -168,11 +170,11 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
         {tools(<More>Tap a line to open it. The number is the percent of times you picked that area. The brain areas are loose textbook links. Nothing here measures a brain.</More>)}
         {f && (
           <Pop label={f.name} onClose={close}>
-            <p className="line-top">Area of the mind · {Math.round(f.share * 100)} percent</p>
+            <p className="line-top">Area · {f.picks} of {f.chances} picks</p>
             <p className="mine-pop-title">{f.name}</p>
             <p>{f.about}</p>
             <p><span className="line-top">Did you know</span> {f.fact}</p>
-            <p className="muted">You picked this {f.picks} of the {f.chances} times you could. Textbooks loosely link it to: {f.region}.</p>
+            <p className="muted">You picked this {f.picks} of the {f.chances} times you could. Science books loosely link this kind of thinking to: {f.region}. This is a picture, not a scan.</p>
             {f.feeds.length > 0 && (
               <p><span className="line-top">What feeds it</span> {f.feeds.join(' · ')}</p>
             )}
@@ -188,7 +190,7 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
     <div className="mirror mine-mirror">
       {tools(
         <>
-          <span className="mine-type" role="img" aria-label={`Our guess for your type: ${mirror.axes.map((a) => a.suggested ?? 'not clear yet').join(', ')}`}>
+          <span className="mine-type" role="img" aria-label={`A guess for your type: ${mirror.axes.map((a) => a.suggested ?? 'not clear yet').join(', ')}`}>
             {mirror.suggested_type.split('').map((ch, i) => (
               <span key={i} className={ch === '.' ? 'open' : ''} aria-hidden="true">{ch === '.' ? '?' : ch}</span>
             ))}
@@ -197,14 +199,15 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
           {part === 'stars' && starPages.pager}
           <More>
             {part === 'guess'
-              ? `The big letters are our guess, from ${mirror.picks_used} picks. Tap a line to see the count behind it. `
-              : 'You do not have to tell your Sym anything. Tap only what you want the game to store. The game never sends it to the AI model, and you can clear it. Star sign and year animal are here for one test: do they guess your picks better than your Sym does? '}
+              ? `A guess from ${mirror.picks_used} picks. A mirror, not a test. It can change as you play. `
+              : 'You do not have to tell your Sym anything. Tap only what you want the game to store. The game never sends it to the AI model, and you can clear it. Star sign and year animal are here for one test: can stars call your picks better than your Sym? We test it. We do not assume it. '}
             These cards are our own. A simple computer program reads your picks. This is not the official test of any publisher.
           </More>
         </>,
       )}
-      <Pick className="mine-parts" label="Our guess, and what you told your Sym" value={part} onChange={setPart}
-        items={[{ id: 'guess', label: 'Our guess' }, { id: 'letters', label: 'My letters' }, { id: 'styles', label: 'My styles' }, { id: 'stars', label: 'Stars' }]} />
+      <p className="fine" style={{ margin: 0 }}>This is a game mirror. It is not a personality test.</p>
+      <Pick className="mine-parts" label="A guess, and what you told your Sym" value={part} onChange={setPart}
+        items={[{ id: 'guess', label: 'A guess' }, { id: 'letters', label: 'My letters' }, { id: 'styles', label: 'My styles' }, { id: 'stars', label: 'Stars' }]} />
 
       {part === 'guess' && (
         <ul className="mine-axes">
@@ -229,9 +232,11 @@ export function MirrorView({ view, onSkill, open, slot }: { view: 'type' | 'mind
       {axis && (
         <Pop label={axis.name} onClose={close}>
           <p className="line-top">{axis.name}</p>
-          <p className="mine-pop-title">{axis.suggested ? `Our guess: ${axis.suggested}` : 'Not clear yet'}</p>
+          <p className="mine-pop-title">{axis.suggested
+            ? `You lean ${axis.suggested}: ${Math.max(axis.first_picks, axis.second_picks)} picks to ${Math.min(axis.first_picks, axis.second_picks)}.`
+            : `Too close to call: ${axis.first_picks} to ${axis.second_picks}.`}</p>
           <p>You picked {axis.first} {axis.first_picks} {axis.first_picks === 1 ? 'time' : 'times'} and {axis.second} {axis.second_picks} {axis.second_picks === 1 ? 'time' : 'times'}.</p>
-          {VERDICT[axis.verdict] && <p className="muted">{VERDICT[axis.verdict]}{axis.told ? ` (${axis.told})` : ''}.</p>}
+          {VERDICT[axis.verdict] && <p className="muted">{VERDICT[axis.verdict]}{axis.told ? ` You said: ${axis.told}.` : ''}</p>}
         </Pop>
       )}
 

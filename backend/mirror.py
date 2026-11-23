@@ -11,7 +11,9 @@ from dataclasses import dataclass
 from content import CARDS, ONTOLOGY
 
 FULL_EVIDENCE = 30  # this many cards touching an area fill its part of the sphere
-MIN_PICKS = 3  # fewer picks than this on an axis and the letter stays open
+MIN_PICKS = 3  # fewer chances than this on a style and the styles stay open
+LETTER_MIN_PICKS = 6  # fewer picks than this on an axis and the letter stays open
+LETTER_MIN_SHARE = 0.8  # and one side needs at least this share of the axis picks (5 of 6), so a letter is a clear lean
 
 # Read from the ontology, so a new gate or a new tag changes the mirror without touching this file.
 # (first letter, second letter, trait for the first, trait for the second, plain name)
@@ -27,6 +29,7 @@ FACULTIES: tuple[tuple[str, str, frozenset[str]], ...] = tuple(
 )
 REGION = {f["id"]: f["region"] for f in ONTOLOGY["faculties"]}
 INFO = {g["id"]: g for g in ONTOLOGY["styles"] + ONTOLOGY["faculties"]}
+UNMAPPED = frozenset(ONTOLOGY.get("unmapped", []))  # tags that count toward nothing, like "mixed" (Sometimes)
 
 SIGNS = ("aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn",
          "aquarius", "pisces")
@@ -40,7 +43,7 @@ class AxisRead:
     second: str
     first_picks: int
     second_picks: int
-    letter: str | None  # None while the axis is open (too few picks, or an even split)
+    letter: str | None  # None while the axis is open (too few picks, or no clear lean)
 
 
 @dataclass(frozen=True)
@@ -55,6 +58,13 @@ class StyleRead:
         return self.picks / self.chances if self.chances else 0.0
 
 
+def counts_for_letters(card) -> bool:
+    """Only cards that set one side against one other count toward the letters. A card with four tagged
+    options (thnk-11, thnk-12) feeds a different axis with each option, so a pick there would add to one
+    letter with no fair chance for its opposite. Those cards still count for the styles."""
+    return len({o.trait for o in card.options if o.trait and o.trait not in UNMAPPED}) <= 2
+
+
 def read_axes(picks: list[tuple[str, str]]) -> list[AxisRead]:
     """picks: (card id, chosen option id) for every card the player answered."""
     counts: dict[str, int] = {}
@@ -62,13 +72,16 @@ def read_axes(picks: list[tuple[str, str]]) -> list[AxisRead]:
         card = CARDS.get(card_id)
         if card is None:
             continue
+        if not counts_for_letters(card):
+            continue
         trait = next((o.trait for o in card.options if o.id == choice), None)
         if trait:
             counts[trait] = counts.get(trait, 0) + 1
     out = []
     for first, second, t1, t2, name in AXES:
         a, b = counts.get(t1, 0), counts.get(t2, 0)
-        letter = None if a + b < MIN_PICKS or a == b else (first if a > b else second)
+        lean = max(a, b) / (a + b) if a + b else 0.0
+        letter = None if a + b < LETTER_MIN_PICKS or lean < LETTER_MIN_SHARE else (first if a > b else second)
         out.append(AxisRead(name, first, second, a, b, letter))
     return out
 

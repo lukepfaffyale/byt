@@ -172,3 +172,7 @@ There is no free-text channel from any user to a model in this build.
 - 45 tests pass.
 - Not done: no live run of the agents since the plain-words rule was added to the shared prompt, so how well the
   model follows it is unmeasured. The audit trail has not been re-read since the Worker's live run.
+
+## 2026-11-22: the four-method test, rerun from the repo
+
+`backend/experiments/cost_experiment.py` was run on the local database with a real model key. It holds back 10 picks from each of 6 test accounts (4 scripted, 2 played by hand) and scores four ways of guessing them. The AI methods ran through this harness, so the limits, the audit trail and the usage table applied. The output is `output/cost_experiment.json`: counts, 95 percent ranges, tokens and dollars, with no name and no player id. The same evening `pytest` gave 94 passed.

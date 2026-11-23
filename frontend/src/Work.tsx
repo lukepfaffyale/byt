@@ -109,8 +109,8 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         // the outcome is said by my Sym, first and kindly: a wrong answer is the Sym's miss, never the person's
         const paid = result.credits_earned > 0
           ? (verdict === 'approved'
-            ? `It paid ${result.credits_earned} credits${result.certified ? ', double' : ''}.`
-            : `It still paid ${result.credits_earned} credits.`)
+            ? `It paid ${result.credits_earned} ${result.credits_earned === 1 ? 'credit' : 'credits'}${result.certified ? ', double' : ''}.`
+            : `It still paid ${result.credits_earned} ${result.credits_earned === 1 ? 'credit' : 'credits'}.`)
           : 'No pay this time.'
         onReward({
           say: `${verdict === 'approved' ? 'Right, you said.' : 'I was wrong. I learned from it.'} ${paid}`,
@@ -257,6 +257,14 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         <More>
           Your Sym answers as you would. You say if the answer is right, or you correct it. A Sym with a certificate
           earns double. The companies that ask are made up, and credits are play money.
+          {tab === 'away' && (
+            <>
+              <br />Agencies ask my Sym. It answers from my picks.
+              <br />They see totals over 5 Syms. Never my name.
+              <br />Credits are play money. Most askers today are BOT agencies.
+              <br />Turn it off any time on My Work.
+            </>
+          )}
         </More>
       </div>
       {jobs && tab === 'jobs' && (

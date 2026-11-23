@@ -2,12 +2,12 @@
   "gate": {"id": "food-1", "title": "Food", "kind": "preference", "deck": "food"},
   "cards": [
     {"id": "food-01", "prompt": "At a restaurant, you order:", "options": [{"id": "a", "label": "My usual dish", "trait": "loyal"}, {"id": "b", "label": "Something new", "trait": "novelty"}]},
-    {"id": "food-02", "prompt": "What is for dinner tonight?", "options": [{"id": "a", "label": "I cook", "trait": "plan"}, {"id": "b", "label": "I order food", "trait": "comfort"}]},
-    {"id": "food-03", "prompt": "How spicy?", "options": [{"id": "a", "label": "Spicy as possible", "trait": "bold"}, {"id": "b", "label": "Mild, please", "trait": "classic"}]},
+    {"id": "food-02", "prompt": "Dinner tonight is:", "options": [{"id": "a", "label": "Planned this morning", "trait": "plan"}, {"id": "b", "label": "Decided when hungry", "trait": "spontaneous"}]},
+    {"id": "food-03", "prompt": "Pizza night:", "options": [{"id": "a", "label": "Chef's surprise", "trait": "bold"}, {"id": "b", "label": "My usual", "trait": "classic"}]},
     {"id": "food-04", "prompt": "Coffee or tea order:", "options": [{"id": "a", "label": "Same every day", "trait": "loyal"}, {"id": "b", "label": "Whatever is new", "trait": "novelty"}]},
     {"id": "food-05", "prompt": "Food shopping:", "options": [{"id": "a", "label": "Follow a list", "trait": "plan"}, {"id": "b", "label": "Walk and decide", "trait": "spontaneous"}]},
     {"id": "food-06", "prompt": "You would rather eat:", "options": [{"id": "a", "label": "One perfect dish", "trait": "quality"}, {"id": "b", "label": "Many small dishes", "trait": "variety"}]},
-    {"id": "food-07", "prompt": "Dessert?", "options": [{"id": "a", "label": "Always", "trait": "splurge"}, {"id": "b", "label": "Almost never", "trait": "save"}]},
-    {"id": "food-08", "prompt": "Eating with others, you:", "options": [{"id": "a", "label": "Share everything", "trait": "social"}, {"id": "b", "label": "Keep my plate", "trait": "solo"}]}
+    {"id": "food-07", "prompt": "The special costs more.", "options": [{"id": "a", "label": "Get it", "trait": "splurge"}, {"id": "b", "label": "Regular is fine", "trait": "save"}]},
+    {"id": "food-08", "prompt": "Best dinner table:", "options": [{"id": "a", "label": "Big and loud", "trait": "social"}, {"id": "b", "label": "Small and quiet", "trait": "solo"}]}
   ]
 }

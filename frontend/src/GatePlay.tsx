@@ -26,6 +26,10 @@ type Props = {
   announce: (text: string) => void
   onProgress: () => void
   onExit: () => void
+  /** after a battle the lit step is the Sym's work */
+  onWork?: () => void
+  /** the whole circle, with this person's numbers on it */
+  onCircle?: () => void
   /** the gate my Sym wants after this one, so one tap goes straight on */
   nextUp?: { id: string; title: string }
   onNext?: (gateId: string) => void
@@ -33,8 +37,40 @@ type Props = {
 
 /** the first gate: its picks write the first blocks of the Sym's code, so its finish shows that code */
 const CALIBRATOR = 'style-1'
+/** the last of the three parts of the calibration: its end is the close of the opening scene */
+const CLOSE = 'quick-hands'
+/** what my Sym says on the first card of each part of the calibration */
+const PART: Record<string, string> = {
+  'style-1': 'Part 1 of 3. Each tap writes a block of me.',
+  'strategy-easy': 'Part 2 of 3. Show me how you decide.',
+  'quick-hands': 'Part 3 of 3. Show me your hands.',
+}
+/** Which side of a pair each option of a Calibrator card stands for: [option a, option b]. This mirrors the traits
+ * in backend/data/cards/01_style.json (the server does not send traits to the browser). If a trait changes there,
+ * change it here. style-05 is left out: its pair has only one card. */
+const LEAN: Record<string, [string, string]> = {
+  'style-01': ['bold', 'classic'], 'style-02': ['comfort', 'look'], 'style-03': ['bold', 'classic'], 'style-04': ['classic', 'bold'],
+  'style-06': ['bold', 'classic'], 'style-07': ['comfort', 'look'], 'style-08': ['comfort', 'look'],
+}
+const LEAN_NAME: Record<string, string> = { bold: 'Bold', classic: 'Classic', comfort: 'Comfort', look: 'Looks' }
 
-export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextUp, onNext }: Props) {
+/** One true line about the person from their own picks in the first gate: a count, never a verdict. */
+function leanLine(picked: Record<string, string>): string {
+  const seen = Object.keys(LEAN).filter((id) => picked[id] === 'a' || picked[id] === 'b')
+  if (seen.length < 7) return ''
+  const count: Record<string, number> = { bold: 0, classic: 0, comfort: 0, look: 0 }
+  for (const id of seen) count[LEAN[id][picked[id] === 'a' ? 0 : 1]] += 1
+  const over = (a: string, b: string) => (count[a] >= count[b] ? [a, b] : [b, a])
+  if (count.comfort === 3 || count.look === 3) {
+    const [top, low] = over('comfort', 'look')
+    return `${LEAN_NAME[top]} over ${LEAN_NAME[low].toLowerCase()}: 3 of 3.`
+  }
+  if (count.bold === 2 && count.classic === 2) return 'Bold or classic: 2 and 2. For you, it depends.'
+  const [top, low] = over('bold', 'classic')
+  return `${LEAN_NAME[top]} over ${LEAN_NAME[low].toLowerCase()}: ${count[top]} of 4.`
+}
+
+export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWork, onCircle, nextUp, onNext }: Props) {
   const isBattle = gateKind === 'battle'
   const [gate, setGate] = useState<Gate | null>(null)
   const [cards, setCards] = useState<Card[]>([])
@@ -64,6 +100,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   const leave = useCallback(() => {
     void Promise.allSettled(pending.current).then(onExit)
   }, [onExit])
+  const toWork = useCallback(() => {
+    void Promise.allSettled(pending.current).then(onWork ?? onExit)
+  }, [onWork, onExit])
   const goNext = useCallback(() => {
     if (nextUp && onNext) void Promise.allSettled(pending.current).then(() => onNext(nextUp.id))
   }, [nextUp, onNext])
@@ -72,6 +111,25 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   // that asks for less motion) nothing moves on a timer: the result stays until Next card is tapped.
   const moveOn = useRef(0)
   const lock = useRef(false) // a pick is on its way: a second tap in the same beat does nothing
+  // the circle: what my Sym was asked and paid while this gate was played, and whether it may be asked at all
+  const poolBefore = useRef<{ answers: number; credits: number } | null>(null)
+  const [pool, setPool] = useState<{ on: boolean; answers: number; credits: number } | null>(null)
+  const [world, setWorld] = useState<{ agencies: number; bots: number; syms: number; botSyms: number } | null>(null)
+  // what was done in this visit to the gate: how long each turn took, what was picked, and each ring tapped in time.
+  // These are the same numbers the server stores with each answer; nothing extra is sent.
+  const paces = useRef<number[]>([])
+  const picked = useRef<Record<string, string>>({})
+  const hits = useRef<number[]>([])
+  const [blocks, setBlocks] = useState<number | null>(null) // every block of my code so far
+  const [job, setJob] = useState<number | null>(null) // what the first open job pays
+  const [justOn, setJustOn] = useState(false)
+  const [earnAsked, setEarnAsked] = useState(() => {
+    try {
+      return sessionStorage.getItem('byt.earn.asked') === '1'
+    } catch {
+      return false
+    }
+  })
   const resultAt = useRef(0)
   // when a gate ends my Sym says what it was worth and offers the next one: one tap and the loop goes on
   const onward = nextUp && onNext ? goNext : leave
@@ -104,6 +162,45 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
 
   const card = cards[index]
   const finished = gate !== null && index >= cards.length
+
+  useEffect(() => {
+    let cancelled = false
+    api.jobs().then((j) => { if (!cancelled) poolBefore.current = { answers: j.data_answers, credits: j.data_credits } }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [gateId])
+  useEffect(() => {
+    if (!finished) return
+    let cancelled = false
+    api.jobs().then((j) => {
+      if (cancelled) return
+      setPool({ on: j.data_income, answers: j.data_answers, credits: j.data_credits })
+      setJob(j.jobs.find((x) => x.state === 'open')?.pay ?? null)
+    }).catch(() => undefined)
+    api.commons().then((c) => { if (!cancelled) setWorld({ agencies: c.agencies, bots: c.bot_agencies, syms: c.people + c.bots, botSyms: c.bots }) }).catch(() => undefined)
+    if (gateId === CLOSE) api.code().then((c) => { if (!cancelled) setBlocks(c.total) }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [finished, gateId])
+  // while this gate was played: how many times my Sym was asked, and what that paid. Never shown as a zero.
+  const askedNow = pool && poolBefore.current ? Math.max(0, pool.answers - poolBefore.current.answers) : 0
+  const gainedNow = pool && poolBefore.current ? Math.max(0, Math.round((pool.credits - poolBefore.current.credits) * 100) / 100) : 0
+  const earnAsk = pool !== null && !pool.on && !earnAsked && !justOn
+  const letEarn = () => {
+    api.consent(true)
+      .then((j) => {
+        setPool({ on: j.data_income, answers: j.data_answers, credits: j.data_credits })
+        setJustOn(true)
+        announce('Your Sym can be asked now.')
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'There was a problem. Please try again.'))
+  }
+  const notNow = () => {
+    try {
+      sessionStorage.setItem('byt.earn.asked', '1')
+    } catch {
+      // the answer still holds until this page is closed
+    }
+    setEarnAsked(true)
+  }
   // every board card with a right answer asks how sure, so no answer is left out of the record
   const askSure = !!card?.board && card.board.game !== 'reflex'
 
@@ -164,6 +261,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
     async (choice: string, sure?: number, took?: number) => {
       if (!card || busy || result) return
       const ms = took ?? Math.max(0, Math.round(performance.now() - shownAt.current))
+      paces.current.push(ms)
+      picked.current[card.id] = choice
+      if (card.board?.game === 'reflex' && choice === 'hit') hits.current.push(ms)
       setError('')
       if (!card.board && !isBattle && card.kind !== 'logic') {
         // No right answer to wait for: the tile lights for a beat, the next card comes, and the save runs behind.
@@ -208,7 +308,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
           announce(`Your Sym said: ${out.twin_choice}. ${out.twin_match ? 'Your Sym was right.' : 'Your Sym was wrong. It will study this after the battle.'}`)
         } else {
           const said = card.board?.game === 'pattern' ? (out.is_correct ? 'You saw the pattern.' : 'The dot went to another square. It is marked on the board.')
-            : card.board?.game === 'reflex' ? (out.is_correct ? 'In time.' : 'Not this time.')
+            : card.board?.game === 'reflex' ? (out.is_correct ? 'In time.' : 'Just late.')
               : card.board ? (out.is_correct ? 'That move wins.' : 'That move does not win.') : out.is_correct ? 'That is right.' : 'That is not right.'
           announce(`${said} You get ${out.points_earned} points.`)
         }
@@ -277,8 +377,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
         {!battle && !error && <p aria-live="polite">Counting the results.</p>}
         {battle && (
           <>
-            <SymCue who={`My Sym${battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}`} calm={still()} formed={1} go={onwardGo} act={onward}
-              say={`I called ${battle.twin_matches} of ${battle.n}. The crowd got ${battle.baseline_matches}.${battle.cert ? ' Certificate earned.' : ''}${!learned ? ' Studying my misses.' : learned.misses > 0 ? ` I made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'}.` : ''}`} />
+            <SymCue who={`My Sym${battle.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}`} calm={still()} formed={1}
+              go={nextUp && onNext ? 'See my jobs' : onwardGo} act={nextUp && onNext ? toWork : onward}
+              alt={nextUp && onNext ? onwardGo : undefined} altAct={nextUp && onNext ? onward : undefined}
+              say={`I called ${battle.twin_matches} of ${battle.n}. The crowd got ${battle.baseline_matches}.${battle.cert ? ' Certificate earned.' : ''}${!learned ? ' Studying my misses.' : learned.misses > 0 ? ` I made ${learned.lessons.length} ${learned.lessons.length === 1 ? 'change' : 'changes'}.` : ''}${nextUp && onNext ? ' Now I can work for you.' : ''}${pool?.on && askedNow > 0 ? ` While you played, I was asked ${askedNow} ${askedNow === 1 ? 'time' : 'times'}. +${credits(gainedNow)} credits.` : ''}`} />
             {battle.cert ? (
               <p className="cert">
                 <span className="cert-kind">Certificate</span>
@@ -331,21 +433,63 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
     )
   }
 
+  // ---- the calibration: one true line about the person at the end of each part, from this visit's own numbers ----
+  const part = gateId in PART
+  const close = gateId === CLOSE
+  const took = Math.round(paces.current.reduce((n, ms) => n + ms, 0) / 1000)
+  const whole = paces.current.length === cards.length && took > 0 && took <= 60 // the person looked away: say nothing
+  const best = hits.current.length > 0 ? Math.min(...hits.current) : null
+  const fact = !finished || !part ? ''
+    : gateId === CALIBRATOR ? leanLine(picked.current)
+      : close ? (blocks !== null ? `You gave ${blocks} inputs. I kept every one.` : '') : ''
+  const pace = !finished || !part || !whole ? ''
+    : gateId === CALIBRATOR ? `${cards.length} picks in ${took} seconds.`
+      : gateId === 'strategy-easy' ? `${cards.length} moves in ${took} seconds.` : ''
+  const quick = finished && close ? (best !== null ? `Quickest tap: ${(best / 1000).toFixed(2)} s on this device.` : 'Tricky rings. Your taps are kept.') : ''
+  const light = finished && close && world ? `One light among them. ${world.botSyms} of the Syms are BOT Syms.` : ''
+  const toJob = close && !earnAsk && job !== null && !!pool?.on
+
   if (finished) {
     return (
-      <section aria-labelledby="done-h" className="gate-done">
+      <section aria-labelledby="done-h" className={earnAsk ? 'gate-done asking' : 'gate-done'}>
         <h1 id="done-h" tabIndex={-1} className="sr-only">Gate finished: {gate.title}</h1>
-        <p className="done-hero"><span className="done-num lead"><strong>+{earned}</strong> points</span></p>
-        {gateId === CALIBRATOR && <CodeView brief />}
-        <SymCue calm={still()} formed={1} go={onwardGo} act={onward}
-          say={`${gate.total} ${gate.total === 1 ? 'tap' : 'taps'} kept.${bonus + sponsored > 0 ? ` We earned ${credits(bonus + sponsored)} credits.` : ''}`} />
+        {/* a tap is a block of my Sym's code: that is what was made here, and what the rest of the game runs on */}
+        {close && blocks !== null
+          ? <p className="done-hero"><span className="done-num lead"><strong>{blocks}</strong> blocks · my code</span></p>
+          : <p className="done-hero"><span className="done-num lead"><strong>+{gate.total}</strong> {gate.total === 1 ? 'block' : 'blocks'}</span></p>}
+        {(gateId === CALIBRATOR || close) && <CodeView brief />}
+        {fact && <p className="done-fact">{fact}</p>}
+        {(pace || light || quick) && (
+          <p className="fine done-facts">
+            {[pace, quick, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
+          </p>
+        )}
+        <SymCue calm={still()} formed={1} go={earnAsk ? 'Let my Sym earn' : toJob ? 'See the job' : onwardGo} act={earnAsk ? letEarn : toJob ? toWork : onward}
+          alt={earnAsk ? 'Not now' : toJob && nextUp && onNext ? onwardGo : undefined} altAct={earnAsk ? notNow : toJob && nextUp && onNext ? onward : undefined}
+          say={justOn && !close ? `I am in. ${world ? `${world.agencies} agencies` : 'Agencies'} can ask me now.`
+            : earnAsk && close ? 'I am ready. May I earn while you rest?'
+            : earnAsk ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}. Agencies can ask me now. May I earn?`
+            : close ? `Now I can work while you rest.${job !== null ? ` A job pays ${job}.` : ''}`
+              : `${pool?.on && askedNow > 0 ? `While you played, I was asked ${askedNow} ${askedNow === 1 ? 'time' : 'times'}. +${credits(gainedNow)} credits.`
+                : pool?.on ? `${gate.total} more ${gate.total === 1 ? 'block' : 'blocks'}. I can be asked now.`
+                  : `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'} kept. ${gate.total} more ${gate.total === 1 ? 'block' : 'blocks'}.`}${bonus + sponsored > 0 ? ` We earned ${credits(bonus + sponsored)} credits.` : ''}`} />
+        {earnAsk && (
+          <p className="fine">
+            Agencies ask my Sym. It answers from my picks.<br />
+            They see totals over 5 Syms. Never my name.<br />
+            {world ? `Credits are play money. ${world.bots} of ${world.agencies} agencies are BOT agencies.` : 'Credits are play money. Most askers today are BOT agencies.'}<br />
+            Turn it off any time on My Work.
+          </p>
+        )}
+        {!earnAsk && earned > 0 && !part && <p className="fine">{earned} points</p>}
+        {close && onCircle && !earnAsk && <button className="link" onClick={() => { void Promise.allSettled(pending.current).then(onCircle) }}>See my circle</button>}
         {cert && (
           <p className="cert">
             <span className="cert-kind">Certificate</span>
             <strong>{cert.topic}, {cert.level} · {Math.round(cert.accuracy * cert.n)} of {cert.n}</strong>
           </p>
         )}
-        {!cert && mark && mark.need !== null && <p className="fine">{mark.right} of {mark.need}. A certificate needs {mark.need}.</p>}
+        {!cert && mark && mark.need !== null && !part && <p className="fine">{mark.right} of {mark.need}. A certificate needs {mark.need}.</p>}
         <div className="done-foot">
           <Worth seat="player" moment="gate" />
           {nextUp && <button className="link" onClick={leave}>My Journey</button>}
@@ -359,7 +503,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
   const last = left === 1
   // the bet my Sym made before the gate began, and how it came out. A miss is never the player's fault here.
   const betSay = (bet: boolean, got: boolean | null) =>
-    bet ? (got ? 'I bet yes. Right.' : 'I bet yes. Wrong.') : got ? 'I bet no. You beat me.' : 'I bet no. Right.'
+    bet ? (got ? 'I bet yes. Right.' : 'I bet on you. Hard one.') : got ? 'I bet no. You beat me.' : 'Hard one. I thought so.'
   // a few words at most, and nothing on most cards: the path filling one light for each tap says the rest
   const symSay = result && isBattle
     ? (result.twin_match ? (run >= 2 ? `Called it. ${run} in a row.` : 'Called it.') : 'You surprised me.')
@@ -371,7 +515,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
         ? (sure[card.id] === undefined ? 'Sealed.' : `Sealed. ${sure[card.id]}% sure.`)
         : card.board?.game === 'pattern' && card.bet_sure !== null
           ? 'My bet is in.'
-          : index === 0 ? 'Tap. I learn.'
+          : index === 0 ? (PART[gateId] ?? 'Tap. I learn.')
             : last ? 'Last one.'
               : index === Math.ceil(cards.length / 2) ? 'Half way.' : ''
   // a board gate says its rule once. From the second card on, the same words are a small line.
@@ -420,7 +564,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, nextU
                 ))}
               </div>
             )}
-            {result && <p className={`beat ${result.is_correct ? 'right' : 'wrong'}`} role="status">{result.is_correct ? '✓' : 'Not this time.'} <strong>+{result.points_earned}</strong></p>}
+            {result && <p className={`beat ${result.is_correct ? 'right' : 'wrong'}`} role="status">{result.is_correct ? '✓' : card.board?.game === 'reflex' ? '' : 'Not this time.'} <strong>+{result.points_earned}</strong></p>}
             {nextButton}
           </div>
         </div>
@@ -596,7 +740,7 @@ function PatternView(props: { board: Board; disabled: boolean; chosen: string | 
   )
 }
 
-const MISS: Record<string, string> = { slow: 'Too slow.', early: 'Too soon. Wait for the full ring.', wrong: 'That was the other ring.' }
+const MISS: Record<string, string> = { slow: 'Just late.', early: 'Early. Wait for the full ring.', wrong: 'That was the other ring.' }
 
 /**
  * One reaction drill. A ring waits for a time no one can guess, then fills; the player taps it as fast as they can.
@@ -648,7 +792,9 @@ function ReflexView(props: { board: Board; disabled: boolean; onDone: (outcome: 
     const ms = stage === 'go' ? Math.round(performance.now() - goAt.current) : 0
     const outcome = stage !== 'go' ? 'early' : mode === 'side' && which !== side ? 'wrong' : ms <= limit ? 'hit' : 'slow'
     setStage('done')
-    setSaid(outcome === 'hit' ? `${ms} thousandths of a second.` : outcome === 'slow' ? `${ms} thousandths of a second. ${MISS.slow}` : MISS[outcome])
+    // seconds on this device only: a phone or laptop adds its own delay, so no normal time is ever shown beside it
+    const secs = (ms / 1000).toFixed(2)
+    setSaid(outcome === 'hit' ? `${secs} s on this device.` : outcome === 'slow' ? `${secs} s. ${MISS.slow}` : MISS[outcome])
     report.current(outcome, ms)
   }
 

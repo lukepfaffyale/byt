@@ -32,6 +32,9 @@ export function Arrival(props: {
   const [data, setData] = useState<Commons | null>(null)
   const [beat, setBeat] = useState(-1)
   const [done, setDone] = useState(calm)
+  // the idea of the game in four short steps, one tap each. A new person sees it once; anyone can open it again.
+  const [how, setHow] = useState<number | null>(null)
+  const shownHow = useRef(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const hover = useRef<Role | null>(null)
   const skip = useRef(false)
@@ -297,19 +300,30 @@ export function Arrival(props: {
 
   const people = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here.`
   const beats = [
-    'This is you.',
-    'Every tap you make forges a path.',
-    `${people} ${(data.people + data.bots).toLocaleString()} Syms are awake.`,
-    `Together they know ${data.known.toLocaleString()} things. Here, what people know is the money.`,
+    'This is you. One light.',
+    'You tap. Your taps build a Sym: a digital you that you own.',
+    'Your Sym learns to guess you, then works while you rest. You are paid.',
+    `${people} ${(data.people + data.bots).toLocaleString()} Syms are awake. Add your light.`,
   ]
+  const HOW: [string, string][] = [
+    ['Only you can give this.', 'AI is learning the work. It cannot make your choices. Each tap is one block of a Sym you own.'],
+    ['It guesses you. Code checks.', 'In a battle your Sym seals its guess before you pick. If it beats the crowd, code gives a certificate.'],
+    ['It works while you rest.', 'Agencies ask Syms and post jobs. When yours answers, you are paid. Credits are play money today.'],
+    ['Use it more. Earn more.', 'A certificate doubles job pay. Weekly play keeps pay full. People give the blocks. Agents make the links.'],
+  ]
+  // a new person who did not see the moving intro (motion is off) is shown the idea once, before choosing a part
+  if (done && calm && data.taps_mine === 0 && !shownHow.current) {
+    shownHow.current = true
+    if (how === null) setHow(0)
+  }
   const play = () => (next ? onPlay(next.id) : onJourney())
   const lead: Role = intent && !(intent === 'agency' ? data.has_agency : data.has_creator) ? intent : 'player'
   const roles: { id: Role; name: string; n: number; what: string; go: string; act: () => void }[] = [
-    { id: 'player', name: 'Player', n: data.people, what: 'Tap. Your Sym learns you.',
+    { id: 'player', name: 'Player', n: data.people, what: 'You give the blocks. Without real people, there is nothing to ask.',
       go: !next ? 'My Journey' : data.taps_mine === 0 ? `Start: ${next.title}` : next.done > 0 ? `Continue: ${next.title}` : `Play: ${next.title}`, act: play },
-    { id: 'agency', name: 'Agency', n: data.agencies, what: 'Ask Syms. Each answer pays its owner.',
+    { id: 'agency', name: 'Agency', n: data.agencies, what: 'You bring the pay. What you back, creators build.',
       go: data.has_agency ? 'My agency' : 'Open an agency', act: () => onSeat('agency') },
-    { id: 'creator', name: 'Creator', n: data.creators, what: 'Build steps. Each pass pays you.',
+    { id: 'creator', name: 'Creator', n: data.creators, what: 'You build the steps Syms climb. Each one widens what they prove.',
       go: data.has_creator ? 'My studio' : 'Open a studio', act: () => onSeat('creator') },
   ]
   const look = (id: Role | null) => () => {
@@ -338,7 +352,7 @@ export function Arrival(props: {
           </dl>
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>
-            <p className="arrival-said">You are one light among them. Choose the part you play.</p>
+            <p className="arrival-said">{data.taps_mine === 0 ? 'Today people have jobs. Tomorrow is uncertain. Start a Sym you own.' : 'You are one light among them. Choose the part you play.'}</p>
             <ul className="arrival-roles">
               {roles.map((r) => (
                 <li key={r.id}>
@@ -351,8 +365,26 @@ export function Arrival(props: {
                 </li>
               ))}
             </ul>
-            <button className="link arrival-in" onClick={onEnter}>See everyone</button>
+            <span className="arrival-foot">
+              <button className="link arrival-in" onClick={() => setHow(0)}>How it works</button>
+              <button className="link arrival-in" onClick={onEnter}>See everyone</button>
+            </span>
           </div>
+          {how !== null && (
+            <div className="pick-pop how-pop" role="dialog" aria-modal="true" aria-labelledby="how-h">
+              <div className="pick-pop-box">
+                <span className="line-top">How it works · {how + 1} of {HOW.length}</span>
+                <h2 id="how-h" className="how-h">{HOW[how][0]}</h2>
+                <p className="more-text" aria-live="polite">{HOW[how][1]}</p>
+                <div className="pick-pop-foot">
+                  <button className="link" onClick={() => setHow(null)}>Close</button>
+                  {how < HOW.length - 1
+                    ? <button className="primary" autoFocus onClick={() => setHow(how + 1)}>Next</button>
+                    : <button className="primary" autoFocus onClick={() => { setHow(null); if (data.taps_mine === 0) play() }}>{data.taps_mine === 0 ? 'Start: 8 quick taps' : 'Got it'}</button>}
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
