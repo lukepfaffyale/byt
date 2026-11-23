@@ -271,7 +271,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         <ul className="lines">
           {jobPage.map((j) => (
             <li key={j.id} className={`job ${j.state}`}>
-              <span className="line-top">{j.requester_kind} · {j.requester} · {j.pay} credits</span>
+              <span className="line-top">{j.pay} credits · {j.requester_kind} · {j.requester}</span>
               <span>{j.question}</span>
               {j.state === 'locked' && <span className="muted">Opens after you finish {j.after_gates} {j.after_gates === 1 ? 'gate' : 'gates'}</span>}
               {j.state === 'done' && <span className="muted">Done · earned {j.credits} credits</span>}

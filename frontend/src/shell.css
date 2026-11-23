@@ -344,3 +344,25 @@
 .arrival-steps { display: flex; gap: 6px; }
 .arrival-steps i { width: 14px; height: 1px; background: currentColor; opacity: 0.3; }
 .arrival-steps i.on { opacity: 1; }
+
+/* a phone: on My Work the jobs come first. The Sym's picture gives its room to the list, and the tabs, the pager
+   and More share one row, so a job and its button are on the first page of a short screen. */
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow .work-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-bottom: 2px; }
+  :root .pages-flow .work-head { flex-wrap: nowrap; }
+  :root .pages-flow .work-head > .seg { flex: 1 1 0; min-width: 0; margin: 0; }
+  :root .pages-flow .work-head .seg-name { white-space: normal; line-height: 1.15; }
+  :root .pages-flow .work-head > .pager { flex: none; margin: 0; gap: 2px; }
+  :root .pages-flow .work-head > .pager .pager-at { min-width: 0; padding: 0 2px; letter-spacing: 0; }
+  :root .pages-flow .work-head > .more { flex: none; position: static; margin: 0; }
+  :root .pages-flow .work-head > .more .more-mark { padding: 0 8px; letter-spacing: 0.08em; }
+  :root .pages-flow .mine .lines li.job { padding: 6px 0; }
+  :root .pages-flow .mine .lines li.job > .line-top { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
+  :root .pages-flow .mine .lines li.job > span:nth-child(2) { font-size: 0.95rem; line-height: 1.3; }
+}
+
+/* a short phone (the browser bars are showing): the picture of the Sym or the crew stays on the journey only.
+   On every other screen its room goes to the list, so the first rows are on the first page. */
+@media (max-width: 999px) and (min-height: 560px) and (max-height: 780px) {
+  :root #root:not(:has(.loop-line)) .stage:not(.stage-wall) { display: none; }
+}
