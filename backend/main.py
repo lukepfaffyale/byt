@@ -306,10 +306,21 @@ def state_of(gate_id: str, answered: set[str], made: dict[str, list[str]] | None
     return next((g for g in gate_state(answered) if g.id == gate_id), None) or step_state(answered, made).get(gate_id)
 
 
+# The small drawing shown beside a choice, by what the option stands for. It is a hint for the eye, so people read
+# less. The browser gets the drawing's name, never the trait itself.
+OPTION_ICON = {
+    "plan": "grid", "spontaneous": "spark", "bold": "bolt", "classic": "column", "save": "coin", "splurge": "gift",
+    "social": "people", "solo": "person", "loyal": "loop", "novelty": "star", "comfort": "cloud", "look": "eye",
+    "quality": "diamond", "variety": "dots", "facts": "bars", "ideas": "bulb", "heart": "heart", "head": "hex",
+    "blunt": "arrow", "warm": "sun", "dry": "dash", "competitive": "flag", "things": "box", "experiences": "peak",
+    "mixed": "half",
+}
+
+
 def card_out(card: Card) -> CardOut:
     board = BoardOut(game=card.board.game, rows=list(card.board.rows), to_move=card.board.to_move, seq=list(card.board.seq)) if card.board else None
     return CardOut(id=card.id, kind=card.kind, prompt=card.prompt,
-                   options=[OptionOut(id=o.id, label=o.label) for o in card.options], board=board)
+                   options=[OptionOut(id=o.id, label=o.label, icon=OPTION_ICON.get(o.trait or "", "")) for o in card.options], board=board)
 
 
 def choice_label(card: Card, choice: str | None) -> str:

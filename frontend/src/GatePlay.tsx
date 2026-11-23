@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api, type BattleResult, type Board, type Card, type Cert, type Gate, type Learned, type ResponseOut } from './api'
 import { Tabs } from './Deck'
 import { still } from './motion'
@@ -10,6 +10,7 @@ import { Worth } from './Worth'
 import { CodeView } from './Code'
 import { credits } from './words'
 import './play.css'
+import { Glyph } from './Glyph'
 
 const SURE: [number, string][] = [[3, 'Sure'], [2, 'Maybe'], [1, 'Guess']]
 /** A reflex card says its time limit in its prompt. The limit is shown as a small number by the ring instead. */
@@ -41,10 +42,26 @@ const CALIBRATOR = 'style-1'
 const CLOSE = 'quick-hands'
 /** what my Sym says on the first card of each part of the calibration */
 const PART: Record<string, string> = {
-  'style-1': 'Part 1 of 3. Tap what you like.',
+  'style-1': 'Part 1 of 3. Baseline. I give a cue. Tap yours.',
   'strategy-easy': 'Part 2 of 3. Win in one move.',
   'quick-hands': 'Part 3 of 3. Tap the ring fast.',
 }
+/** Baseline: the cues of the first gate that come again at the end, with the sides swapped. The second answers are
+ * kept in the browser only: they are never sent, they add no blocks, and they change no score. */
+const ECHO = ['style-01', 'style-04', 'style-07']
+/** how long the bar under a cue takes to run down. Nothing is lost when it runs out: the tap still counts. */
+const CUE_MS = 2500
+
+/** Two readings of a person's own pace on this device: the middle time of their picks, and how far the picks
+ * sat from that middle on average. A pattern of taps, never a reading of a mind or a mood. */
+function paceLine(times: number[]): string {
+  if (times.length < 4) return ''
+  const sorted = [...times].sort((a, b) => a - b)
+  const mid = sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+  const spread = times.reduce((n, t) => n + Math.abs(t - mid), 0) / times.length
+  return `Pace: about ${(mid / 1000).toFixed(1)} s a pick, give or take ${(spread / 1000).toFixed(1)} s, on this device.`
+}
+
 /** A battle tap faster than this is too fast to have read the card: my Sym holds it and asks for one more tap. */
 const FAST_MS = 700
 /** and it asks at most this many times in one battle, so it is never a nag */
@@ -213,8 +230,18 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
     }
   }, [gateId, isBattle])
 
-  const card = cards[index]
-  const finished = gate !== null && index >= cards.length
+  // Baseline: when the cues of the first gate are done, three of them come once more with the sides swapped
+  const baseline = gateId === CALIBRATOR
+  const [echo, setEcho] = useState(0) // how many of the repeat cues are answered
+  const echoSame = useRef(0) // of those, how many got the same answer as the first time
+  const echoCards = useMemo(
+    () => (baseline ? cards.filter((c) => ECHO.includes(c.id)).map((c) => ({ ...c, options: [...c.options].reverse() })) : []),
+    [baseline, cards],
+  )
+  const firstDone = gate !== null && index >= cards.length
+  const echoing = firstDone && echo < echoCards.length
+  const card = echoing ? echoCards[echo] : cards[index]
+  const finished = firstDone && !echoing
 
   useEffect(() => {
     let cancelled = false
@@ -317,6 +344,21 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
   const pick = useCallback(
     async (choice: string, sure?: number, took?: number) => {
       if (!card || busy || result) return
+      if (echoing) {
+        // a repeat cue: the answer is compared with the first one here in the browser, and nothing is sent or stored
+        if (lock.current) return
+        lock.current = true
+        if (picked.current[card.id] === choice) echoSame.current += 1
+        setChosen(choice)
+        const on = () => {
+          lock.current = false
+          setChosen(null)
+          setEcho((n) => n + 1)
+        }
+        if (still()) on()
+        else window.setTimeout(on, 220)
+        return
+      }
       const ms = took ?? Math.max(0, Math.round(performance.now() - shownAt.current))
       if (isBattle && !card.board && doubt === null && ms < FAST_MS && doubts.current < FAST_ASKS) {
         // nothing is sent yet. The tile stays lit and both tiles stay live: the same one keeps the pick, the other
@@ -394,7 +436,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
         setBusy(false)
       }
     },
-    [card, busy, result, isBattle, doubt, announce, onProgress, advance],
+    [card, busy, result, isBattle, doubt, echoing, announce, onProgress, advance],
   )
 
   // Keyboard shortcuts for plain option cards: arrows for two options, number keys for any.
@@ -513,8 +555,12 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
   const fact = !finished || !part ? ''
     : gateId === CALIBRATOR ? leanLine(picked.current)
       : close ? (blocks !== null ? `You gave ${blocks} inputs. I kept every one.` : '') : ''
-  const pace = !finished || !part || !whole ? ''
-    : ''  // in the first minute, fewer words: the pace lines are left out (a tester said there was too much to read)
+  // Baseline reads two things from this visit's own numbers: steadiness and pace. Both are counts, not verdicts.
+  const pace = finished && baseline && whole ? paceLine(paces.current) : ''
+  const steady = finished && baseline && echoCards.length > 0
+    ? (echoSame.current === echoCards.length ? `Same answer twice: ${echoSame.current} of ${echoCards.length}.`
+      : `Same answer twice: ${echoSame.current} of ${echoCards.length}. Some cues pulled two ways.`)
+    : ''
   const quick = finished && close ? (best !== null ? `Quickest tap: ${(best / 1000).toFixed(2)} s on this device.` : 'Tricky rings. Your taps are kept.') : ''
   const kept = finished && close ? ringBest() : null
   const season = kept && kept.week > 0 ? `Best this week: ${(kept.week / 1000).toFixed(2)} s. Best ever: ${(kept.ever / 1000).toFixed(2)} s.` : ''
@@ -531,9 +577,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
           : <p className="done-hero"><span className="done-num lead"><strong>+{gate.total}</strong> {gate.total === 1 ? 'block' : 'blocks'}</span></p>}
         {(gateId === CALIBRATOR || close) && <CodeView brief />}
         {fact && <p className="done-fact">{fact}</p>}
-        {(pace || light || quick || season) && (
-          <p className="fine done-facts">
-            {[pace, quick, season, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
+        {(steady || pace || light || quick || season) && (
+          <p className="fine done-facts instrument">
+            {[steady, pace, quick, season, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
           </p>
         )}
         {/* until the game knows whether earning is on, there is no button: the one question must not be skipped by a fast tap */}
@@ -588,6 +634,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
           : (sure[card.id] === undefined ? 'Sealed.' : `Sealed. ${sure[card.id]}% sure.`)
         : card.board?.game === 'pattern' && card.bet_sure !== null
           ? 'My bet is in.'
+          : echoing ? (echo === 0 ? 'Again. Three cues. Sides swapped.' : '')
           : index === 0 ? (PART[gateId] ?? 'Tap. I learn.')
             : last ? 'Last one.'
               : index === Math.ceil(cards.length / 2) ? 'Half way.' : ''
@@ -609,7 +656,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
       // a tap on the card ends the wait early, but not a doubled tap that lands as the result arrives
       onClick={result && auto ? () => { if (performance.now() - resultAt.current > 350) advance() } : undefined}>
       <SymLive say={symSay} done={index + (result ? 1 : 0)} total={cards.length} pulse={index * 2 + (result ? 1 : 0)} calm={still()}
-        label={`${index + 1} / ${cards.length} · ${isBattle ? `Battle${twinKind === 'offline' ? ' · practice Sym, no AI' : ''}` : gate.title}`} />
+        label={echoing ? `Again ${echo + 1} / ${echoCards.length} · Baseline` : `${baseline ? 'Cue ' : ''}${index + 1} / ${cards.length} · ${isBattle ? `Battle${twinKind === 'offline' ? ' · practice Sym, no AI' : ''}` : baseline ? 'Baseline' : gate.title}`} />
       {isBattle && (
         <p className="duel" aria-label={`So far: your Sym ${tally.twin}, the crowd's guess ${tally.crowd}, of ${tally.done} cards.`}>
           <span><strong>{tally.twin}</strong> my Sym</span>
@@ -617,6 +664,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
         </p>
       )}
       <h1 id="card-h" key={`p-${card.id}`} ref={promptRef} tabIndex={-1} className={again ? 'prompt again' : 'prompt'}>{shown}</h1>
+      {/* Baseline: a thin bar runs down on each cue to set the beat. Nothing is lost when it runs out. */}
+      {baseline && auto && <span className="cue-bar" aria-hidden="true"><span key={`${card.id}-${echoing ? 'again' : 'first'}`} style={{ animationDuration: `${CUE_MS}ms` }} /></span>}
 
       {flown > 0 && !still() && !card.board && <span className="t-fly" aria-hidden="true"><TBlock key={flown} /></span>}
       {card.board ? (
@@ -652,6 +701,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
               return (
                 <button key={o.id} className={`option${how}`} disabled={busy || result !== null || (chosen !== null && doubt === null)} onClick={() => void pick(o.id)}>
                   <span className="key" aria-hidden="true">{i + 1}</span>
+                  {o.icon && <Glyph name={o.icon} />}
                   {o.label}
                   {syms && <span className="sym-tag">Sym</span>}
                   {mine && !isBattle && result && <span className="pts">{result.is_correct ? '✓ ' : ''}+{result.points_earned}</span>}

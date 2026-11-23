@@ -203,3 +203,16 @@ Read as web search summaries on 2026-11-23, not as full pages, and the report sa
 - Park, J. S., and others (2024). "Generative Agent Simulations of 1,000 People." arXiv:2411.10109,
   https://arxiv.org/abs/2411.10109 . Agents built from two-hour interviews with 1,052 people matched their General
   Social Survey answers 85 percent as well as the people matched themselves two weeks later.
+
+## Mood for the Baseline part of the calibration (added 2026-11-23)
+
+The student named the "baseline test" scene of a well-known science-fiction film as the mood for the first part of the
+calibration: a fast call and response, read by a cold, clean instrument. It is inspiration only. The film is not named
+in the game, the report or the deck, and no word, line, image or sound from it, or from the poem it uses, appears
+anywhere. Baseline's cues are BYT's own cards, and it reads a pattern of picks and their pace on one device, not a
+mind, a mood, a truth or a lie. The film and the poem belong to their owners, and nothing here is official, licensed
+or for sale.
+
+## Human baseline, the term (added 2026-11-23)
+
+- NHI Mgmt Group, "What Is Human Baseline? Definition and Examples", https://nhimg.org/glossary/human-baseline/ , page updated 2026-10-31, read 2026-11-23. Used for the plain meaning of the term: judgments made by people that automated scoring is checked against. The way BYT applies it (each person is the baseline for their own Sym) is the student's own.

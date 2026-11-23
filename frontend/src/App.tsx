@@ -452,7 +452,9 @@ export default function App() {
   const formed = me && me.gates_total > 0 ? me.gates_done / me.gates_total : 0
   // what my Sym asks for on this page: one line and one tap. Code writes it from counts; no model does.
   const percent = Math.round(formed * 100)
-  const top = plan.find((o) => !next || o.id !== `gate:${next.id}`)
+  // a move that leads to the page the person is already on does nothing when tapped, so it is never offered there
+  const here = (o: PlanOption) => o.id === screen.name
+  const top = plan.find((o) => (!next || o.id !== `gate:${next.id}`) && !here(o))
   const cue: { say: string; go: string; act: () => void } | null = !me ? null
     // once a day, after the calibration: three sealed throws, so every visit has a small duel in it
     : me.gates_done >= 3 && (!next || next.done === 0) && screen.name !== 'arena' && !duelDone()
@@ -477,7 +479,7 @@ export default function App() {
           : o.why
   }
   const paths = cue
-    ? [cue, ...plan.filter((o) => o.title !== cue.go && !cue.go.endsWith(o.title)).slice(0, 2)
+    ? [cue, ...plan.filter((o) => o.title !== cue.go && !cue.go.endsWith(o.title) && !here(o)).slice(0, 2)
         .map((o) => ({ say: `Another path. ${builds(o)}`, go: o.title, act: () => go(o.id) }))]
     : []
   const pathAt = paths.length > 0 && path.page === screen.name ? path.at % paths.length : 0

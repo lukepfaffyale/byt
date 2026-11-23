@@ -228,6 +228,9 @@
   :root .pages-flow .play-row .c4 .drop { min-height: 40px; }
 }
 
+/* a small line drawing beside a choice: a hint for the eye, drawn in the color of the words */
+.option .glyph { display: inline-block; width: 1.5em; height: 1.5em; margin-right: 0.5em; vertical-align: -0.35em; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+
 /* the end of a part of the calibration: one true line about the person, then small facts */
 .done-fact { text-align: center; font-size: 1.15rem; font-weight: 300; margin: 2px 0 6px; }
 .done-facts { display: grid; gap: 2px; justify-items: center; text-align: center; margin: 0 0 6px; }
@@ -242,3 +245,11 @@
   :root .pages-flow .gate-done > .fine { margin: 2px 0; line-height: 1.35; }
 }
 
+/* Baseline: a thin bar under the cue runs down to set the beat, and the end reads out like an instrument */
+.cue-bar { display: block; height: 2px; margin: 2px 0 10px; background: var(--hair); overflow: hidden; }
+.cue-bar > span { display: block; height: 100%; width: 100%; background: var(--gold); transform-origin: left; animation: cue-run linear forwards; }
+@keyframes cue-run { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.done-facts.instrument { font-family: ui-monospace, Consolas, monospace; letter-spacing: 0.02em; }
+@media (prefers-reduced-motion: reduce) { .cue-bar > span { animation: none; } }
+/* on a phone the tiles are tall and narrow, so the drawing sits above the words */
+@media (max-width: 999px) { .option .glyph { display: block; width: 2em; height: 2em; margin: 0 auto 8px; } }

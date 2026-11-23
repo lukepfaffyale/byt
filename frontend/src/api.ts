@@ -15,7 +15,7 @@ export type Gate = {
   unlocked: boolean
 }
 export type Bin = { id: string; name: string; about: string }
-export type Option = { id: string; label: string }
+export type Option = { id: string; label: string; icon?: string }
 export type Board = { game: 'tictactoe' | 'connect4' | 'pattern' | 'reflex'; rows: string[]; to_move: string; seq: string[] }
 export type Card = { id: string; kind: string; prompt: string; options: Option[]; board: Board | null; bet_sure: number | null }
 export type Me = { nickname: string; points: number; level: number; gates_done: number; gates_total: number; certs: number; credits: number; jobs_open: number; twins: number; people: number; together: number; active_days: number; income_share: number }

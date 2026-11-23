@@ -461,6 +461,7 @@ class Journey(Strict):
 class OptionOut(Strict):
     id: str
     label: str
+    icon: str = ""  # the name of a small line drawing shown beside the words; empty when the option has none
 
 
 class BoardOut(Strict):
