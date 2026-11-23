@@ -178,3 +178,5 @@ There is no free-text channel from any user to a model in this build.
 `backend/experiments/cost_experiment.py` was run on the local database with a real model key. It holds back 10 picks from each of 6 test accounts (4 scripted, 2 played by hand) and scores four ways of guessing them. The AI methods ran through this harness, so the limits, the audit trail and the usage table applied. The output is `output/cost_experiment.json`: counts, 95 percent ranges, tokens and dollars, with no name and no player id. The same evening `pytest` gave 94 passed.
 
 On 21 and 22 November the course key was refused: 68 runs in the committed trail stopped with ModelHTTPError before using a token, and the practice Sym took over each time. With a working key the runs complete again.
+
+Fresh clone, 2026-11-22: an empty folder, Python 3.14.7 and Node 24.20.0 on Windows. Install about 75 seconds, the server answered 5 seconds after starting with no key set, sign-up returned 201, 94 passed, and the front end installed and built in 4 seconds. About 2 minutes in all.
