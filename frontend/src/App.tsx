@@ -23,6 +23,7 @@ import { Start } from './Start'
 import { TwinForm } from './TwinForm'
 import { Work } from './Work'
 import './shell.css'
+import { duelDay, duelDone } from './daily'
 
 type Screen = { name: 'journey' } | { name: 'commons'; first?: 'mine' } | { name: 'gate'; gateId: string } | { name: 'mine'; area?: string; at?: number; tab?: 'beliefs' } | { name: 'work' } | { name: 'agency'; view: SeatView; ask?: string } | { name: 'creator'; view: SeatView } | { name: 'money' } | { name: 'arena' } | { name: 'world' } | { name: 'commons' } | { name: 'about' }
 
@@ -296,6 +297,8 @@ export default function App() {
   const litTimer = useRef(0)
   useEffect(() => () => window.clearInterval(litTimer.current), [])
   const [plan, setPlan] = useState<PlanOption[]>([])
+  // which path my Sym is showing: 0 is its own pick. It goes back to the pick when the page changes.
+  const [path, setPath] = useState({ page: '', at: 0 })
 
   function changeSpeed(next: number) {
     setSpeed(next)
@@ -451,6 +454,9 @@ export default function App() {
   const percent = Math.round(formed * 100)
   const top = plan.find((o) => !next || o.id !== `gate:${next.id}`)
   const cue: { say: string; go: string; act: () => void } | null = !me ? null
+    // once a day, after the calibration: three sealed throws, so every visit has a small duel in it
+    : me.gates_done >= 3 && (!next || next.done === 0) && screen.name !== 'arena' && !duelDone()
+      ? { say: `Day ${duelDay()} on this device. I sealed 3 throws. Fool me.`, go: "Today's 3", act: () => setScreen({ name: 'arena' }) }
     : me.jobs_open > 0 && screen.name !== 'work'
       ? { say: `${me.jobs_open} ${me.jobs_open === 1 ? 'job is' : 'jobs are'} open. I answer, you check, we are paid.`, go: 'Send my Sym to work', act: () => setScreen({ name: 'work' }) }
       : next && next.done > 0
@@ -461,9 +467,28 @@ export default function App() {
           : top
             ? { say: `All ${me.gates_total} gates done.`, go: top.title, act: () => go(top.id) }
             : { say: `All ${me.gates_total} gates done. Play me: I studied your throws.`, go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
+  // command your journey: my Sym names its pick, and one quiet button flips to another path. Each path says what
+  // it builds: blocks, credits, or a habit learned. The person chooses; the Sym carries.
+  const builds = (o: PlanOption) => {
+    const gate = gates.find((g) => o.id === `gate:${g.id}` || o.id === `retry:${g.id}`)
+    return o.id === 'arena' ? 'I learn a habit.'
+      : o.credits > 0 ? `+${o.credits} credits.`
+        : gate ? `${gate.total - gate.done} ${gate.total - gate.done === 1 ? 'tap' : 'taps'}, +${gate.total - gate.done} blocks.`
+          : o.why
+  }
+  const paths = cue
+    ? [cue, ...plan.filter((o) => o.title !== cue.go && !cue.go.endsWith(o.title)).slice(0, 2)
+        .map((o) => ({ say: `Another path. ${builds(o)}`, go: o.title, act: () => go(o.id) }))]
+    : []
+  const pathAt = paths.length > 0 && path.page === screen.name ? path.at % paths.length : 0
+  const otherPath = paths.length > 1
+    ? { label: pathAt === paths.length - 1 ? 'Back to my pick' : `Another path · ${pathAt + 1} of ${paths.length - 1}`,
+        act: () => setPath({ page: screen.name, at: pathAt + 1 }) }
+    : null
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
   const told = flash ? flash
     : screen.name === 'money' && moneyCue ? moneyCue
+    : pathAt > 0 ? paths[pathAt]
     : cue && landed.n > 0
     ? { ...cue, say: `I just earned you ${credits(landed.sum)} ${landed.sum === 1 ? 'credit' : 'credits'}. ${landed.meet ? 'A seat met me.' : 'They saw totals only.'}` }
     : cue && gain.n > 0
@@ -684,7 +709,8 @@ export default function App() {
           onWork={() => setScreen({ name: 'work' })} />
       )}
       {told && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'commons' && (
-        <SymCue say={told.say} go={told.go} act={told.act} calm={!motion} formed={formed} />
+        <SymCue say={told.say} go={told.go} act={told.act} calm={!motion} formed={formed}
+          alt={!flash && otherPath ? otherPath.label : undefined} altAct={!flash && otherPath ? otherPath.act : undefined} />
       )}
       {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'commons' && screen.name !== 'arena' && (
         <TwinTalk where={screen.name} announce={setLive}

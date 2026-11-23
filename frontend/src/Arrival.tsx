@@ -347,7 +347,7 @@ export function Arrival(props: {
     ? [
         ['Firms earn from your data.', 'What do you get?'],
         ['AI is learning the work.', 'It cannot be you.'],
-        ['Your taps build a Sym.', 'A Sym is a digital you.'],
+        ['DNA gave you your start.', 'Your taps build your Sym: a digital you.'],
         ['It works while you rest.', 'You are paid. Play money today.'],
         [count[0], 'Add your light.'],
       ]
@@ -360,9 +360,9 @@ export function Arrival(props: {
       ]
   const HOW: [string, string][] = [
     ['Why this game?', 'Firms earn from your data. You carry the risk and get little back. AI is learning the work too. It cannot make your choices. Only you can give those.'],
-    ['What is a Sym?', 'A digital you. It learns how you choose from your taps, and it is yours. Later it guesses your picks, and code keeps score.'],
+    ['What is a Sym?', 'A digital you. DNA gave you your start. Your taps build your Sym: each tap is one block of its code, and it is yours. Later it guesses your picks, and code keeps score.'],
     ['It works while you rest.', 'Agencies ask Syms and post jobs. When yours answers, you are paid. Credits are play money today.'],
-    ['We build toward something greater.', 'You give the blocks. Agents make the connections. Use your Sym more and it earns more. Add your light.'],
+    ['We build toward something greater.', 'In a brain, links between cells hold memory and shape thought. Here, you give the blocks and agents make the links. What your Sym knows is its memory. Use it more and it earns more. Add your light.'],
   ]
   // a new person who did not see the moving intro (motion is off) is shown the idea once, before choosing a part
   if (done && calm && data.taps_mine === 0 && !shownHow.current) {

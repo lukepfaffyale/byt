@@ -4,6 +4,7 @@ import { Tabs } from './Deck'
 import { More } from './More'
 import { Rows } from './Rows'
 import { Failed } from './Retry'
+import { DUEL_ROUNDS, markDuel } from './daily'
 
 const NAME: Record<string, string> = { r: 'Rock', p: 'Paper', s: 'Scissors' }
 const SAID = { you: 'You win this round.', twin: 'My Sym wins this round.', draw: 'A draw.' }
@@ -29,6 +30,8 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [tab, setTab] = useState<'score' | 'tells' | 'league'>('score')
+  // Today's 3: the rounds of this visit, and how many of them the person won
+  const [visit, setVisit] = useState({ rounds: 0, fooled: 0 })
 
   useEffect(() => {
     let cancelled = false
@@ -46,6 +49,13 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
       .then((s) => {
         setState(s)
         setError('')
+        if (s.round) {
+          const won = s.round.outcome === 'you' ? 1 : 0
+          setVisit((v) => {
+            if (v.rounds + 1 === DUEL_ROUNDS) markDuel()
+            return { rounds: v.rounds + 1, fooled: v.fooled + won }
+          })
+        }
         if (s.round) announce(`You threw ${NAME[s.round.mine]}. Your Sym threw ${NAME[s.round.twin]}. ${SAID[s.round.outcome]} ${s.round.why}`)
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'There was a problem. Please try again.'))
@@ -64,7 +74,9 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
       <div className="twin-line">
         <span className="line-top">My Sym</span>
         <p>
-          {state.rounds === 0
+          {visit.rounds === DUEL_ROUNDS
+            ? `Today: you fooled me ${visit.fooled} of ${DUEL_ROUNDS}. ${state.tells.length > 0 ? `I know ${state.tells.length} of your ${state.tells.length === 1 ? 'habit' : 'habits'} now.` : 'I am still looking for a habit.'} Play on, or come back tomorrow.`
+            : state.rounds === 0
             ? 'I have chosen my throw. I do not know how you play yet, so beat me while you can.'
             : round ? round.why
               : `I have watched ${state.rounds} of your throws. I read your throw right ${called} percent of the time: each time I win, I knew what you would throw. I have chosen my next throw.`}
