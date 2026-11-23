@@ -334,3 +334,13 @@
 :root .how-pop .how-h { margin: 0; font-size: 1.6rem; font-weight: 300; line-height: 1.2; letter-spacing: 0; text-transform: none; color: var(--gold); }
 .arrival-foot { display: flex; flex-wrap: wrap; gap: 4px 22px; }
 
+
+/* the opening lines: each beat fades in whole, its second line a moment after the first (the clock in Arrival.tsx says when) */
+.arrival-beat.arrival-two { animation-duration: 1.1s; }
+.arrival-beat.arrival-two span { display: block; }
+.arrival-beat-2 { visibility: hidden; }
+.arrival-beat-2.on { visibility: visible; animation: assemble 1.1s ease-out both; }
+.arrival-tap { position: fixed; left: 0; right: 0; bottom: max(16px, env(safe-area-inset-bottom)); margin: 0; display: grid; justify-items: center; gap: 8px; font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--teal); pointer-events: none; }
+.arrival-steps { display: flex; gap: 6px; }
+.arrival-steps i { width: 14px; height: 1px; background: currentColor; opacity: 0.3; }
+.arrival-steps i.on { opacity: 1; }

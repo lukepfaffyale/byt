@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api, type Commons } from './api'
-import { Tick, Typed } from './Future'
+import { Tick } from './Future'
 import { TAU, along, body, clamp, deepSpace, ease, makeDust, seeded, shoot, trace, wander, type V, type Wander } from './neural'
 
 type Kind = 'you' | 'person' | 'hold' | 'agency' | 'creator'
@@ -9,6 +9,12 @@ const HUE: Record<Kind, string> = { you: '255, 244, 222', person: '255, 226, 188
 const SIZE: Record<Kind, number> = { you: 0.052, person: 0.034, hold: 0.02, agency: 0.046, creator: 0.046 }
 const ROLE_OF: Record<Kind, Role | null> = { you: 'player', person: 'player', hold: null, agency: 'agency', creator: 'creator' }
 const MOST_KNOWN = 1500
+// seconds each opening line stays up. The words keep the time; the picture is stretched to fit them.
+const HOLD_FIRST = [4.5, 5, 5, 5.5, 5.5, 5, 5.5] // 36 s. The last one includes a 1.5 s rest before the hub.
+const HOLD_BACK = [4, 4, 4] // 12 s on later visits
+const SECOND_LINE = 0.9 // the second line of each beat comes this long after the first
+const FIRST_LINE = 0.4 // the first words wait this long, so the light is seen alone first
+const ARRIVED = 'byt.arrived'
 
 /**
  * The first thing after signing in: the whole game seen from far off. It begins as one point of light, which is
@@ -38,6 +44,12 @@ export function Arrival(props: {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const hover = useRef<Role | null>(null)
   const skip = useRef(false)
+  const step = useRef(false) // a tap: go to the next line now
+  const [two, setTwo] = useState(false) // the second line of this beat is showing
+  // the full opening is for the first time in this browser; later visits get the short one
+  const [first] = useState(() => {
+    try { return window.localStorage.getItem(ARRIVED) !== '1' } catch { return true }
+  })
   const headRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -131,19 +143,19 @@ export function Arrival(props: {
     })
 
     const dust = makeDust(seeded(7), 320)
-    let seen = false
-    try {
-      seen = window.localStorage.getItem('byt.arrived') === '1'
-      window.localStorage.setItem('byt.arrived', '1')
-    } catch {
-      seen = false
-    }
-    // slow enough to read every line; a little quicker on later visits. A tap still skips it.
-    const speed = seen ? 0.95 : 0.7
-    const began = performance.now()
+    step.current = false // a key pressed while the counts were loading does not eat the first line
+    const hold = first || data.taps_mine === 0 ? HOLD_FIRST : HOLD_BACK
+    const ends = hold.map((_, i) => hold.slice(0, i + 1).reduce((a, b) => a + b, 0))
+    const total = ends[ends.length - 1]
+    const speed = END / total // the picture runs its whole course in the time the words take
+    // the clocks add up frame time, so they stop in a hidden tab and nobody comes back to a finished scene
+    let last = performance.now()
+    let said = 0 // the words' clock, in seconds
+    let drawn = 0 // the picture's clock: it follows the words, and hurries without jumping after a tap
     let raf = 0
     let ended = false
     let lastBeat = -1
+    let lastTwo = false
 
     const draw = (now: number) => {
       const w = canvas.clientWidth
@@ -155,16 +167,35 @@ export function Arrival(props: {
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       const t = calm ? 40 : now / 1000
-      const T = calm || skip.current ? END + 1 : ((now - began) / 1000) * speed
+      const dt = Math.min(0.1, Math.max(0, (now - last) / 1000))
+      last = now
+      if (!calm) {
+        said += dt
+        if (step.current) {
+          step.current = false
+          const i = ends.findIndex((e) => said < e)
+          said = i < 0 ? total : ends[i]
+        }
+        drawn = Math.min(said, drawn + dt * (said - drawn > 0.3 ? 5 : 1))
+      }
+      const T = calm || skip.current ? END + 1 : drawn * speed
       const f = T - FORGE
 
       if (!calm) {
-        const b = T < 0.3 ? -1 : f < 0.2 ? 0 : T < END * 0.42 ? 1 : T < END * 0.76 ? 2 : 3
+        let b = ends.findIndex((e) => said < e)
+        if (b < 0) b = hold.length - 1
+        if (said < FIRST_LINE) b = -1
         if (b !== lastBeat) {
           lastBeat = b
           setBeat(b)
         }
-        if (T >= END && !ended) {
+        const from = b <= 0 ? FIRST_LINE : ends[b - 1]
+        const second = b >= 0 && said - from >= SECOND_LINE
+        if (second !== lastTwo) {
+          lastTwo = second
+          setTwo(second)
+        }
+        if (said >= total && !ended) {
           ended = true
           setDone(true)
         }
@@ -267,23 +298,30 @@ export function Arrival(props: {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', again)
     }
-  }, [data, calm])
+  }, [data, calm, first])
 
-  // the keyboard can end the opening too
+  // the keyboard: Enter, Space or the right arrow go to the next line; Escape ends the opening
   useEffect(() => {
     if (done) {
+      // seen once it has played (or been skipped); with motion off it never played, so it is not marked
+      if (!calm) {
+        try { window.localStorage.setItem(ARRIVED, '1') } catch { /* it plays in full again next time */ }
+      }
       headRef.current?.focus({ preventScroll: true })
       return
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'Escape') {
         e.preventDefault()
         finish()
+      } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        step.current = true
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [done])
+  }, [done, calm])
 
   function finish() {
     skip.current = true
@@ -293,23 +331,40 @@ export function Arrival(props: {
   if (!data) {
     return (
       <div className="arrival">
+        {/* Skip is there from the first frame: once the counts come, it goes straight to the welcome */}
+        {!done && <button className="link arrival-skip" onClick={finish}>Skip</button>}
         <p className="arrival-beat" aria-live="polite">Finding everyone.</p>
       </div>
     )
   }
 
   const people = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here.`
-  const beats = [
-    'This is you. One light.',
-    'You tap. Your taps build a Sym: a digital you that you own.',
-    'Your Sym learns to guess you, then works while you rest. You are paid.',
-    `${people} ${(data.people + data.bots).toLocaleString()} Syms are awake. Add your light.`,
-  ]
+  const who = `${data.people.toLocaleString()} ${data.people === 1 ? 'person' : 'people'}`
+  const count: [string, string] = [`${who}. ${(data.people + data.bots).toLocaleString()} Syms awake.`, `Together they know ${data.known.toLocaleString()} things.`]
+  // the same rule as the clock in the picture: the full script the first time, or for a person with no taps yet
+  const full = first || data.taps_mine === 0
+  const beats: [string, string][] = full
+    ? [
+        ['Today people have jobs.', 'Tomorrow is uncertain.'],
+        ['AI is learning the work.', 'It cannot make your choices.'],
+        ['Each tap is one block.', 'The blocks build a Sym you own.'],
+        ['It guesses you. Code keeps score.', 'Each half proves the other.'],
+        ['Then it works while you rest.', 'You are paid. Play money today.'],
+        count,
+        ['Agents make the connections.', 'Add your light.'],
+      ]
+    : [
+        ['You give the blocks.', 'Agents make the connections.'],
+        count,
+        data.known_mine > 0
+          ? [`${data.known_mine.toLocaleString()} of them came from you.`, 'Add more light.']
+          : ['We build toward something greater.', 'Add your light.'],
+      ]
   const HOW: [string, string][] = [
-    ['Only you can give this.', 'AI is learning the work. It cannot make your choices. Each tap is one block of a Sym you own.'],
-    ['It guesses you. Code checks.', 'In a battle your Sym seals its guess before you pick. If it beats the crowd, code gives a certificate.'],
+    ['Today people have jobs.', 'Tomorrow is uncertain. AI is learning the work. It cannot make your choices. Only you can give those.'],
+    ['Each tap is one block.', 'The blocks build a Sym you own. It seals a guess before you pick. Code keeps score. Each half proves the other.'],
     ['It works while you rest.', 'Agencies ask Syms and post jobs. When yours answers, you are paid. Credits are play money today.'],
-    ['Use it more. Earn more.', 'A certificate doubles job pay. Weekly play keeps pay full. People give the blocks. Agents make the links.'],
+    ['We build toward something greater.', 'You give the blocks. Agents make the connections. Use your Sym more and it earns more. Add your light.'],
   ]
   // a new person who did not see the moving intro (motion is off) is shown the idea once, before choosing a part
   if (done && calm && data.taps_mine === 0 && !shownHow.current) {
@@ -331,16 +386,26 @@ export function Arrival(props: {
   }
 
   return (
-    <div className={done ? 'arrival done' : 'arrival'} role="dialog" aria-modal="true" aria-label="Welcome to BYT" onClick={done ? undefined : finish}>
+    <div className={done ? 'arrival done' : 'arrival'} role="dialog" aria-modal="true" aria-label="Welcome to BYT" onClick={done ? undefined : () => { step.current = true }}>
       <canvas ref={canvasRef} className="arrival-space" aria-hidden="true" />
       <p className="sr-only">
         A picture of everyone in the game as points of light in space, joined by paths that grow outward from you. {people} {data.people + data.bots} Syms are awake.
         There are {data.agencies} agencies and {data.creators} creators. Together they know {data.known} things, and {data.known_mine} of those came from you.
       </p>
       <p className="arrival-mark" aria-hidden="true">BYT</p>
-      {!done && <button className="link arrival-skip" onClick={finish}>Skip</button>}
+      {!done && <button className="link arrival-skip" onClick={(e) => { e.stopPropagation(); finish() }}>Skip</button>}
+      {!done && <p className="sr-only" aria-live="polite">{beat >= 0 ? beats[beat].join(' ') : ''}</p>}
       {!done && beat >= 0 && (
-        <p className="arrival-beat"><Typed key={beat} text={beats[beat]} calm={calm} /></p>
+        <p key={beat} className="arrival-beat arrival-two" aria-hidden="true">
+          <span>{beats[beat][0]}</span>
+          <span className={two ? 'arrival-beat-2 on' : 'arrival-beat-2'}>{beats[beat][1]}</span>
+        </p>
+      )}
+      {!done && (
+        <p className="arrival-tap" aria-hidden="true">
+          <span className="arrival-steps">{beats.map((_, i) => <i key={i} className={i <= beat ? 'on' : undefined} />)}</span>
+          Tap to go on
+        </p>
       )}
       {done && (
         <>
@@ -352,7 +417,11 @@ export function Arrival(props: {
           </dl>
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>
-            <p className="arrival-said">{data.taps_mine === 0 ? 'Today people have jobs. Tomorrow is uncertain. Start a Sym you own.' : 'You are one light among them. Choose the part you play.'}</p>
+            <p className="arrival-said">{data.taps_mine === 0
+              ? 'Your choices are the one thing AI cannot make. Start a Sym you own.'
+              : data.known_mine > 0
+                ? `${data.known_mine.toLocaleString()} of these lights came from you. Choose the part you play.`
+                : 'You are one light among them. Choose the part you play.'}</p>
             <ul className="arrival-roles">
               {roles.map((r) => (
                 <li key={r.id}>
