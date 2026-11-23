@@ -878,3 +878,7 @@ Nine reviews were run as AI test passes by the engineer (game design, finance, s
 - **Calibration in about a minute.** A new third gate of three reaction rings joins the first two gates as a three-part calibration. Reaction time is shown as the person's own time "on this device", against no one, and earns no credits. There is no timer on taste picks.
 - **The idea, before the choice.** A first outside tester said an intro to the concept would help. The welcome now tells the idea in its four moving lines, and "How it works" tells it in four taps; it opens once by itself for a new player whose device has motion off.
 - **Not changed:** pay still halves after 7 days away. The psychologist called this a loss hook and advised 30 and 90 days. It is left for the owner to decide.
+
+## 2026-11-22: two first outside testers
+
+A friend and a family member of the owner tried the live game. Both gave their feedback to the owner, who passed it on and agreed that both may be counted as first outside testers and that the second may be quoted without her name. The report says what each found and what was changed. They are feedback, not a study: nothing they did is used as evidence that a Sym knows its person, and no nickname of theirs is written anywhere in the repository.
