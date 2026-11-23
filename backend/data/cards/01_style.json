@@ -1,5 +1,5 @@
 {
-  "gate": {"id": "style-1", "title": "Calibrator", "kind": "preference", "deck": "style"},
+  "gate": {"id": "style-1", "title": "Baseline", "kind": "preference", "deck": "style"},
   "cards": [
     {"id": "style-01", "prompt": "Going out. You wear:", "options": [{"id": "a", "label": "Stand out", "trait": "bold"}, {"id": "b", "label": "Always works", "trait": "classic"}]},
     {"id": "style-02", "prompt": "Shoes: what matters?", "options": [{"id": "a", "label": "Feel good", "trait": "comfort"}, {"id": "b", "label": "Look good", "trait": "look"}]},

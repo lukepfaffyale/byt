@@ -817,7 +817,7 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
 - These are counts. No other Sym is named, shown or reachable from them, and they are shown only to the person whose code it is.
 - Another Sym is compared only once it has answered at least 8 of the same cards, and nothing is said unless at least 5 Syms can be compared.
 - The crowd includes BOT Syms, whose picks are random. The screen says so. The report must not present these counts as evidence about real people.
-- The first gate is now named the Calibrator. Its picks are the first blocks, and its finish screen shows the code.
+- The first gate was named the Calibrator, and since 2026-11-23 Baseline. Its picks are the first blocks, and its finish screen shows the code.
 
 ### What the game rewards (the student's rule, 2026-11-21)
 

@@ -769,7 +769,7 @@ export default function App() {
                     <button className="bin" onClick={() => setScreen({ name: 'arena' })}>
                       <span className="bin-name">Arena</span>
                       <span className="bin-count" aria-hidden="true">&#9675;</span>
-                      <span className="muted">rock, paper, scissors against my Sym</span>
+                      <span className="muted">four duels against my Sym</span>
                     </button>
                   </div>
                 )}
@@ -858,7 +858,7 @@ export default function App() {
 
       {screen.name === 'money' && <MoneyView onChange={() => { refresh(); syncPurses() }} onMove={go} onCue={setMoneyCue} />}
 
-      {screen.name === 'arena' && <Arena announce={setLive} />}
+      {screen.name === 'arena' && <Arena announce={setLive} onPaid={refresh} />}
 
       {screen.name === 'mine' && (
         <Mine

@@ -947,6 +947,7 @@ class RpsOut(Strict):
     rank: int = 0
     of: int = 0
     round: RpsRound | None = None  # the round just played
+    bonus: int = 0  # credits the growth fund just paid for being in step with one's Sym (Think alike, once a day)
 
 
 class BriefIn(Strict):

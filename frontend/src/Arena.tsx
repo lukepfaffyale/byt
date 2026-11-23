@@ -11,7 +11,7 @@ const GAMES: [Game, string][] = [['rps', 'Rock, paper'], ['hide', 'Hide the ligh
  * scissors), it plays on the person's side (Think alike), and it is read in turn (Keeper). The game built these.
  * Duels are a creator's ground: building more of them is how a creator is meant to earn.
  */
-export function Arena({ announce }: { announce: (text: string) => void }) {
+export function Arena({ announce, onPaid }: { announce: (text: string) => void; onPaid?: () => void }) {
   const [game, setGame] = useState<Game>('rps')
   const games = (
     <div className="chips world-keys" role="group" aria-label="Pick a duel">
@@ -20,5 +20,5 @@ export function Arena({ announce }: { announce: (text: string) => void }) {
       ))}
     </div>
   )
-  return game === 'rps' ? <Rps announce={announce} games={games} /> : <Duel key={game} game={game} announce={announce} games={games} />
+  return game === 'rps' ? <Rps announce={announce} games={games} /> : <Duel key={game} game={game} announce={announce} games={games} onPaid={onPaid} />
 }

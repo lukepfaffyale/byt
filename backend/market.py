@@ -43,6 +43,11 @@ TEST_PARTWAY = 0.15  # and at which it is partway
 BANDS: tuple[tuple[str, str], ...] = (("strong", "Strong here"), ("partway", "Partway"), ("new", "New to this"))
 FUND_START = 200  # play credits the growth fund starts with
 STEP_BONUS = 10  # paid from the growth fund when a player passes a skill step
+# Interlinked: a person and their Sym are paid for being in step. In Think alike, when they match at least
+# LINK_MATCHES of the day's first LINK_ROUNDS rounds, the growth fund pays LINK_BONUS, once a day, as far as it reaches.
+LINK_BONUS = 2
+LINK_ROUNDS = 3
+LINK_MATCHES = 2
 STEP_KIND = "Skill step"  # how a growth bonus is marked in the earnings table
 TOGETHER_FULL = 4  # connections with others at which a twin shows its full color
 ACTIVE_WINDOW = 14  # the days looked at when the game says how often a player played

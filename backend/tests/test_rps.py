@@ -196,3 +196,15 @@ def test_think_alike_and_keeper_each_keep_their_own_rounds(client, auth):
     # a letter of one duel is refused in another, and no duel sees another's rows
     assert client.post("/duel/keeper", headers=auth, json={"pick": "a"}).status_code == 422
     assert client.get("/duel/hide", headers=auth).json()["rounds"] == 0
+
+
+def test_being_in_step_with_your_sym_is_paid_once_a_day_from_the_growth_fund(client, auth):
+    before = client.get("/me", headers=auth).json()["credits"]
+    one = client.post("/duel/sync", headers=auth, json={"pick": "d"}).json()  # the Sym has nothing to go on: a miss
+    two = client.post("/duel/sync", headers=auth, json={"pick": "d"}).json()  # now it picks the sun too
+    three = client.post("/duel/sync", headers=auth, json={"pick": "d"}).json()  # 2 of the day's first 3 matched
+    assert (one["bonus"], two["bonus"], three["bonus"]) == (0, 0, 2)
+    assert client.post("/duel/sync", headers=auth, json={"pick": "d"}).json()["bonus"] == 0  # never twice in a day
+    assert client.get("/me", headers=auth).json()["credits"] == before + 2
+    # the other duels pay nothing
+    assert client.post("/duel/hide", headers=auth, json={"pick": "a"}).json()["bonus"] == 0

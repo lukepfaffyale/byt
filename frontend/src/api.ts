@@ -36,7 +36,7 @@ export type BattleResult = {
 }
 export type Judgment = { rows: { level: number; right: number; total: number }[]; taps: { at: string; level: number; right: boolean }[]; says: string }
 export type RpsRound = { mine: string; twin: string; outcome: 'you' | 'twin' | 'draw'; why: string }
-export type RpsOut = {
+export type RpsOut = { bonus?: number;
   rounds: number; you: number; twin: number; draws: number; last: RpsRound[]
   tells: { after: string; then: string; n: number; of: number }[]
   need: number; rivals: { name: string; free: boolean; won: number; lost: number; drawn: number }[]; rank: number; of: number

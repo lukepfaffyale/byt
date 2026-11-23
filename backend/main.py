@@ -1608,7 +1608,22 @@ def duel_play(game: str, body: DuelIn, request: Request, player: Player = Depend
     rate_limit(request, "rps", 120)
     move, why = rps.duel_move(game, [t.mine for t in db.throws_for(player.id, symbols)])
     db.add_throw(player.id, body.pick, move)
-    return duel_out(player, game, RpsRound(mine=body.pick, twin=move, outcome=rps.duel_outcome(game, body.pick, move), why=why))
+    out = duel_out(player, game, RpsRound(mine=body.pick, twin=move, outcome=rps.duel_outcome(game, body.pick, move), why=why))
+    if game == "sync":
+        out.bonus = link_bonus(player)
+    return out
+
+
+def link_bonus(player: Player) -> int:
+    """Interlinked: when a person and their Sym match at least LINK_MATCHES of the day's first LINK_ROUNDS rounds of
+    Think alike, the growth fund pays LINK_BONUS, once a day, as far as it reaches. Code decides it from the stored
+    rounds; nothing is paid on any later round of the day. Returns what was paid just now."""
+    today = db.utcnow().date()
+    rounds = [t for t in db.throws_for(player.id, rps.DUELS["sync"]["symbols"]) if t.created_at.date() == today]
+    if len(rounds) != market.LINK_ROUNDS or sum(1 for t in rounds if t.mine == t.twin) < market.LINK_MATCHES:
+        return 0
+    bonus = min(market.LINK_BONUS, max(0, db.fund_balance(market.FUND_START, market.STEP_KIND)))
+    return bonus if bonus > 0 and db.pay_step_bonus(player.id, f"link:{today.isoformat()}", market.STEP_KIND, bonus) else 0
 
 
 @app.get("/rps", response_model=RpsOut)
@@ -2137,6 +2152,10 @@ def money(player: Player = Depends(current_player)) -> Money:
     for e in db.earnings_for(player.id):
         if e.kind == market.STEP_KIND:
             growth_total += e.credits
+            if (e.campaign_id or "").startswith("link:"):
+                lines.append(MoneyLine(source="Growth", label="Interlinked: in step with your Sym",
+                                       detail="A bonus from the growth fund", credits=e.credits, at=db.iso(e.created_at)))
+                continue
             step = GATE_BY_ID.get((e.campaign_id or "").removeprefix("step:"))
             lines.append(MoneyLine(source="Growth", label=f"Skill step passed: {step.title if step else 'a skill step'}",
                                    detail="A bonus from the growth fund", credits=e.credits, at=db.iso(e.created_at)))

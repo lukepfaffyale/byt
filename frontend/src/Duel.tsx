@@ -33,13 +33,13 @@ const GAME: Record<DuelGame, {
   sync: {
     title: 'Think alike with my Sym',
     picks: [['d', 'Sun'], ['e', 'Moon'], ['f', 'Star']],
-    first: 'Pick a sign. I pick one too. We both win when we match. My pick is sealed.',
+    first: 'Pick a sign. I pick one too. Match 2 of 3 today and we are paid. My pick is sealed.',
     sealed: "My Sym's pick is sealed. Tap yours.",
     good: (s) => `I picked the ${s} too. We matched.`,
     bad: (s) => `I picked the ${s}. Not this time.`,
     mine: 'We matched', theirs: 'We missed',
     habit: (a, t) => `after the ${a}, you pick the ${t}`,
-    about: 'You are on the same side here. Your Sym seals the sign it thinks you will pick, from your earlier picks.',
+    about: 'You are on the same side here. Your Sym seals the sign it thinks you will pick, from your earlier picks. Match 2 of your first 3 rounds in a day and the growth fund pays you both 2 credits, once a day, while the fund lasts. Play money.',
   },
   keeper: {
     title: 'Keeper: save the shot of my Sym',
@@ -75,7 +75,7 @@ function Mark({ game, at, lit, sym }: { game: DuelGame; at: number; lit: boolean
  * paid. The game built these duels; duels are a creator's ground, and building more of them is how a creator
  * is meant to earn.
  */
-export function Duel({ game, announce, games }: { game: DuelGame; announce: (text: string) => void; games: ReactNode }) {
+export function Duel({ game, announce, games, onPaid }: { game: DuelGame; announce: (text: string) => void; games: ReactNode; onPaid?: () => void }) {
   const [state, setState] = useState<RpsOut | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -100,6 +100,7 @@ export function Duel({ game, announce, games }: { game: DuelGame; announce: (tex
         setState(s)
         setError('')
         if (!s.round) return
+        if (s.bonus) onPaid?.() // the wallet at the top of the page is read again
         const good = s.round.outcome === 'you'
         setVisit((v) => {
           if (v.rounds + 1 === DUEL_ROUNDS) markDuel()
@@ -125,7 +126,8 @@ export function Duel({ game, announce, games }: { game: DuelGame; announce: (tex
       <div className="twin-line">
         <span className="line-top">My Sym</span>
         <p>
-          {visit.rounds === DUEL_ROUNDS ? `Today: ${g.mine.toLowerCase()} ${visit.good} of ${DUEL_ROUNDS}. Play on, or come back tomorrow.`
+          {state.bonus ? `Interlinked. We were in step today: +${state.bonus} credits from the growth fund.`
+            : visit.rounds === DUEL_ROUNDS ? `Today: ${g.mine.toLowerCase()} ${visit.good} of ${DUEL_ROUNDS}. Play on, or come back tomorrow.`
             : state.rounds === 0 ? g.first
               : round ? round.why
                 : `We have played ${state.rounds} ${state.rounds === 1 ? 'round' : 'rounds'}. My next move is sealed.`}
