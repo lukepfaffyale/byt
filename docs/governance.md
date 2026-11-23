@@ -103,7 +103,9 @@ The full record is `output/harness.md`. The rules in short:
   The register (job, tool, what it reads, what it never reads, how its output is checked) is in the ontology and is
   tested against the code.
 - An agent never learns who the person is: no nickname, token or id reaches a model. It never sees another player,
-  picks held back for a battle, or what the player told the Sym.
+  or picks held back for a battle. It does read the short facts a player told their Sym and chose to keep: the
+  Profiler and the Twin get them, after the prompt guard, with no name on them. (An earlier line here said those
+  facts never reach a model. The code sent them. The record is corrected, 2026-11-22.)
 - An agent never writes. Code stores what an agent returns, after checking it.
 - A model never decides a certificate, a payment, what an agency sees, the suggested letters or the sphere. Those
   are plain code, and a test fails if a model library is imported into those modules.

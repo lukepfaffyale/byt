@@ -817,14 +817,14 @@ def market_twins() -> list[market.TwinFacts]:
 def campaign_out(c) -> CampaignOut:
     q = market.QUESTION_BY_ID[c.question_id]
     counts = json.loads(c.counts)
-    total = sum(counts.values()) or 1
+    total = sum(v for k, v in counts.items() if not k.startswith("_")) or 1
     first = math.ceil(market.tier_base(c.sample_twins, c.twins - c.sample_twins, c.pay, c.depth))
     return CampaignOut(kind=q.kind, question=q.question, audience=market.AUDIENCE_NAME.get(c.audience, c.audience), group=c.audience,
                        depth=market.TIER_NAME.get(c.depth, c.depth),
                        pay=c.pay, twins=c.twins, sample_twins=c.sample_twins, spent=c.spent, total=round(c.spent + db.share_of(c.spent), 2), extra=max(0, c.spent - first),
                        split=[SplitRow(label=o.label, count=counts.get(o.id, 0), share=round(counts.get(o.id, 0) / total, 3))
                               for o in q.card.options],
-                       created_at=db.iso(c.created_at))
+                       unsure=int(counts.get("_unsure", 0)), created_at=db.iso(c.created_at))
 
 
 def agency_out(player: Player) -> Agency:
@@ -888,7 +888,7 @@ def brief_out(b, made: dict[str, list[str]]) -> BriefOut:
             note = "You built this step. Players can play it." if live else "This step is yours. Tap Build my step to pick its cards."
         return BriefOut(kind=b.kind, title=title, audience=SKILL_BY_ID[b.topic]["name"],
                         twins=0, sample_twins=0, spent=b.spent, fee=b.spent, total=b.spent, created_at=db.iso(b.created_at), note=note)
-    total = sum(counts.values()) or 1
+    total = sum(v for k, v in counts.items() if not str(k).startswith("_")) or 1
     if b.kind == "survey":
         q = market.QUESTION_BY_ID[b.topic]
         title, rows = q.question, [(o.id, o.label) for o in q.card.options]
@@ -896,6 +896,7 @@ def brief_out(b, made: dict[str, list[str]]) -> BriefOut:
         title, rows = f"Test: {SKILL_BY_ID[b.topic]['name']}", list(market.BANDS)
     return BriefOut(kind=b.kind, title=title, audience=audience, twins=b.twins, sample_twins=b.sample_twins, spent=b.spent,
                     fee=market.CREW_FEE, total=round(b.spent + db.share_of(b.spent - market.CREW_FEE), 2), created_at=db.iso(b.created_at),
+                    unsure=int(counts.get("_unsure", 0)),
                     split=[SplitRow(label=label, count=counts.get(key, 0), share=round(counts.get(key, 0) / total, 3)) for key, label in rows])
 
 
@@ -1037,7 +1038,10 @@ def run_brief(body: BriefIn, request: Request, player: Player = Depends(current_
     if len(asked) < market.MIN_TWINS:
         raise HTTPException(409, f"Fewer than {market.MIN_TWINS} Syms match that group. No one was asked, and nothing was charged.")
     if body.kind == "survey":
-        counts = market.tally(known, [market.answer(known, t) for t in asked])
+        # a Sym with no real answer is left out of the totals, as for an agency
+        knowing = [t for t in asked if market.knows(known, t)]
+        counts = market.tally(known, [market.answer(known, t) for t in knowing])
+        counts["_unsure"] = len(asked) - len(knowing)
     else:
         traits = market.skill_traits(body.topic)
         bands = [market.band(t, traits) for t in asked]
@@ -1087,7 +1091,7 @@ def met_out(m) -> MetTwin:
                    key=lambda f: f.share, reverse=True)
     return MetTwin(open=True, nickname=db.nickname_of(m.player_id), sample=sample, strongest=[f.name for f in areas[:2]],
                    answers=[MetAnswer(question=q.question,
-                                      answer=next(o.label for o in q.card.options if o.id == market.answer(q, facts)))
+                                      answer=next(o.label for o in q.card.options if o.id == market.answer(q, facts)) if market.knows(q, facts) else "I do not know yet. Ask my person.")
                             for q in market.QUESTIONS],
                    paid=m.paid, at=db.iso(m.created_at))
 
@@ -1173,7 +1177,12 @@ def run_campaign(body: CampaignIn, request: Request, player: Player = Depends(cu
     cost, _extra = market.tier_cost(free, len(asked) - free, body.pay, body.depth, db.earlier_asks(org.id, body.audience))
     if db.wallet_balance(player.id, "agency") < cost:
         raise HTTPException(409, "You do not have enough credits to ask that many Syms at that price.")
-    counts = market.tally(q, [market.answer(q, t) for t in asked])
+    # A Sym with no real answer says "I do not know, ask my person". It is left out of the totals, and the result
+    # says how many. Tonight it is still paid, because the price a seat is told must be the price charged and the
+    # price is worked out for the group before the question is known. Not paying it is the stated next step.
+    knowing = [t for t in asked if market.knows(q, t)]
+    counts = market.tally(q, [market.answer(q, t) for t in knowing])
+    counts["_unsure"] = len(asked) - len(knowing)  # a key that starts with _ is never an option
     done = db.run_campaign(org.id, q.id, q.kind, body.audience, body.pay, len(asked), free,
                            json.dumps(counts),
                            [(t.player_id, market.twin_pay(member_pay, db.days_since_active(t.player_id)))

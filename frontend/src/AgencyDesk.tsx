@@ -434,7 +434,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
             </ul>
             <span className="muted">{c.twins - c.sample_twins > 0
               ? `You paid the owners of ${c.twins - c.sample_twins} member ${c.twins - c.sample_twins === 1 ? 'Sym' : 'Syms'}. ${c.sample_twins} ${c.sample_twins === 1 ? 'was a free Sym' : 'were free Syms'}, mostly BOT Syms.`
-              : `All ${c.sample_twins} were free Syms, mostly BOT Syms. No person was paid this time.`}</span>
+              : `All ${c.sample_twins} were free Syms, mostly BOT Syms. No person was paid this time.`}{(c.unsure ?? 0) > 0 ? ` ${c.unsure} ${c.unsure === 1 ? 'Sym' : 'Syms'} said "I do not know yet" and ${c.unsure === 1 ? 'is' : 'are'} left out of the bars.` : ''}</span>
           </li>
         ))}
       </ul>

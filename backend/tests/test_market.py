@@ -48,8 +48,9 @@ def test_campaign_pays_only_opted_in_twins_and_returns_counts_only(client, auth)
     free = len(db.free_twin_ids())  # the made-up twins, and the twins of players who left in other tests
     assert camp["sample_twins"] == free and camp["twins"] == free + 1  # the opted-in player, not the quiet one
     assert camp["spent"] == free + 2 and agency["budget"] == market.START_BUDGET - free - 2 - db.share_of(free + 2)  # the game takes its share on top; a free twin costs half
-    assert sum(r["count"] for r in camp["split"]) == free + 1
-    assert set(camp) == {"kind", "question", "audience", "group", "depth", "pay", "twins", "sample_twins", "spent", "total", "extra", "split", "created_at"}
+    # a Sym with no real answer says so and is left out of the totals; the result says how many
+    assert sum(r["count"] for r in camp["split"]) + camp["unsure"] == free + 1
+    assert set(camp) == {"kind", "question", "audience", "group", "depth", "pay", "twins", "sample_twins", "spent", "total", "extra", "unsure", "split", "created_at"}  # unsure is a count, never a person
 
     earned = client.get("/jobs", headers=player).json()
     assert earned["data_credits"] == 2 and earned["data_answers"] == 1 and earned["credits"] == 2

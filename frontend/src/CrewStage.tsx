@@ -305,9 +305,9 @@ export function CrewStage(props: { script: CrewScript; doneLabel: string; onDone
         {script.stats && script.stats.length > 0 && (
           <dl className="pair crew-stats">
             {script.stats.map((s) => (
-              <div key={s.label} className={at >= s.at ? 'on' : undefined}>
+              <div key={s.label} className={over || at >= s.at ? 'on' : undefined}>
                 <dt>{s.label}</dt>
-                <dd><Count to={s.value} state={calm || at > s.at ? 'done' : at === s.at ? 'run' : 'wait'} /></dd>
+                <dd><Count to={s.value} state={calm || over || at > s.at ? 'done' : at === s.at ? 'run' : 'wait'} /></dd>
               </div>
             ))}
           </dl>

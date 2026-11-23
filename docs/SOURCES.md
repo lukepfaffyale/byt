@@ -173,3 +173,11 @@ the report gives the date beside each one.
 - Supabase, pricing page: the free plan holds 500 MB and pauses after a week without activity. Read 2026-11-21.
 - Model token prices for `gpt-6-luna`: the rates set in `backend/agent.py` (`PRICES`). Every dollar figure in the
   report is token counts from real runs times those rates. It is not a bill.
+
+## The idea of a Sym that outlasts its moment (added 2026-11-22)
+
+The student named Altered Carbon (the novel by Richard K. Morgan, and the television series made from it) as a mood
+for one part of the long-term vision: a stored self that others may still speak with. It is named here as
+inspiration only. No name, character, term, image, design or text from it is used, and BYT's own idea differs in what
+matters most: a Sym is a record of choices a person gave by playing, kept and shared only with that person's yes.
+The work belongs to its owners, and nothing here is official, licensed or for sale.

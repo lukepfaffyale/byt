@@ -42,7 +42,7 @@ any other sensitive category.
 | card_id | text | server | no | Which card | With the player |
 | choice | text | player tap | **yes** (preference or behaviour) | Trains and tests the Sym | With the player |
 | is_correct | boolean, nullable | server | **yes** (performance) | Skill certs | With the player |
-| response_ms | integer | browser timer | **yes** (behaviour) | Strength of preference, reflex and skill timing | With the player |
+| response_ms | integer, thousandths of a second | browser timer | **yes** (behaviour) | What it times depends on the card. Taste, battle and skill-question cards: from the card showing to the tap, so reading time is inside it. Board cards that ask how sure: from the card showing to the how-sure tap, so the move and the how-sure tap are one number; on a pattern card the flashing dots are inside it too. Rings: from the signal to the tap; 0 means a tap before the signal, and the limit plus 1500 means no tap. Every time includes the device's own delay and is sent by the browser; the server does not check it | With the player |
 | held_out | boolean | server | no | True if the Sym must never see this pick before the battle | With the player |
 | created_at | timestamp | server | no | Ordering | With the player |
 
@@ -373,7 +373,7 @@ The usage row for the run holds token counts only.
 
 | Column | Type | Source | PII | Purpose | Retention |
 |---|---|---|---|---|---|
-| responses.sure | integer, nullable (3 sure, 2 think so, 1 a guess) | player tap, on pattern puzzles only | no by itself; with the right or wrong mark it shows how well one person judges their own answers | So the player can see how often they are right when they feel sure. The Sym may read the totals | With the player |
+| responses.sure | integer, nullable (3 sure, 2 think so, 1 a guess) | player tap, on every board card with a right answer except rings | no by itself; with the right or wrong mark it shows how well one person judges their own answers | So the player can see how often they are right when they feel sure. The Sym may read the totals | With the player |
 
 ## tendencies.scope (added 2026-11-15)
 

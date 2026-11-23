@@ -247,9 +247,17 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
 
   // on the results page the crew says what the studio's work has paid, then asks for the next thing to build
   const shownRow = back.rows[0]
+  const latest = seat.briefs[0]  // the newest errand: what the crew just came back from
   const lead = shownRow && shownRow.split.length > 0 ? [...shownRow.split].sort((a, b) => b.share - a.share)[0] : null
   const paidOut = {
-    say: lead ? `${shownRow.twins} Syms answered. Most said: ${lead.label}, ${Math.round(lead.share * 100)}%.` : seat.made.length > 0 ? `${passes} ${passes === 1 ? 'pass' : 'passes'} earned you ${credits(earned)} credits. What next?` : `${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} run. Nothing passed yet. What next?`,
+    // what just came back comes first: a step built, a step claimed, or the answers to a question. A count of
+    // zero is never said as if it were a result.
+    say: latest?.kind === 'build' ? `${latest.title.replace(/^Skill step (built|claimed): /, '')} is built and open. Each pass pays you ${seat.step_royalty} credits.`
+      : latest?.kind === 'skill' && seat.packs.length > 0 ? `You claimed ${seat.packs[0].step}. Tap ${seat.step_cards} cards and we build it.`
+      : lead ? `${shownRow.twins} Syms answered. Most said: ${lead.label}, ${Math.round(lead.share * 100)}%.`
+      : passes > 0 ? `${passes} ${passes === 1 ? 'pass' : 'passes'} earned you ${credits(earned)} credits. What next?`
+      : seat.made.length > 0 ? `${seat.made.length} ${seat.made.length === 1 ? 'step is' : 'steps are'} open. Each pass pays you ${seat.step_royalty} credits.`
+      : seat.briefs.length > 0 ? `${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} run. What next?` : 'Nothing back yet. Ask one question.',
     go: seat.packs.length > 0 ? 'Build my step' : open ? `Claim: ${open.waiting[0]}` : 'Ask a group',
     act: () => (seat.packs.length > 0 ? start('make', seat.packs[0].id) : open ? start('skill', open.id) : start('survey', null)),
   }
@@ -409,7 +417,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                 <span className="line-top">{b.kind === 'skill' || b.kind === 'build' ? 'Skill' : b.kind === 'test' ? 'Test' : 'Question'} · {b.audience}{b.twins > 0 ? ` · ${b.twins} Syms` : ''} · {b.total} credits</span>
                 <span>{b.title}</span>
                 {b.split.length > 0 && <SplitBars rows={b.split} />}
-                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} are free Syms, mostly BOT Syms.`}</span>
+                <span className="muted">{b.note || `${b.sample_twins} of the ${b.twins} are free Syms, mostly BOT Syms.`}{(b.unsure ?? 0) > 0 ? ` ${b.unsure} said "I do not know yet" and are left out of the bars.` : ''}</span>
               </li>
             ))}
           </ul>}

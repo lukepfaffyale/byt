@@ -33,7 +33,7 @@ def test_a_survey_and_a_test_return_counts_only_and_every_credit_is_in_the_ledge
     platform = db.wallet_balance(None, "platform")
     out = client.post("/creator/briefs", json={"kind": "survey", "topic": market.QUESTIONS[0].id, "audience": "all"}, headers=auth).json()
     survey = out["briefs"][0]
-    assert survey["twins"] >= market.MIN_TWINS and sum(r["count"] for r in survey["split"]) == survey["twins"]
+    assert survey["twins"] >= market.MIN_TWINS and sum(r["count"] for r in survey["split"]) + survey["unsure"] == survey["twins"]
     assert survey["spent"] == survey["twins"] * market.CREATOR_PAY + market.CREW_FEE
     assert out["budget"] == HELD - survey["spent"] - db.share_of(survey["spent"] - market.CREW_FEE)
     out = client.post("/creator/briefs", json={"kind": "test", "topic": "logic", "audience": "all"}, headers=auth).json()

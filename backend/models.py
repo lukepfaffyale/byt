@@ -958,6 +958,7 @@ class BriefOut(Strict):
     spent: int
     fee: int
     total: float = 0  # what left the wallet in all: spent plus the game's share
+    unsure: int = 0  # Syms that said they did not know: left out of the totals
     split: list["SplitRow"] = []
     note: str = ""
     created_at: str
@@ -1119,6 +1120,7 @@ class CampaignOut(Strict):
     spent: int
     total: float = 0  # what left the wallet in all: spent plus the game's share
     extra: int = 0  # the part of `spent` that was the price of asking this group again; it went to the growth fund
+    unsure: int = 0  # Syms in the group that said they did not know: not counted, not paid
     split: list["SplitRow"]
     created_at: str
 
