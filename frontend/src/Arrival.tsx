@@ -345,8 +345,8 @@ export function Arrival(props: {
   const full = first || data.taps_mine === 0
   const beats: [string, string][] = full
     ? [
-        ['Today people have jobs.', 'Tomorrow is uncertain.'],
-        ['AI can learn the work.', 'It cannot be you.'],
+        ['Firms earn from your data.', 'What do you get?'],
+        ['AI is learning the work.', 'It cannot be you.'],
         ['Your taps build a Sym.', 'A Sym is a digital you.'],
         ['It works while you rest.', 'You are paid. Play money today.'],
         [count[0], 'Add your light.'],
@@ -359,7 +359,7 @@ export function Arrival(props: {
           : ['We build toward something greater.', 'Add your light.'],
       ]
   const HOW: [string, string][] = [
-    ['Today people have jobs.', 'Tomorrow is uncertain. AI is learning the work. It cannot make your choices. Only you can give those.'],
+    ['Why this game?', 'Firms earn from your data. You carry the risk and get little back. AI is learning the work too. It cannot make your choices. Only you can give those.'],
     ['What is a Sym?', 'A digital you. It learns how you choose from your taps, and it is yours. Later it guesses your picks, and code keeps score.'],
     ['It works while you rest.', 'Agencies ask Syms and post jobs. When yours answers, you are paid. Credits are play money today.'],
     ['We build toward something greater.', 'You give the blocks. Agents make the connections. Use your Sym more and it earns more. Add your light.'],

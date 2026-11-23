@@ -363,6 +363,12 @@
 
 /* a short phone (the browser bars are showing): the picture of the Sym or the crew stays on the journey only.
    On every other screen its room goes to the list, so the first rows are on the first page. */
-@media (max-width: 999px) and (min-height: 560px) and (max-height: 780px) {
+@media (max-width: 999px) and (min-height: 560px) and (max-height: 840px) {
   :root #root:not(:has(.loop-line)) .stage:not(.stage-wall) { display: none; }
+}
+
+/* a very short phone (under 560 high, where pages scroll): the name and wallet line never pushes the page sideways */
+@media (max-width: 999px) and (max-height: 559px) {
+  :root .status { flex-basis: 100%; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html, body { overflow-x: hidden; }
 }
