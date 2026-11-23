@@ -216,3 +216,28 @@ or for sale.
 ## Human baseline, the term (added 2026-11-23)
 
 - NHI Mgmt Group, "What Is Human Baseline? Definition and Examples", https://nhimg.org/glossary/human-baseline/ , page updated 2026-10-31, read 2026-11-23. Used for the plain meaning of the term: judgments made by people that automated scoring is checked against. The way BYT applies it (each person is the baseline for their own Sym) is the student's own.
+
+## Research behind the motivation (added 2026-11-23; each page was opened and the quoted number seen that day)
+
+- US Federal Trade Commission, press release, 27 May 2014: "FTC Recommends Congress Require the Data Broker Industry
+  to be More Transparent and Give Consumers Greater Control Over Their Personal Information". One broker it studied
+  "holds information on more than 1.4 billion consumer transactions and 700 billion data elements".
+  https://www.ftc.gov/news-events/news/press-releases/2014/05/ftc-recommends-congress-require-data-broker-industry-be-more-transparent-give-consumers-greater
+- US Federal Trade Commission, "Equifax Data Breach Settlement": the breach "exposed the personal information of 147
+  million people", and the settlement "includes up to $425 million to help people affected". The "under 3 dollars a
+  person" in the report is our own division of those two numbers.
+  https://www.ftc.gov/enforcement/refunds/equifax-data-breach-settlement
+- Georgieva, K., "AI Will Transform the Global Economy. Let's Make Sure It Benefits Humanity", IMF Blog, 14 January
+  2024: "almost 40 percent of global employment is exposed to AI"; in advanced economies "about 60 percent of jobs
+  may be impacted". https://www.imf.org/en/Blogs/Articles/2024/01/14/ai-will-transform-the-global-economy-lets-make-sure-it-benefits-humanity
+- Pew Research Center, "Americans and Privacy: Concerned, Confused and Feeling Lack of Control Over Their Personal
+  Information", 15 November 2019: 81 percent say the risks of data collection by companies outweigh the benefits; 72
+  percent say they benefit very little or none.
+  https://www.pewresearch.org/internet/2019/11/15/americans-and-privacy-concerned-confused-and-feeling-lack-of-control-over-their-personal-information/
+- Bisbee, J., Clinton, J. D., Dorff, C., Kenkel, B., and Larson, J. M. (2024). "Synthetic Replacements for Human Survey
+  Data? The Perils of Large Language Models." Political Analysis 32(4), 401 to 416. Less variation in the model's
+  answers than in the real survey, and 48 percent of coefficients significantly different (the 48 percent is in the
+  introduction, not the abstract). https://doi.org/10.1017/pan.2024.5
+- Wei, K. L., and others (2025). "Recommendations and Reporting Checklist for Rigorous and Transparent Human Baselines
+  in Model Evaluations." arXiv:2506.13776. A review of 115 human baselines found shortcomings in existing methods
+  (abstract read only). https://arxiv.org/abs/2506.13776
