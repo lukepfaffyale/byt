@@ -2203,7 +2203,7 @@ MOVE_LABEL = {
     ("grant", True): ("Starting credits", "Play money to try this seat"),
     ("work", True): ("Work pay", "From a job requester, after you checked the job"),
     ("data", True): ("Data income", "From an agency. The agency saw only totals."),
-    ("growth", True): ("Skill step bonus", "From the growth fund"),
+    ("growth", True): ("Growth bonus", "From the growth fund: a skill step you passed, or being in step with your Sym"),
     ("data", False): ("Paid to Syms", "For one question"),
     ("samples", False): ("Paid to BOT Syms", "Made-up Syms, one for each country, that keep the game moving. No person is behind them."),
     ("fund_in", False): ("To the growth fund", "The extra for asking a group again, and the part held back from owners who were away"),
