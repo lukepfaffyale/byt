@@ -408,9 +408,17 @@ def collective(job: work_rules.Job) -> tuple[list[str], int]:
     answer by the zero-token rule of thumb. Returns (choices, how many of them are sample Syms)."""
     real = db.confirmed_choices(job.id)
     samples = []
-    for pid in db.sample_player_ids():
-        choice = verifier.rule_of_thumb(job.card, db.trait_counts(pid, include_held_out=True), job.card.options[0].id)
-        samples.append(choice)
+    # one query for every sample Sym's picks (it used to be one query for each Sym, which made a job check slow)
+    for picks in db.picks_of(db.sample_player_ids()).values():
+        counts: dict[str, int] = {}
+        for card_id, choice in picks:
+            card = CARDS.get(card_id)
+            if card is None or card.kind not in ("preference", "battle"):
+                continue
+            trait = next((o.trait for o in card.options if o.id == choice), None)
+            if trait:
+                counts[trait] = counts.get(trait, 0) + 1
+        samples.append(verifier.rule_of_thumb(job.card, counts, job.card.options[0].id))
     return real + samples, len(samples)
 
 
