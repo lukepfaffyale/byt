@@ -16,7 +16,7 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
 - **No time limits** on preference, strategy or logic cards. Time is recorded, never enforced.
 - **Announcements:** points earned, right or wrong, the Sym's pick and the battle score are announced through one
   polite `aria-live` region. Loading states ("your Sym is thinking") are announced too.
-- **Motion:** with the device setting for reduced motion on, nothing moves and the Sym is one still picture,
+- **Motion (changed 2026-11-23):** motion now starts ON for everyone, and the Motion switch in the footer turns it off (the choice is kept). Until this date the game started still when the device asked for reduced motion. This is a known gap against WCAG 2.3.3: a person who asked their device for less motion sees the opening once before they can turn it off. Nothing flashes, any tap or key ends the opening, and Skip is there from the first frame. Small CSS effects still follow the device setting. The earlier rule read: with the device setting for reduced motion on, nothing moves and the Sym is one still picture,
   redrawn when the Sym changes. A "Motion" switch under the Sym lets the player turn movement on or off; their
   choice is kept in the browser and wins over the device setting in both directions. Nothing flashes.
 - **Color (BYT house style, second pass, 2026-11-14: infinite black, a lit horizon, sharp lines, platinum for
@@ -62,7 +62,7 @@ Status on 2026-11-23. Checked: the page has `lang="en"` and a descriptive title 
 - [ ] Contrast checked for every text and border pair, results recorded below
 - [ ] Meaning never by color alone
 - [ ] 320px wide and 200% zoom checked
-- [ ] Reduced motion respected; nothing flashes
+- [ ] Reduced motion respected (not by default since 2026-11-23: the Motion switch turns it off); nothing flashes
 
 ### Labels and announcements
 - [ ] Nickname field has a visible label; it is the only text field in the app

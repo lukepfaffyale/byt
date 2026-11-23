@@ -85,7 +85,7 @@ The longer view (why this matters when work changes, and where it goes next) is 
 and 8 of `report.html`.
 
 If your device is set to reduce motion, the game starts still, and each result waits for a tap on **Next**.
-The footer has **Motion: off**: tap it once to see the game move.
+Motion is on when you arrive. The footer has **Motion: on**: tap it to stop the moving scenes.
 
 ## If something does not start
 

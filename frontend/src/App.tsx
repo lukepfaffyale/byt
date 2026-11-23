@@ -115,15 +115,18 @@ function readSpeed(): number {
   return 0.6
 }
 
-/** The player's own choice wins. With no choice yet, follow the device setting. */
+/** The player's own choice wins. With no choice yet, motion is on: the opening and the moving scenes are how the
+ * game explains itself, and the owner chose (2026-11-23) that everyone sees them first. One tap on "Motion: on"
+ * in the footer turns them off, and that choice is kept. Small effects written in CSS still follow the device
+ * setting for reduced motion. Nothing in the game flashes. */
 function readMotion(): boolean {
   try {
     const saved = localStorage.getItem(MOTION_KEY)
     if (saved) return saved === 'on'
   } catch {
-    // no storage: fall through to the device setting
+    // no storage: motion starts on
   }
-  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return true
 }
 
 function nowAreasOf(sphere: Sphere | null): Vertical[] {
