@@ -41,9 +41,9 @@ const CALIBRATOR = 'style-1'
 const CLOSE = 'quick-hands'
 /** what my Sym says on the first card of each part of the calibration */
 const PART: Record<string, string> = {
-  'style-1': 'Part 1 of 3. Each tap writes a block of me.',
-  'strategy-easy': 'Part 2 of 3. Show me how you decide.',
-  'quick-hands': 'Part 3 of 3. Show me your hands.',
+  'style-1': 'Part 1 of 3. Tap what you like.',
+  'strategy-easy': 'Part 2 of 3. Win in one move.',
+  'quick-hands': 'Part 3 of 3. Tap the ring fast.',
 }
 /** Which side of a pair each option of a Calibrator card stands for: [option a, option b]. This mirrors the traits
  * in backend/data/cards/01_style.json (the server does not send traits to the browser). If a trait changes there,
@@ -446,8 +446,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
     : gateId === CALIBRATOR ? leanLine(picked.current)
       : close ? (blocks !== null ? `You gave ${blocks} inputs. I kept every one.` : '') : ''
   const pace = !finished || !part || !whole ? ''
-    : gateId === CALIBRATOR ? `${cards.length} picks in ${took} seconds.`
-      : gateId === 'strategy-easy' ? `${cards.length} moves in ${took} seconds.` : ''
+    : ''  // in the first minute, fewer words: the pace lines are left out (a tester said there was too much to read)
   const quick = finished && close ? (best !== null ? `Quickest tap: ${(best / 1000).toFixed(2)} s on this device.` : 'Tricky rings. Your taps are kept.') : ''
   const light = finished && close && world ? `One light among them. ${world.botSyms} of the Syms are BOT Syms.` : ''
   const toJob = close && !earnAsk && job !== null && !!pool?.on
@@ -472,7 +471,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
           alt={earnAsk ? 'Not now' : toJob && nextUp && onNext ? onwardGo : undefined} altAct={earnAsk ? notNow : toJob && nextUp && onNext ? onward : undefined}
           say={justOn && !close ? `I am in. ${world ? `${world.agencies} agencies` : 'Agencies'} can ask me now.`
             : earnAsk && close ? 'I am ready. May I earn while you rest?'
-            : earnAsk ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}. Agencies can ask me now. May I earn?`
+            : earnAsk ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}. I can answer questions for pay. May I?`
             : close ? `Now I can work while you rest.${job !== null ? ` A job pays ${job}.` : ''}`
               : pool === null ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}.`
               : `${pool?.on && askedNow > 0 ? `While you played, I was asked ${askedNow} ${askedNow === 1 ? 'time' : 'times'}. +${credits(gainedNow)} credits.`
@@ -480,10 +479,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
                   : `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'} kept. ${gate.total} more ${gate.total === 1 ? 'block' : 'blocks'}.`}${bonus + sponsored > 0 ? ` We earned ${credits(bonus + sponsored)} credits.` : ''}`} />
         {earnAsk && (
           <p className="fine">
-            Agencies ask my Sym. It answers from my picks.<br />
-            They see totals over 5 Syms. Never my name.<br />
-            {world ? `Credits are play money. ${world.bots} of ${world.agencies} agencies are BOT agencies.` : 'Credits are play money. Most askers today are BOT agencies.'}<br />
-            Turn it off any time on My Work.
+            They see totals only. Never your name.<br />
+            {world ? `Play money. ${world.bots} of ${world.agencies} askers are BOT agencies.` : 'Play money. Most askers today are BOT agencies.'} Turn it off any time.
           </p>
         )}
         {!earnAsk && earned > 0 && !part && <p className="fine">{earned} points</p>}

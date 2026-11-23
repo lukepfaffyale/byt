@@ -29,15 +29,13 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
 
   return (
     <section aria-labelledby="start-h" className="start">
-      <p className="twin-says">I am not you yet. Teach me.</p>
-      <h1 id="start-h">Meet your Sym. It works while you rest.</h1>
-      <p className="lead">A short tap game. Your Sym learns you, guesses you, then answers and works for you, and you are paid. Play money for now.</p>
+      <h1 id="start-h">Meet your Sym.</h1>
+      <p className="lead">A Sym is a digital you. You tap. It learns you. Then it works for you.</p>
 
       <form onSubmit={submit}>
         <div className="notice" id="notice">
           <p>
-            The game stores a nickname, the days you play and your taps. Notes about you go to an AI model, without
-            your nickname. You can see and delete it all. Use a nickname, not your real name.
+            We keep a nickname and your taps. You can delete it all. Play money only.
           </p>
           <More>
             This game stores a nickname, the days you play, and your taps: what you pick and how fast you tap. The game

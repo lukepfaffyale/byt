@@ -10,7 +10,7 @@ const SIZE: Record<Kind, number> = { you: 0.052, person: 0.034, hold: 0.02, agen
 const ROLE_OF: Record<Kind, Role | null> = { you: 'player', person: 'player', hold: null, agency: 'agency', creator: 'creator' }
 const MOST_KNOWN = 1500
 // seconds each opening line stays up. The words keep the time; the picture is stretched to fit them.
-const HOLD_FIRST = [4.5, 5, 5, 5.5, 5.5, 5, 5.5] // 36 s. The last one includes a 1.5 s rest before the hub.
+const HOLD_FIRST = [4.5, 5, 5.5, 5.5, 5.5] // 26 s, five short beats. The last one includes a 1.5 s rest before the hub.
 const HOLD_BACK = [4, 4, 4] // 12 s on later visits
 const SECOND_LINE = 0.9 // the second line of each beat comes this long after the first
 const FIRST_LINE = 0.4 // the first words wait this long, so the light is seen alone first
@@ -346,12 +346,10 @@ export function Arrival(props: {
   const beats: [string, string][] = full
     ? [
         ['Today people have jobs.', 'Tomorrow is uncertain.'],
-        ['AI is learning the work.', 'It cannot make your choices.'],
-        ['Each tap is one block.', 'The blocks build a Sym you own.'],
-        ['It guesses you. Code keeps score.', 'Each half proves the other.'],
-        ['Then it works while you rest.', 'You are paid. Play money today.'],
-        count,
-        ['Agents make the connections.', 'Add your light.'],
+        ['AI can learn the work.', 'It cannot be you.'],
+        ['Your taps build a Sym.', 'A Sym is a digital you.'],
+        ['It works while you rest.', 'You are paid. Play money today.'],
+        [count[0], 'Add your light.'],
       ]
     : [
         ['You give the blocks.', 'Agents make the connections.'],
@@ -362,7 +360,7 @@ export function Arrival(props: {
       ]
   const HOW: [string, string][] = [
     ['Today people have jobs.', 'Tomorrow is uncertain. AI is learning the work. It cannot make your choices. Only you can give those.'],
-    ['Each tap is one block.', 'The blocks build a Sym you own. It seals a guess before you pick. Code keeps score. Each half proves the other.'],
+    ['What is a Sym?', 'A digital you. It learns how you choose from your taps, and it is yours. Later it guesses your picks, and code keeps score.'],
     ['It works while you rest.', 'Agencies ask Syms and post jobs. When yours answers, you are paid. Credits are play money today.'],
     ['We build toward something greater.', 'You give the blocks. Agents make the connections. Use your Sym more and it earns more. Add your light.'],
   ]
@@ -374,7 +372,7 @@ export function Arrival(props: {
   const play = () => (next ? onPlay(next.id) : onJourney())
   const lead: Role = intent && !(intent === 'agency' ? data.has_agency : data.has_creator) ? intent : 'player'
   const roles: { id: Role; name: string; n: number; what: string; go: string; act: () => void }[] = [
-    { id: 'player', name: 'Player', n: data.people, what: 'You give the blocks. Without real people, there is nothing to ask.',
+    { id: 'player', name: 'Player', n: data.people, what: data.taps_mine === 0 ? 'Tap two tiles. Your Sym learns you. One minute.' : 'You give the blocks. Without real people, there is nothing to ask.',
       go: !next ? 'My Journey' : data.taps_mine === 0 ? `Start: ${next.title}` : next.done > 0 ? `Continue: ${next.title}` : `Play: ${next.title}`, act: play },
     { id: 'agency', name: 'Agency', n: data.agencies, what: 'You bring the pay. What you back, creators build.',
       go: data.has_agency ? 'My agency' : 'Open an agency', act: () => onSeat('agency') },
@@ -418,18 +416,18 @@ export function Arrival(props: {
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>
             <p className="arrival-said">{data.taps_mine === 0
-              ? 'Your choices are the one thing AI cannot make. Start a Sym you own.'
+              ? 'A Sym is a digital you. Tap to start yours.'
               : data.known_mine > 0
                 ? `${data.known_mine.toLocaleString()} of these lights came from you. Choose the part you play.`
                 : 'You are one light among them. Choose the part you play.'}</p>
             <ul className="arrival-roles">
-              {roles.map((r) => (
+              {roles.filter((r) => data.taps_mine > 0 || r.id === lead).map((r) => (
                 <li key={r.id}>
                   <button className={r.id === lead ? 'arrival-role lead' : 'arrival-role'}
                     onClick={r.act} onMouseEnter={look(r.id)} onMouseLeave={look(null)} onFocus={look(r.id)} onBlur={look(null)}>
                     <span className="arrival-role-top"><span className="arrival-role-name">{r.name}</span><span className="arrival-role-n">{r.n}</span></span>
                     <span className="arrival-role-what">{r.what}</span>
-                    <span className="arrival-role-go">{r.id === lead && (data.taps_mine === 0 || lead !== 'player') ? 'My Sym: start here. ' : ''}{r.go}</span>
+                    <span className="arrival-role-go">{data.taps_mine === 0 && r.id === 'player' ? 'Start: 8 quick taps' : <>{r.id === lead && lead !== 'player' ? 'My Sym: start here. ' : ''}{r.go}</>}</span>
                   </button>
                 </li>
               ))}
