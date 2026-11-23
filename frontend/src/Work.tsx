@@ -187,6 +187,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
       <section aria-labelledby="work-h" className="mine job-done">
         <h1 id="work-h" className="sr-only">Your Sym was paid</h1>
         <p className="job-pay"><strong className="stat">+{r.credits_earned}</strong> <span className="stat-label">credits your Sym earned · {amount(r.credits)} in total</span></p>
+        <p className="job-group">Your data. Your pay. It is play money today.</p>
         {r.insight && (
           <p className="cert job-cert">
             <span className="cert-kind">Insight certificate</span>

@@ -352,7 +352,7 @@ export function Arrival(props: {
         [count[0], 'Add your light.'],
       ]
     : [
-        ['You give the blocks.', 'Agents make the connections.'],
+        ['Firms earn from your data.', 'Here, you do.'],
         count,
         data.known_mine > 0
           ? [`${data.known_mine.toLocaleString()} of them came from you.`, 'Add more light.']
@@ -416,9 +416,9 @@ export function Arrival(props: {
           <div className="arrival-end">
             <h1 ref={headRef} tabIndex={-1}>Welcome, {data.nickname}.</h1>
             <p className="arrival-said">{data.taps_mine === 0
-              ? 'A Sym is a digital you. Tap to start yours.'
+              ? 'Firms earn from your data. Here, you do. Start your Sym, a digital you.'
               : data.known_mine > 0
-                ? `${data.known_mine.toLocaleString()} of these lights came from you. Choose the part you play.`
+                ? `${data.known_mine.toLocaleString()} of these lights came from you. Here, your data pays you.`
                 : 'You are one light among them. Choose the part you play.'}</p>
             <ul className="arrival-roles">
               {roles.filter((r) => data.taps_mine > 0 || r.id === lead).map((r) => (

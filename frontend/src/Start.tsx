@@ -30,7 +30,7 @@ export function Start({ onStarted }: { onStarted: (seat: Seat) => void }) {
   return (
     <section aria-labelledby="start-h" className="start">
       <h1 id="start-h">Meet your Sym.</h1>
-      <p className="lead">A Sym is a digital you. You tap. It learns you. Then it works for you.</p>
+      <p className="lead"><strong>Firms earn from your data. Here, you do.</strong> A Sym is a digital you. You tap. It learns you. Then it works for you.</p>
 
       <form onSubmit={submit}>
         <div className="notice" id="notice">
