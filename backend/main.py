@@ -863,6 +863,10 @@ def agency_out(player: Player) -> Agency:
     base.sponsorships = [SponsorOut(skill=SKILL_BY_ID[b.skill]["name"], budget=b.budget, spent=b.spent, passes=b.passes, open=not b.closed)
                          for b in db.sponsorships_for(org.id)]
     base.postings = [post_out(p) for p in db.postings_for(org.id)]
+    now = db.utcnow()
+    base.week_question = market.question_of_week(now).id
+    askers = db.week_askers(base.week_question, market.week_start(now))
+    base.week_asked = askers if askers >= market.MIN_TWINS else 0  # a small count could point at one seat
     return base
 
 

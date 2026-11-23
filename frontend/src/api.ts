@@ -188,6 +188,7 @@ export type Posting = {
   sample_twins: number; split: { label: string; count: number; share: number }[]; created_at: string
 }
 export type Agency = {
+  week_question?: string; week_asked?: number
   job_pay_choices: number[]; job_seats: number[]; hold_times: number; postings: Posting[]
   sponsor_budgets: number[]; sponsor_skills: { id: string; name: string }[]
   sponsorships: { skill: string; budget: number; spent: number; passes: number; open: boolean }[]

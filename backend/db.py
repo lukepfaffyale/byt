@@ -896,6 +896,12 @@ def all_campaigns() -> list[Campaign]:
         return list(s.exec(select(Campaign)))
 
 
+def week_askers(question_id: str, since: datetime) -> int:
+    """How many agencies asked this question since a moment. A count of seats, never which."""
+    with Session(get_engine()) as s:
+        return len(set(s.exec(select(Campaign.org_id).where(Campaign.question_id == question_id, Campaign.created_at >= since))))
+
+
 def campaigns_for(org_id: str) -> list[Campaign]:
     with Session(get_engine()) as s:
         return list(s.exec(select(Campaign).where(Campaign.org_id == org_id).order_by(Campaign.created_at.desc())))

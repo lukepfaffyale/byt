@@ -52,7 +52,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const [name, setName] = useState(() => madeUpName('Studio'))
   const [busy, setBusy] = useState(false)
   const [task, setTask] = useState<Task>('needs')
-  const [need, setNeed] = useState<'paying' | 'asked' | 'new'>('paying')
+  const [need, setNeed] = useState<'paying' | 'asked' | 'new' | 'mine'>('paying')
   const [topic, setTopic] = useState<string | null>(null)
   const [group, setGroup] = useState('all')
   const [got, setGot] = useState<'briefs' | 'met'>('briefs')
@@ -281,7 +281,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
           {task === 'needs' && (
             <>
               <Tabs label="What is needed" value={need} onChange={setNeed}
-                tabs={[{ id: 'paying', label: 'Paying now', n: seat.needs.length }, { id: 'asked', label: 'Asked about', n: seat.wanted.length }, { id: 'new', label: 'New needs', n: seat.emerging.length }]} />
+                tabs={[{ id: 'paying', label: 'Paying now', n: seat.needs.length }, { id: 'asked', label: 'Asked about', n: seat.wanted.length }, { id: 'new', label: 'New needs', n: seat.emerging.length }, { id: 'mine', label: 'My steps', n: seat.made.length }]} />
               {need === 'paying' && (
                 <Rows pageKey="paying" size={3} wide empty="No agency has put credits behind a skill yet." rows={seat.needs.map((n) => ({
                   id: n.skill, top: 'Agencies pay', label: n.name, gold: !n.built, n: `${n.left} credits`,
@@ -293,6 +293,13 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
                   id: w.skill, top: `${w.agencies} ${w.agencies === 1 ? 'agency' : 'agencies'}`, label: w.name, gold: w.waiting > 0,
                   n: w.waiting > 0 ? `${w.waiting} to build` : w.built ? 'built' : '',
                   detail: <>{w.agencies} {w.agencies === 1 ? 'agency has' : 'agencies have'} asked about this skill, through a question, a job or by backing it. {w.waiting > 0 ? `${w.waiting} of its steps ${w.waiting === 1 ? 'is' : 'are'} still waiting for a creator.` : 'Every step of it that can be built is built.'} You never see which agency.</>,
+                }))} />
+              )}
+              {need === 'mine' && (
+                <Rows pageKey="made" size={3} wide empty="You have not built a step yet. Claim one and build it, and each pass pays you." rows={seat.made.map((m) => ({
+                  id: m.skill + m.step, top: m.skill, label: m.step, gold: m.passes > 0,
+                  n: `${m.passes} ${m.passes === 1 ? 'pass' : 'passes'} · ${m.earned} credits`,
+                  detail: <>Built from {m.cards} cards. Each time another player passes it, the growth fund pays you. You never see who passed.</>,
                 }))} />
               )}
               {need === 'new' && (

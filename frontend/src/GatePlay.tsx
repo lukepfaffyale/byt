@@ -45,6 +45,35 @@ const PART: Record<string, string> = {
   'strategy-easy': 'Part 2 of 3. Win in one move.',
   'quick-hands': 'Part 3 of 3. Tap the ring fast.',
 }
+/** The best tap on the reaction rings, kept on this device only: the best ever and the best of this week (a week is
+ * one season). Nothing here is sent to the server, and it is never shown as a score against other people. */
+const RING_KEY = 'byt-ring-best'
+function seasonNow(): string {
+  const d = new Date()
+  const day = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
+  day.setUTCDate(day.getUTCDate() + 4 - (day.getUTCDay() || 7)) // the Thursday of this week names its year
+  const first = Date.UTC(day.getUTCFullYear(), 0, 1)
+  return `${day.getUTCFullYear()}-W${Math.ceil(((day.getTime() - first) / 86400000 + 1) / 7)}`
+}
+function ringBest(): { ever: number; week: number } | null {
+  try {
+    const kept = JSON.parse(localStorage.getItem(RING_KEY) ?? 'null') as { ever?: number; season?: string; week?: number } | null
+    if (!kept || typeof kept.ever !== 'number') return null
+    return { ever: kept.ever, week: kept.season === seasonNow() && typeof kept.week === 'number' ? kept.week : 0 }
+  } catch {
+    return null
+  }
+}
+function noteRing(ms: number): void {
+  try {
+    const now = ringBest()
+    const week = now && now.week > 0 ? Math.min(now.week, ms) : ms
+    localStorage.setItem(RING_KEY, JSON.stringify({ ever: now ? Math.min(now.ever, ms) : ms, season: seasonNow(), week }))
+  } catch {
+    // storage is off in this browser: the best of this visit is still shown
+  }
+}
+
 /** Which side of a pair each option of a Calibrator card stands for: [option a, option b]. This mirrors the traits
  * in backend/data/cards/01_style.json (the server does not send traits to the browser). If a trait changes there,
  * change it here. style-05 is left out: its pair has only one card. */
@@ -266,7 +295,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
       const ms = took ?? Math.max(0, Math.round(performance.now() - shownAt.current))
       paces.current.push(ms)
       picked.current[card.id] = choice
-      if (card.board?.game === 'reflex' && choice === 'hit') hits.current.push(ms)
+      if (card.board?.game === 'reflex' && choice === 'hit') {
+        hits.current.push(ms)
+        noteRing(ms)
+      }
       setError('')
       if (!card.board && !isBattle && card.kind !== 'logic') {
         // No right answer to wait for: the tile lights for a beat, the next card comes, and the save runs behind.
@@ -448,6 +480,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
   const pace = !finished || !part || !whole ? ''
     : ''  // in the first minute, fewer words: the pace lines are left out (a tester said there was too much to read)
   const quick = finished && close ? (best !== null ? `Quickest tap: ${(best / 1000).toFixed(2)} s on this device.` : 'Tricky rings. Your taps are kept.') : ''
+  const kept = finished && close ? ringBest() : null
+  const season = kept && kept.week > 0 ? `Best this week: ${(kept.week / 1000).toFixed(2)} s. Best ever: ${(kept.ever / 1000).toFixed(2)} s.` : ''
   const light = finished && close && world ? `One light among them. ${world.botSyms} of the Syms are BOT Syms.` : ''
   const toJob = close && !earnAsk && job !== null && !!pool?.on
 
@@ -461,9 +495,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
           : <p className="done-hero"><span className="done-num lead"><strong>+{gate.total}</strong> {gate.total === 1 ? 'block' : 'blocks'}</span></p>}
         {(gateId === CALIBRATOR || close) && <CodeView brief />}
         {fact && <p className="done-fact">{fact}</p>}
-        {(pace || light || quick) && (
+        {(pace || light || quick || season) && (
           <p className="fine done-facts">
-            {[pace, quick, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
+            {[pace, quick, season, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
           </p>
         )}
         {/* until the game knows whether earning is on, there is no button: the one question must not be skipped by a fast tap */}

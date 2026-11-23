@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from content import KNOWN_TRAITS, ONTOLOGY, TOPICS, Card, Option
@@ -183,6 +184,19 @@ def load_questions(path: Path = QUESTIONS_PATH) -> list[Question]:
 QUESTIONS = load_questions()
 QUESTION_BY_ID = {q.id: q for q in QUESTIONS}
 # two or three plain words for what each fixed question is about, for the lines on the Everyone screen
+
+
+def week_start(now: datetime) -> datetime:
+    """Monday 00:00 UTC of the week that holds this moment. A week is one season of the game."""
+    day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return day - timedelta(days=day.weekday())
+
+
+def question_of_week(now: datetime) -> Question:
+    """The fixed question the game puts forward this week. It turns by the calendar, in order: plain code, no model."""
+    return QUESTIONS[now.isocalendar().week % len(QUESTIONS)]
+
+
 QUESTION_TOPIC = {"q-launch": "new products", "q-price": "prices", "q-message": "messages", "q-loyalty": "coming back",
                   "q-role": "new jobs", "q-learn": "learning"}
 

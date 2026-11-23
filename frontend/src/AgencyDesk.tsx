@@ -192,7 +192,13 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
     ? `${ready} of the ${many(syms, 'Sym')} (${many(people, 'person', 'people')}) can answer today.`
     : `${many(ready, 'Sym')} can answer today.`
   const askN = reach ? reach[0] + reach[1] : 0
-  const fresh = agency.questions.find((q) => !agency.campaigns.some((c) => c.question === q.question)) ?? agency.questions[0]
+  // the question of the week is offered first, until this agency has asked it; then the next one it has not asked
+  const notAsked = (q: { question: string }) => !agency.campaigns.some((c) => c.question === q.question)
+  const ofWeek = agency.questions.find((q) => q.id === agency.week_question)
+  const fresh = (ofWeek && notAsked(ofWeek) ? ofWeek : agency.questions.find(notAsked)) ?? agency.questions[0]
+  // the insight library: how many of the fixed questions this agency has an answer to
+  const inLibrary = agency.questions.filter((q) => !notAsked(q)).length
+  const library = `Your insight library: ${inLibrary} of ${agency.questions.length} questions.`
   const pickFresh = () => {
     onView('desk')
     setMode('ask')
@@ -225,7 +231,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
             ? { say: `${canAnswer} Pick a question.`, go: fresh ? 'Pick a question for me' : undefined, act: pickFresh }
             : agency.postings.length === 0
               ? { say: `${many(agency.campaigns[0].twins, 'Sym')} answered. A job goes deeper. Post one?`, go: 'Post a job', act: () => { onView('desk'); setMode('job') } }
-              : { say: `${canAnswer} What do we ask next?`, go: fresh ? 'Pick a question for me' : undefined, act: pickFresh }
+              : { say: `${library} What do we ask next?`, go: fresh ? 'Pick a question for me' : undefined, act: pickFresh }
 
   // when the crew is back it says where the money went, then asks for the next question
   const last = agency.campaigns[0]
@@ -261,7 +267,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
               <span className="chips-label">Which question</span>
               {agency.questions.map((q) => (
                 <button key={q.id} className="chip wide" onClick={() => setQuestion(q.id)}>
-                  <span className="chip-kind">{q.kind}</span> {q.question}
+                  <span className="chip-kind">{q.id === agency.week_question ? `This week${agency.week_asked ? ` · ${agency.week_asked} agencies asked` : ''} · ` : ''}{q.kind}</span> {q.question}
                 </button>
               ))}
             </div>
@@ -384,7 +390,7 @@ export function AgencyDesk(props: { announce: (text: string) => void; view: Seat
       {view === 'results' && (
         <div className="results-head">
           <Tabs label="What came back" value={got} onChange={setGot}
-            tabs={[{ id: 'asks', label: agency.campaigns.length === 1 ? 'Question' : 'Questions', n: agency.campaigns.length }, { id: 'jobs', label: 'Jobs', n: agency.postings.length },
+            tabs={[{ id: 'asks', label: 'Library', n: agency.campaigns.length }, { id: 'jobs', label: 'Jobs', n: agency.postings.length },
               { id: 'skills', label: 'Skills', n: agency.sponsorships.length }, { id: 'met', label: 'Syms met', n: meets?.met.length ?? 0 }]} />
           {got === 'asks' ? asks.pager : got === 'jobs' ? jobsBack.pager : got === 'skills' ? backed.pager : metBack.pager}
         </div>

@@ -1127,6 +1127,8 @@ class CampaignOut(Strict):
 
 
 class Agency(Strict):
+    week_question: str = ""  # the id of the fixed question the game puts forward this week
+    week_asked: int = 0  # agencies that asked it this week, BOT agencies included; 0 until at least 5 have
     exists: bool
     name: str = ""
     budget: float = 0

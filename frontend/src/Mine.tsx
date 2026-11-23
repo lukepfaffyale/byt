@@ -231,6 +231,9 @@ export function Mine({ onDeleted, onPlay, area, start }: { onDeleted: () => void
                 {' '}Tap a row to see what is behind it.
               </More>
             </Tools>
+            <p className="fine shelf" aria-label="My trophy shelf">
+              Trophy shelf · Sym {data.certs.filter((c) => c.kind === 'twin').length} · Insight {data.certs.filter((c) => c.kind === 'insight').length} · Skill {data.certs.filter((c) => c.kind === 'skill').length}
+            </p>
             <Pick className="mine-parts" label="Kinds of proof" value={proof} onChange={setProof}
               items={[{ id: 'certs', label: 'Certificates', n: certRows.length }, { id: 'work', label: 'Checked work', n: workRows.length }, { id: 'battles', label: 'Battles', n: battleRows.length }]} />
             {proof === 'certs' && <Rows rows={certRows} pageKey="certs" size={SIZE} wide slot={slot}
