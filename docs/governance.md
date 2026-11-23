@@ -849,3 +849,14 @@ Each BOT Sym now acts only between 7 in the morning and 11 at night on the clock
 ## 2026-11-22: A new studio starts with play credits
 
 A fresh-account walk through all three seats, judged from screenshots only, found that a new creator started with an empty wallet and was sent to My Money before it could do anything, while a new agency started with 2,000 play credits. A creator seat now starts with the same 2,000 play credits as an agency. They are play money from outside the game, as every deposit is, and the books still balance (the ledger tests pass). The same walk found the seat name box could not be seen, so each seat now opens with a made-up name filled in.
+
+## 2026-11-22: The game on a phone, and less reading
+
+The owner played the live game on a phone and reported two things: the screens did not fit (text on top of text, tabs cut off, everything scrolled), and playing felt like reading. Three testers checked every seat at phone size and a game designer reviewed the play. What changed, and what was decided:
+
+- **One screen, no scrolling, on a phone too.** The rule that a screen is pages turned by a tap used to apply to wide windows only. It now applies to any window at least 560 px tall. On a phone the Sym starts small beside the BYT mark, the menu is under the thumb, and the signal line is hidden because the Sym's own panel says the same thing.
+- **Shorter cards.** The prompt and option text of 113 text cards was rewritten shorter (2,231 words down to 1,386). Card ids, option ids, traits, right answers, order and counts did not change, so what a pick means to the Sym is the same. Beliefs and lesson lines written before the change may quote the old wording; nothing was migrated.
+- **A result that needs no reading.** With motion on, the answer is shown on the tiles (the pick lights, a tag marks the tile the Sym guessed) and the next card comes by itself after about one second; a tap skips the wait. With motion off, or on a device that asks for less motion, nothing moves on a timer: the result stays until Next card is tapped. This keeps the timing rule for accessibility.
+- **A miss is not a failure.** When the Sym guesses wrong it says "You surprised me." There is no red cross on the player, no countdown on a question about who they are, and no leaderboard.
+- **Limits counted for each caller.** Behind the host's proxy every request arrives from the proxy's address, so the per-minute limits were shared by everyone playing at once. The limit now uses the first forwarded address. A caller could fake that header to get a fresh allowance; for a class project with play money that risk is accepted and written here.
+- **Not done, on purpose:** no drawn icons on cards (an icon would hint at the trait and bias the pick), no swipes (they fight the phone's back gesture), no "62 percent picked this" on preference cards (it would add a wait to the one card type that is instant).

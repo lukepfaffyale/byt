@@ -109,11 +109,11 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
         // the outcome is said by my Sym, first and kindly: a wrong answer is the Sym's miss, never the person's
         const paid = result.credits_earned > 0
           ? (verdict === 'approved'
-            ? `That job paid us ${result.credits_earned} credits${result.certified ? ', double for my certificate' : ''}. You hold ${amount(result.credits)} now.`
-            : `A wrong answer of mine still paid us ${result.credits_earned} credits. You hold ${amount(result.credits)} now.`)
-          : 'That one paid nothing this time.'
+            ? `It paid ${result.credits_earned} credits${result.certified ? ', double' : ''}.`
+            : `It still paid ${result.credits_earned} credits.`)
+          : 'No pay this time.'
         onReward({
-          say: `${verdict === 'approved' ? 'You said I got it right.' : 'I got that one wrong. Thank you for setting me right: I learned from it.'} ${paid} ${more ? 'Another job is waiting.' : 'That was the last job for now. More will come.'}`,
+          say: `${verdict === 'approved' ? 'Right, you said.' : 'I was wrong. I learned from it.'} ${paid}`,
           go: more ? (more.state === 'open' ? 'Send my Sym again' : 'Check the next answer') : 'Back to my jobs',
           act: more ? () => send(more) : back,
         })

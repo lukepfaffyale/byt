@@ -231,8 +231,27 @@ export function CrewStage(props: { script: CrewScript; doneLabel: string; onDone
           body(ctx, see, a.at, 0.03 + 0.07 * Math.sqrt(share / top), tone, end * (calm ? 1 : 0.92 + 0.08 * Math.sin(t * 1.5 + k)), a.arms, scale)
         })
         ctx.globalCompositeOperation = 'source-over'
+        if (w < 560) {
+          // a phone: there is no room beside the bodies, so the answers are a short list across the top,
+          // each with its share and the color of its body
+          ctx.textAlign = 'left'
+          const rowH = 34
+          answers.forEach((_, k) => {
+            const y = 84 + k * rowH  // below the title of the stage
+            ctx.fillStyle = `rgba(2, 5, 10, ${0.78 * end})`
+            ctx.fillRect(8, y - 22, w - 16, rowH - 4)
+            ctx.fillStyle = `rgba(${HUES[k % HUES.length]}, ${end})`
+            ctx.fillRect(8, y - 22, 3, rowH - 4)
+            ctx.font = "200 24px 'Helvetica Neue', Helvetica, Arial, sans-serif"
+            ctx.fillStyle = `rgba(245, 247, 251, ${end})`
+            ctx.fillText(`${Math.round(split[k].share * 100)}%`, 18, y)
+            ctx.font = "300 13px 'Helvetica Neue', Helvetica, Arial, sans-serif"
+            ctx.fillStyle = `rgba(198, 206, 222, ${end})`
+            ctx.fillText(wrapWords(ctx, split[k].label, w - 96, 1)[0] ?? '', 78, y - 2)
+          })
+        }
         ctx.textAlign = 'right'
-        answers.forEach((a, k) => {
+        if (w >= 560) answers.forEach((a, k) => {
           const q = see(a.at)
           const x = q[0] - (0.03 + 0.07 * Math.sqrt(split[k].share / top)) * scale * 2.2 - 14
           ctx.font = "200 30px 'Helvetica Neue', Helvetica, Arial, sans-serif"

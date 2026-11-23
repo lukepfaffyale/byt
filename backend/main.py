@@ -211,7 +211,10 @@ _hits: dict[str, deque[float]] = defaultdict(deque)
 def rate_limit(request: Request | None, name: str, limit: int, window: float = 60.0) -> None:
     if request is None:  # a BOT seat, moved by the game's own code (life.py), not by a caller
         return
-    key = f"{name}:{request.client.host if request.client else 'unknown'}"
+    # behind a host's proxy every caller arrives from the proxy's address, so the first forwarded address is the
+    # caller. Without this, everyone playing at once would share one limit.
+    forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    key = f"{name}:{forwarded or (request.client.host if request.client else 'unknown')}"
     now = time.monotonic()
     q = _hits[key]
     while q and now - q[0] > window:

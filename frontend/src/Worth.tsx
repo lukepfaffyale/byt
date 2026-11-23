@@ -32,7 +32,7 @@ export function Worth({ seat, moment, who = 'My Sym' }: { seat: Seat; moment: Mo
   }
   return (
     <div className="worth chips" role="group" aria-label="Was that worth it?">
-      <span className="chips-label">{who} asks: was that worth it?</span>
+      <span className="chips-label">Worth it?</span>
       <button className="chip" onClick={tap('yes')}>Yes</button>
       <button className="chip" onClick={tap('unsure')}>Not sure</button>
       <button className="chip" onClick={tap('no')}>No</button>

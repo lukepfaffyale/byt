@@ -48,7 +48,10 @@ export function CodeView({ brief = false, slot }: { brief?: boolean; slot?: HTML
   )
   return (
     <div className={brief ? 'code' : 'code code-mine'}>
-      <p className="code-line">My Sym: {code.line}</p>
+      <p className="code-line">{brief
+        // after the first gate: one short line. The whole story is on My Sym, under Code.
+        ? <>My code: <strong>{code.total} blocks</strong>. {code.others === 0 ? '' : code.same === 0 ? `No other Sym of ${code.others} has these.` : `${code.same} of ${code.others} Syms match.`}</>
+        : <>My Sym: {code.line}</>}</p>
       <div className="code-strand" role="group"
         aria-label={`My Sym's code: ${code.total} blocks. ${LETTERS.map((l) => `${code.counts[l.id] ?? 0} ${l.name}`).join(', ')}. Tap a block to see what it was.`}>
         {hidden > 0 && <span className="code-more">+{hidden} earlier</span>}
@@ -59,13 +62,6 @@ export function CodeView({ brief = false, slot }: { brief?: boolean; slot?: HTML
         ))}
         {code.total === 0 && <span className="code-more">No blocks yet</span>}
       </div>
-      {brief && code.others > 0 && (
-        <p className="code-stats">
-          <span><strong>{code.same}</strong> of {code.others} other Syms match me</span>
-          <span>the nearest matches <strong>{code.near[0]}</strong> of {code.near[1]}</span>
-          <span><strong>{code.apart}</strong> bright blocks are picks that are more mine</span>
-        </p>
-      )}
       {!brief && <ul className="code-key">
         {LETTERS.map((l) => (
           <li key={l.id}>
@@ -80,7 +76,8 @@ export function CodeView({ brief = false, slot }: { brief?: boolean; slot?: HTML
           </li>
         )}
       </ul>}
-      {slot === undefined ? more : <Tools slot={slot}>{more}</Tools>}
+      {/* after the first gate the strand speaks for itself: the long note lives on My Sym, under Code */}
+      {brief ? null : slot === undefined ? more : <Tools slot={slot}>{more}</Tools>}
       {picked && open !== null && (
         <Pop label={`Block ${hidden + open + 1} of my code`} onClose={() => setOpen(null)}>
           <p className="code-pop-head">

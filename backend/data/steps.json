@@ -9,7 +9,7 @@
       "cards": [
         {
           "id": "lg1-1",
-          "prompt": "2, 4, 6, 8. What comes next?",
+          "prompt": "2, 4, 6, 8, ?",
           "right": "b",
           "options": [
             {
@@ -28,7 +28,7 @@
         },
         {
           "id": "lg1-2",
-          "prompt": "Red, blue, red, blue, red. What comes next?",
+          "prompt": "Red, blue, red, blue, red, ?",
           "right": "c",
           "options": [
             {
@@ -47,7 +47,7 @@
         },
         {
           "id": "lg1-3",
-          "prompt": "1, 2, 4, 8. What comes next?",
+          "prompt": "1, 2, 4, 8, ?",
           "right": "c",
           "options": [
             {
@@ -66,7 +66,7 @@
         },
         {
           "id": "lg1-4",
-          "prompt": "A, C, E, G. What letter comes next?",
+          "prompt": "A, C, E, G, ?",
           "right": "b",
           "options": [
             {
@@ -85,7 +85,7 @@
         },
         {
           "id": "lg1-5",
-          "prompt": "10, 8, 6, 4. What comes next?",
+          "prompt": "10, 8, 6, 4, ?",
           "right": "a",
           "options": [
             {
@@ -104,7 +104,7 @@
         },
         {
           "id": "lg1-6",
-          "prompt": "Monday, Wednesday, Friday. What day comes next?",
+          "prompt": "Monday, Wednesday, Friday, ?",
           "right": "b",
           "options": [
             {
@@ -131,7 +131,7 @@
       "cards": [
         {
           "id": "lg2-1",
-          "prompt": "All cats have tails. Mo is a cat. What must be true?",
+          "prompt": "All cats have tails. Mo is a cat. So:",
           "right": "a",
           "options": [
             {
@@ -150,26 +150,26 @@
         },
         {
           "id": "lg2-2",
-          "prompt": "Ana is taller than Ben. Ben is taller than Cy. What must be true?",
+          "prompt": "Ana is taller than Ben. Ben is taller than Cy. So:",
           "right": "c",
           "options": [
             {
               "id": "a",
-              "label": "Cy is taller than Ana"
+              "label": "Cy taller than Ana"
             },
             {
               "id": "b",
-              "label": "Ben is the tallest"
+              "label": "Ben is tallest"
             },
             {
               "id": "c",
-              "label": "Ana is taller than Cy"
+              "label": "Ana taller than Cy"
             }
           ]
         },
         {
           "id": "lg2-3",
-          "prompt": "The shop is closed on Sundays. Today the shop is open. What must be true?",
+          "prompt": "The shop closes on Sundays. Today it is open. So:",
           "right": "b",
           "options": [
             {
@@ -188,7 +188,7 @@
         },
         {
           "id": "lg2-4",
-          "prompt": "When it rains, the grass gets wet. It rained today. What must be true?",
+          "prompt": "When it rains, the grass gets wet. It rained today. So:",
           "right": "a",
           "options": [
             {
@@ -207,26 +207,26 @@
         },
         {
           "id": "lg2-5",
-          "prompt": "Every box in the room is red. This box is blue. What must be true?",
+          "prompt": "Every box in the room is red. This box is blue. So:",
           "right": "c",
           "options": [
             {
               "id": "a",
-              "label": "This box is empty"
+              "label": "It is empty"
             },
             {
               "id": "b",
-              "label": "Some boxes in the room are blue"
+              "label": "Room has blue boxes"
             },
             {
               "id": "c",
-              "label": "This box is not in the room"
+              "label": "Not in the room"
             }
           ]
         },
         {
           "id": "lg2-6",
-          "prompt": "Sam has more coins than Lee. Lee has 5 coins. What must be true?",
+          "prompt": "Sam has more coins than Lee. Lee has 5. So:",
           "right": "b",
           "options": [
             {
@@ -235,7 +235,7 @@
             },
             {
               "id": "b",
-              "label": "Sam has more than 5 coins"
+              "label": "Sam has over 5"
             },
             {
               "id": "c",
@@ -253,20 +253,20 @@
       "cards": [
         {
           "id": "lg3-1",
-          "prompt": "All birds have wings. A bat has wings. So a bat is a bird. Where is the mistake?",
+          "prompt": "All birds have wings. A bat has wings. So a bat is a bird.",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Other animals can have wings too"
+              "label": "Other animals have wings"
             },
             {
               "id": "b",
-              "label": "Bats do not have wings"
+              "label": "Bats have no wings"
             },
             {
               "id": "c",
-              "label": "There is no mistake"
+              "label": "No mistake"
             }
           ]
         },
@@ -291,31 +291,31 @@
         },
         {
           "id": "lg3-3",
-          "prompt": "Rain makes the street wet. The street is wet. So it must have rained. Where is the mistake?",
+          "prompt": "Rain makes the street wet. The street is wet. So it must have rained.",
           "right": "c",
           "options": [
             {
               "id": "a",
-              "label": "Rain does not make streets wet"
+              "label": "Rain leaves streets dry"
             },
             {
               "id": "b",
-              "label": "There is no mistake"
+              "label": "No mistake"
             },
             {
               "id": "c",
-              "label": "The street can get wet another way"
+              "label": "Other things wet streets"
             }
           ]
         },
         {
           "id": "lg3-4",
-          "prompt": "Tom is older than Jo. Jo is older than Kim. So Kim is older than Tom. Where is the mistake?",
+          "prompt": "Tom is older than Jo. Jo is older than Kim. So Kim is older than Tom.",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Kim is the youngest, so Tom is older than Kim"
+              "label": "Kim is the youngest"
             },
             {
               "id": "b",
@@ -323,7 +323,7 @@
             },
             {
               "id": "c",
-              "label": "There is no mistake"
+              "label": "No mistake"
             }
           ]
         },
@@ -348,20 +348,20 @@
         },
         {
           "id": "lg3-6",
-          "prompt": "Each time I wear my red hat, my team wins. So my hat makes them win. Where is the mistake?",
+          "prompt": "Each time I wear my red hat, my team wins. So my hat makes them win.",
           "right": "c",
           "options": [
             {
               "id": "a",
-              "label": "Blue hats are the lucky ones"
+              "label": "Blue hats are lucky"
             },
             {
               "id": "b",
-              "label": "There is no mistake"
+              "label": "No mistake"
             },
             {
               "id": "c",
-              "label": "Two things can happen together by chance"
+              "label": "It could be chance"
             }
           ]
         }
@@ -375,12 +375,12 @@
       "cards": [
         {
           "id": "pl1-1",
-          "prompt": "You want to make toast. What comes first?",
+          "prompt": "Making toast. What comes first?",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Put the bread in the toaster"
+              "label": "Bread in the toaster"
             },
             {
               "id": "b",
@@ -394,7 +394,7 @@
         },
         {
           "id": "pl1-2",
-          "prompt": "You want to mail a letter. What comes last?",
+          "prompt": "Mailing a letter. What comes last?",
           "right": "c",
           "options": [
             {
@@ -407,13 +407,13 @@
             },
             {
               "id": "c",
-              "label": "Put it in the mailbox"
+              "label": "Drop in the mailbox"
             }
           ]
         },
         {
           "id": "pl1-3",
-          "prompt": "You want to plant a seed. What comes first?",
+          "prompt": "Planting a seed. What comes first?",
           "right": "b",
           "options": [
             {
@@ -426,13 +426,13 @@
             },
             {
               "id": "c",
-              "label": "Wait for it to grow"
+              "label": "Wait for growth"
             }
           ]
         },
         {
           "id": "pl1-4",
-          "prompt": "You want to paint a wall. What comes first?",
+          "prompt": "Painting a wall. What comes first?",
           "right": "b",
           "options": [
             {
@@ -451,12 +451,12 @@
         },
         {
           "id": "pl1-5",
-          "prompt": "You are packing for a trip. What comes first?",
+          "prompt": "Packing for a trip. What comes first?",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Make a list of what to bring"
+              "label": "Make a list"
             },
             {
               "id": "b",
@@ -464,13 +464,13 @@
             },
             {
               "id": "c",
-              "label": "Carry the bag to the car"
+              "label": "Carry bag to car"
             }
           ]
         },
         {
           "id": "pl1-6",
-          "prompt": "You want to bake a cake. What comes last?",
+          "prompt": "Baking a cake. What comes last?",
           "right": "c",
           "options": [
             {
@@ -483,7 +483,7 @@
             },
             {
               "id": "c",
-              "label": "Let the cake cool"
+              "label": "Let it cool"
             }
           ]
         }
@@ -497,7 +497,7 @@
       "cards": [
         {
           "id": "pl2-1",
-          "prompt": "Dinner: wash the rice, 2 minutes. Cook the rice, 20 minutes. Set the table, 3 minutes. Which step takes the most time?",
+          "prompt": "Wash rice 2 minutes. Cook rice 20. Set table 3. Slowest step?",
           "right": "b",
           "options": [
             {
@@ -516,7 +516,7 @@
         },
         {
           "id": "pl2-2",
-          "prompt": "Three people pass boxes down a line. Ana passes 10 a minute. Ben passes 4 a minute. Cy passes 9 a minute. Who slows the line down?",
+          "prompt": "Boxes a minute: Ana 10, Ben 4, Cy 9. Who is slowest?",
           "right": "b",
           "options": [
             {
@@ -535,7 +535,7 @@
         },
         {
           "id": "pl2-3",
-          "prompt": "A trip: walk to the bus, 5 minutes. Wait for the bus, 15 minutes. Ride the bus, 10 minutes. Which part is the longest?",
+          "prompt": "Walk to bus 5 minutes. Wait 15. Ride 10. Longest part?",
           "right": "c",
           "options": [
             {
@@ -554,7 +554,7 @@
         },
         {
           "id": "pl2-4",
-          "prompt": "Dinner needs a soup that cooks for 40 minutes and a salad that takes 5 minutes. You want to eat soon. What do you start first?",
+          "prompt": "Soup takes 40 minutes, salad 5. Eat soon. Start with:",
           "right": "a",
           "options": [
             {
@@ -573,7 +573,7 @@
         },
         {
           "id": "pl2-5",
-          "prompt": "A shop has one worker at the door and three at the tills. A long line forms at the door. Where should one more worker go?",
+          "prompt": "Door: 1 worker, long line. Tills: 3 workers. Add one where?",
           "right": "a",
           "options": [
             {
@@ -592,7 +592,7 @@
         },
         {
           "id": "pl2-6",
-          "prompt": "Laundry: wash, 30 minutes. Dry, 60 minutes. Fold, 10 minutes. Which step should you speed up to save the most time?",
+          "prompt": "Wash 30 minutes. Dry 60. Fold 10. Speed up which?",
           "right": "c",
           "options": [
             {
@@ -619,12 +619,12 @@
       "cards": [
         {
           "id": "pl3-1",
-          "prompt": "You plan a picnic. It may rain. What is the best plan?",
+          "prompt": "You plan a picnic. It may rain.",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Pick a spot with a roof close by"
+              "label": "Spot near a roof"
             },
             {
               "id": "b",
@@ -632,56 +632,56 @@
             },
             {
               "id": "c",
-              "label": "Stay home, just in case"
+              "label": "Stay home"
             }
           ]
         },
         {
           "id": "pl3-2",
-          "prompt": "Your bus comes once an hour. You must not be late. What is the best plan?",
+          "prompt": "Your bus comes once an hour. You must not be late.",
           "right": "b",
           "options": [
             {
               "id": "a",
-              "label": "Take the last bus that could still make it"
+              "label": "The last possible bus"
             },
             {
               "id": "b",
-              "label": "Take the bus before the one you need"
+              "label": "One bus earlier"
             },
             {
               "id": "c",
-              "label": "Run if you miss the bus"
+              "label": "Run if you miss"
             }
           ]
         },
         {
           "id": "pl3-3",
-          "prompt": "You will bake a cake for a party. You have never made this cake. What is the best plan?",
+          "prompt": "A party cake you have never made.",
           "right": "c",
           "options": [
             {
               "id": "a",
-              "label": "Make it for the first time on the day"
+              "label": "First try that day"
             },
             {
               "id": "b",
-              "label": "Bake two new cakes on the day"
+              "label": "Two cakes that day"
             },
             {
               "id": "c",
-              "label": "Try the cake once before the party"
+              "label": "Try it once before"
             }
           ]
         },
         {
           "id": "pl3-4",
-          "prompt": "You carry the only key to the house. You might lose it. What is the best plan?",
+          "prompt": "You carry the only house key. You might lose it.",
           "right": "a",
           "options": [
             {
               "id": "a",
-              "label": "Leave a second key with someone you trust"
+              "label": "Leave a spare key"
             },
             {
               "id": "b",
@@ -695,7 +695,7 @@
         },
         {
           "id": "pl3-5",
-          "prompt": "Your work is saved on one computer. It might break. What is the best plan?",
+          "prompt": "Your work is on one computer. It might break.",
           "right": "b",
           "options": [
             {
@@ -704,17 +704,17 @@
             },
             {
               "id": "b",
-              "label": "Keep a copy in a second place"
+              "label": "Keep a second copy"
             },
             {
               "id": "c",
-              "label": "Turn the computer off at night"
+              "label": "Turn it off nightly"
             }
           ]
         },
         {
           "id": "pl3-6",
-          "prompt": "You need 10 chairs for a show. A chair or two may break. What is the best plan?",
+          "prompt": "You need 10 chairs. One or two may break.",
           "right": "c",
           "options": [
             {
@@ -741,7 +741,7 @@
       "cards": [
         {
           "id": "ot1-1",
-          "prompt": "Apple, pear, plum. Which one belongs with them?",
+          "prompt": "Apple, pear, plum. What fits?",
           "right": "b",
           "options": [
             {
@@ -760,7 +760,7 @@
         },
         {
           "id": "ot1-2",
-          "prompt": "Circle, square, triangle. Which one belongs with them?",
+          "prompt": "Circle, square, triangle. What fits?",
           "right": "a",
           "options": [
             {
@@ -779,7 +779,7 @@
         },
         {
           "id": "ot1-3",
-          "prompt": "Car, bus, train. Which one belongs with them?",
+          "prompt": "Car, bus, train. What fits?",
           "right": "c",
           "options": [
             {
@@ -798,7 +798,7 @@
         },
         {
           "id": "ot1-4",
-          "prompt": "Hammer, saw, drill. Which one belongs with them?",
+          "prompt": "Hammer, saw, drill. What fits?",
           "right": "b",
           "options": [
             {
@@ -817,7 +817,7 @@
         },
         {
           "id": "ot1-5",
-          "prompt": "Rain, snow, wind. Which one belongs with them?",
+          "prompt": "Rain, snow, wind. What fits?",
           "right": "a",
           "options": [
             {
@@ -836,7 +836,7 @@
         },
         {
           "id": "ot1-6",
-          "prompt": "Monday, Friday, Sunday. Which one belongs with them?",
+          "prompt": "Monday, Friday, Sunday. What fits?",
           "right": "c",
           "options": [
             {
@@ -863,7 +863,7 @@
       "cards": [
         {
           "id": "rp2-1",
-          "prompt": "A friend says: I studied all week and still failed. What do they feel most?",
+          "prompt": "A friend says: I studied all week and still failed.",
           "right": "a",
           "options": [
             {
@@ -882,7 +882,7 @@
         },
         {
           "id": "rp2-2",
-          "prompt": "A friend says: I cannot wait for Saturday! What do they feel most?",
+          "prompt": "A friend says: I cannot wait for Saturday!",
           "right": "b",
           "options": [
             {
@@ -901,7 +901,7 @@
         },
         {
           "id": "rp2-3",
-          "prompt": "A friend says: Fine. Do what you want. Then they look away. What do they feel most?",
+          "prompt": "A friend says: Fine. Do what you want. Then they look away.",
           "right": "c",
           "options": [
             {
@@ -920,7 +920,7 @@
         },
         {
           "id": "rp2-4",
-          "prompt": "A friend says: My talk is tomorrow and my hands are shaking. What do they feel most?",
+          "prompt": "A friend says: My talk is tomorrow and my hands are shaking.",
           "right": "a",
           "options": [
             {
@@ -939,7 +939,7 @@
         },
         {
           "id": "rp2-5",
-          "prompt": "A friend says, with a big smile: I got the job! What do they feel most?",
+          "prompt": "A friend says, with a big smile: I got the job!",
           "right": "b",
           "options": [
             {
@@ -958,7 +958,7 @@
         },
         {
           "id": "rp2-6",
-          "prompt": "A friend says: Everyone was invited but me. What do they feel most?",
+          "prompt": "A friend says: Everyone was invited but me.",
           "right": "c",
           "options": [
             {

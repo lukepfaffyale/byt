@@ -1,6 +1,6 @@
 {
   "gate": {"id": "feedback-a", "title": "How was it?", "kind": "feedback", "deck": "tone"},
   "cards": [
-    {"id": "fb-a1", "prompt": "How did that gate feel?", "options": [{"id": "a", "label": "Too easy. Next one, please.", "trait": "blunt"}, {"id": "b", "label": "That was fun. More, please!", "trait": "warm"}, {"id": "c", "label": "It was fine.", "trait": "dry"}, {"id": "d", "label": "Give me a harder one.", "trait": "competitive"}]}
+    {"id": "fb-a1", "prompt": "How was that?", "options": [{"id": "a", "label": "Too easy", "trait": "blunt"}, {"id": "b", "label": "Fun. More!", "trait": "warm"}, {"id": "c", "label": "It was fine", "trait": "dry"}, {"id": "d", "label": "Harder, please", "trait": "competitive"}]}
   ]
 }

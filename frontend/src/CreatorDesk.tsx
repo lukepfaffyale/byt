@@ -190,10 +190,9 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   }
   const open = seat.skills.find((s) => s.waiting.length > 0)
   const paid = seat.needs.find((n) => !n.built && (seat.skills.find((s) => s.id === n.skill)?.waiting.length ?? 0) > 0)
-  // what to build, from where Syms stand: the skill most Syms are new to that still has a step to claim,
-  // and the skill most are already strong in. Counts of Syms only.
+  // what to build, from where Syms stand: the skill most Syms are new to that still has a step to claim.
+  // Counts of Syms only.
   const weak = [...seat.skills].filter((s) => s.waiting.length > 0).sort((a, b) => b.new - a.new)[0]
-  const best = [...seat.skills].sort((a, b) => b.strong - a.strong)[0]
   const waiting = seat.skills.reduce((n, s) => n + s.waiting.length, 0)
   const passes = seat.made.reduce((n, m) => n + m.passes, 0)
   const earned = seat.made.reduce((n, m) => n + m.earned, 0)
@@ -201,7 +200,6 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
   const asked = seat.reach[group] ?? 0
   const total = Math.round((asked * seat.pay * (1 + seat.platform_share) + seat.crew_fee) * 100) / 100
   const meetTotal = meets ? Math.round((meets.price * (1 + seat.platform_share) + meets.fee) * 100) / 100 : 0
-  const armed = !!topic || task === 'meet'
   const cue: { say: string; go?: string; act?: () => void; alt?: string; altAct?: () => void } =
     // when something did not work, the crew says so first, with the way out
     error
@@ -210,48 +208,48 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
         : { say: `We could not go. ${error}` }
     : task === 'make' && pack
       ? cards.length === seat.step_cards
-        ? { say: `That is all ${seat.step_cards} cards. Send us, and we build ${pack.step}.`, go: 'Build it', act: () => build(), alt: 'Change my picks', altAct: () => setPicking(true) }
-        : { say: `${pack.step} needs ${seat.step_cards} cards. Who picks them? If we pick, we build it right away. Building costs ${seat.crew_fee} credits.`,
+        ? { say: `All ${seat.step_cards} cards picked. We build it.`, go: 'Build it', act: () => build(), alt: 'Change my picks', altAct: () => setPicking(true) }
+        : { say: `${seat.step_cards} cards needed. Who picks? Building costs ${seat.crew_fee} credits.`,
             go: 'You pick', act: () => build(pack.cards.map((c) => c.id).slice(0, seat.step_cards)), alt: 'I pick', altAct: () => setPicking(true) }
       : task === 'skill' && picked && picked.waiting.length > 0
-        ? { say: `${picked.waiting[0]} is free to claim. ${seat.claim_fee} credits, and it is yours to build.`, go: 'Send my crew', act: send }
+        ? { say: `${picked.waiting[0]} is free. Claim it for ${seat.claim_fee} credits.`, go: 'Send my crew', act: send }
         : task === 'skill' && !open
-          ? { say: 'Every step is claimed for now. See what Syms and agencies need next, and we build for that.', go: 'See what is needed', act: () => start('needs', null) }
+          ? { say: 'Every step is claimed. See what is needed.', go: 'See what is needed', act: () => start('needs', null) }
         : task === 'make' && seat.packs.length === 0
           ? open
-            ? { say: `You have no step to build yet. ${open.waiting[0]} in ${open.name} is free to claim.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
-            : { say: 'You have no step to build, and every step is claimed for now. Ask a group what they need next.', go: 'Ask a group', act: () => start('survey', null) }
+            ? { say: `Nothing to build yet. ${open.waiting[0]} is free.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
+            : { say: 'Every step is claimed. Ask a group what they need.', go: 'Ask a group', act: () => start('survey', null) }
         : task === 'meet'
-          ? { say: `One Sym, one meeting: ${meetTotal} credits in all. Pick its group below, then tap Meet.` }
+          ? { say: `One Sym, one meeting: ${meetTotal} credits. Pick its group.` }
         : task === 'test' && !topic
-          ? { say: 'Pick one skill below, and we find how strong a group is in it.' }
+          ? { say: 'Pick a skill. We find how strong a group is.' }
         : (task === 'survey' || task === 'test') && topic
           ? asked === 0
-            ? { say: 'Too few Syms match that group. Widen it, and we can go.', go: 'Ask every Sym', act: () => setGroup('all') }
+            ? { say: 'Too few Syms match. Widen the group.', go: 'Ask every Sym', act: () => setGroup('all') }
             : total > seat.budget
-              ? { say: `${asked} Syms can answer. That costs ${total} credits, and your wallet holds ${credits(seat.budget)}. Add play credits, or pick a smaller group.`, go: 'Add play credits', act: () => onView('money') }
-              : { say: `Ready. ${asked} Syms can answer, for ${total} credits in all: ${asked * seat.pay} to the Syms, ${seat.crew_fee} for the crew, ${Math.round(asked * seat.pay * seat.platform_share * 100) / 100} for the game.`, go: `Send my crew · ${total} credits`, act: send }
+              ? { say: `${total} credits needed, ${credits(seat.budget)} held. Add credits or pick fewer.`, go: 'Add play credits', act: () => onView('money') }
+              : { say: `${asked} Syms: ${asked * seat.pay} to them, ${seat.crew_fee} to crew, ${Math.round(asked * seat.pay * seat.platform_share * 100) / 100} to the game.`, go: `Send my crew · ${total} credits`, act: send }
         : task === 'survey' && !topic
-          ? { say: 'Pick one question below, and we carry it to the group you choose.' }
+          ? { say: 'Pick a question. We carry it to your group.' }
         : seat.packs.length > 0
-          ? { say: `You claimed ${seat.packs[0].step}. Tap ${seat.step_cards} cards, and we build it. Each pass pays you ${seat.step_royalty} credits.`, go: 'Build my step', act: () => start('make', seat.packs[0].id) }
+          ? { say: `Tap ${seat.step_cards} cards and we build it. Each pass pays you ${seat.step_royalty} credits.`, go: 'Build my step', act: () => start('make', seat.packs[0].id) }
           : seat.budget < seat.claim_fee
-            ? { say: `Your wallet holds ${seat.budget} credits, and a claim costs ${seat.claim_fee}. Add play credits, and we start.`, go: 'My money', act: () => onView('money') }
+            ? { say: `A claim costs ${seat.claim_fee}. We hold ${seat.budget}. Add credits.`, go: 'My money', act: () => onView('money') }
             : paid
-              ? { say: `Agencies have put ${paid.left} credits behind ${paid.name}, and no step is built. Claim one, and that pay is yours to earn.`, go: `Claim: ${paid.name}`, act: () => start('skill', paid.skill) }
+              ? { say: `Agencies put ${paid.left} credits behind ${paid.name}. Claim a step.`, go: `Claim: ${paid.name}`, act: () => start('skill', paid.skill) }
               : weak && weak.new > 0
-                ? { say: `${weak.new} of ${weak.new + weak.partway + weak.strong} Syms are new to ${weak.name}, and its next step is not built. Build it, and they have a way to grow. Each pass pays you ${seat.step_royalty} credits.`, go: `Build for: ${weak.name}`, act: () => start('skill', weak.id) }
+                ? { say: `${weak.new} of ${weak.new + weak.partway + weak.strong} Syms are new to ${weak.name}. Build its next step.`, go: `Build for: ${weak.name}`, act: () => start('skill', weak.id) }
               : open
-                ? { say: `${waiting} ${waiting === 1 ? 'step is' : 'steps are'} waiting for a creator. Claim ${open.waiting[0]} in ${open.name}, and we start.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
+                ? { say: `${waiting} ${waiting === 1 ? 'step is' : 'steps are'} waiting. Claim one.`, go: `Claim: ${open.waiting[0]}`, act: () => start('skill', open.id) }
                 : seat.made.length > 0
-                  ? { say: `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned ${earned} credits. Ask a group what they need next.`, go: 'Ask a group', act: () => start('survey', null) }
-                  : { say: 'Send us out with one question, and we find what Syms need.', go: 'Ask a group', act: () => start('survey', null) }
+                  ? { say: `${passes} ${passes === 1 ? 'pass' : 'passes'} earned you ${earned} credits. Ask what is needed.`, go: 'Ask a group', act: () => start('survey', null) }
+                  : { say: 'Ask one question. We find what Syms need.', go: 'Ask a group', act: () => start('survey', null) }
 
   // on the results page the crew says what the studio's work has paid, then asks for the next thing to build
   const shownRow = back.rows[0]
   const lead = shownRow && shownRow.split.length > 0 ? [...shownRow.split].sort((a, b) => b.share - a.share)[0] : null
   const paidOut = {
-    say: lead ? `${shownRow.twins} Syms answered. Most said: ${lead.label}, ${Math.round(lead.share * 100)}%. What do we build next?` : `${seat.made.length > 0 ? `Your steps were passed ${passes} ${passes === 1 ? 'time' : 'times'} and earned you ${credits(earned)} credits. Each pass paid the player too.` : `We have run ${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} for you. Nothing you built has been passed yet.`} What do we build next?`,
+    say: lead ? `${shownRow.twins} Syms answered. Most said: ${lead.label}, ${Math.round(lead.share * 100)}%.` : seat.made.length > 0 ? `${passes} ${passes === 1 ? 'pass' : 'passes'} earned you ${credits(earned)} credits. What next?` : `${seat.briefs.length} ${seat.briefs.length === 1 ? 'errand' : 'errands'} run. Nothing passed yet. What next?`,
     go: seat.packs.length > 0 ? 'Build my step' : open ? `Claim: ${open.waiting[0]}` : 'Ask a group',
     act: () => (seat.packs.length > 0 ? start('make', seat.packs[0].id) : open ? start('skill', open.id) : start('survey', null)),
   }
@@ -263,8 +261,7 @@ export function CreatorDesk(props: { view: SeatView; onView: (view: SeatView) =>
         <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={paidOut.say} go={paidOut.go} act={paidOut.act} calm={still()} formed={0.6} /></CueSlot>
       )}
       {view === 'desk' && (
-        <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} alt={busy ? undefined : cue.alt} altAct={cue.altAct} calm={still()} formed={0.6}
-          more={armed ? undefined : [...(best && best.strong > 0 ? [`${best.strong} Syms are already strong in ${best.name}. A harder step there keeps them growing.`] : []), 'Each step you build lets every Sym do more, and pays you each time one passes.', `You have ${seat.budget} credits in your wallet.`, 'The game adds 10 percent on top of what a crew job pays out. That is how it earns.']} /></CueSlot>
+        <CueSlot><SymCue who="My crew" crew rgb="134, 211, 230" say={cue.say} go={busy ? undefined : cue.go} act={cue.act} alt={busy ? undefined : cue.alt} altAct={cue.altAct} calm={still()} formed={0.6} /></CueSlot>
       )}
       {error && <p className="error" role="alert">{error}</p>}
 

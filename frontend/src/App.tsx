@@ -10,7 +10,7 @@ import { Backdrop } from './Future'
 import { Arrival } from './Arrival'
 import { SymCue } from './SymCue'
 import { WorthTotals } from './Worth'
-import { credits, stop } from './words'
+import { credits } from './words'
 import { Failed, RetryZone } from './Retry'
 import { Pages } from './Pages'
 import { Tabs } from './Deck'
@@ -51,11 +51,13 @@ const ROOM = new URLSearchParams(window.location.search).get('view') === 'wall'
 function readDock(): Dock {
   if (ROOM) return 'wall'
   try {
-    if (localStorage.getItem(DOCK_KEY) === 'mini') return 'mini'
+    const kept = localStorage.getItem(DOCK_KEY)
+    if (kept === 'mini' || kept === 'stage') return kept
   } catch {
     // no storage: the usual place
   }
-  return 'stage'
+  // on a phone the Sym starts small beside the BYT mark, so the page a person came for fits the screen
+  return window.innerWidth < 1000 ? 'mini' : 'stage'
 }
 type Look = 'mono' | 'light'
 const LOOK_KEY = 'byt_look'
@@ -449,27 +451,23 @@ export default function App() {
   const top = plan.find((o) => !next || o.id !== `gate:${next.id}`)
   const cue: { say: string; go: string; act: () => void } | null = !me ? null
     : me.jobs_open > 0 && screen.name !== 'work'
-      ? { say: `I did ${me.jobs_open} ${me.jobs_open === 1 ? 'job' : 'jobs'} for you. Check my work: each check pays you, and shows me where I am wrong.`, go: 'Check my work', act: () => setScreen({ name: 'work' }) }
+      ? { say: `I did ${me.jobs_open} ${me.jobs_open === 1 ? 'job' : 'jobs'}. Each check pays you.`, go: 'Check my work', act: () => setScreen({ name: 'work' }) }
       : next && next.done > 0
-        ? { say: `We stopped ${next.done} of ${next.total} taps into this one: ${stop(next.title)} Give me ${next.total - next.done} more and I keep all of it.`, go: `Continue: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
+        ? { say: `${next.total - next.done} ${next.total - next.done === 1 ? 'tap' : 'taps'} left in this one.`, go: `Continue: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
         : next
-          ? { say: me.gates_done === 0 ? `I know nothing about you yet. ${next.total} quick picks calibrate me: they write the first blocks of my code, and no other Sym will have the same.` : `I am ${percent} percent formed. Next up: ${stop(next.title)} It is ${next.total} taps, and I will know you better.`,
+          ? { say: me.gates_done === 0 ? `I know nothing yet. ${next.total} taps.` : `I am ${percent} percent formed. ${next.total} taps.`,
               go: `Start: ${next.title}`, act: () => setScreen({ name: 'gate', gateId: next.id }) }
           : top
-            ? { say: `We finished all ${me.gates_total} gates of the journey. ${top.why}`, go: top.title, act: () => go(top.id) }
-            : { say: `We finished all ${me.gates_total} gates of the journey. Come and play me: I have been studying how you throw.`, go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
+            ? { say: `All ${me.gates_total} gates done.`, go: top.title, act: () => go(top.id) }
+            : { say: `All ${me.gates_total} gates done. Play me: I studied your throws.`, go: 'Play me in the Arena', act: () => setScreen({ name: 'arena' }) }
   // the reward comes first: what came in, who paid, and that it is theirs. Then the ask.
   const told = flash ? flash
     : screen.name === 'money' && moneyCue ? moneyCue
     : cue && landed.n > 0
-    ? { ...cue, say: `Just now I earned you ${credits(landed.sum)} ${landed.sum === 1 ? 'credit' : 'credits'}${landed.n > 1 ? ` in ${landed.n} payments` : ''}. ${landed.meet ? 'A seat paid to meet me.' : 'Someone paid for my answer, and saw only totals.'} ${cue.say}` }
+    ? { ...cue, say: `I just earned you ${credits(landed.sum)} ${landed.sum === 1 ? 'credit' : 'credits'}. ${landed.meet ? 'A seat met me.' : 'They saw totals only.'}` }
     : cue && gain.n > 0
-    ? { ...cue, say: `While you were away I earned you ${credits(gain.sum)} ${gain.sum === 1 ? 'credit' : 'credits'} in ${gain.n} ${gain.n === 1 ? 'payment' : 'payments'}. ${cue.say}` }
+    ? { ...cue, say: `While you were away, I earned you ${credits(gain.sum)} ${gain.sum === 1 ? 'credit' : 'credits'}.` }
     : cue
-  const cueMore = me ? [
-    me.gates_done === 0 ? 'I am waiting right here. The first gate is short, and you only tap.' : `Every tap you give me, I keep. You have finished ${me.gates_done} of ${me.gates_total} gates with me.`,
-    me.active_days > 1 ? `You have come back on ${me.active_days} days. That is how I get to know you.` : 'Come back tomorrow too. I learn the most from people who return.',
-  ] : []
   // the sphere of the seat you are in, at the moment you are looking at
   const who = seat?.name ?? 'player'
   const mine: Sphere | null = seat
@@ -685,7 +683,7 @@ export default function App() {
           onWork={() => setScreen({ name: 'work' })} />
       )}
       {told && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'commons' && (
-        <SymCue say={told.say} more={screen.name === 'journey' ? cueMore : undefined} go={told.go} act={told.act} calm={!motion} formed={formed} />
+        <SymCue say={told.say} go={told.go} act={told.act} calm={!motion} formed={formed} />
       )}
       {me && !seat && screen.name !== 'gate' && screen.name !== 'about' && screen.name !== 'world' && screen.name !== 'commons' && screen.name !== 'arena' && (
         <TwinTalk where={screen.name} announce={setLive}

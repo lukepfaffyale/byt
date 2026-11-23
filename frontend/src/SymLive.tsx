@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { Typed } from './Future'
 import { TAU, along, body, clamp, seeded, shoot, trace, wander, type V } from './neural'
 
 /**
@@ -103,7 +102,7 @@ export function SymLive(props: { say: string; label: string; done: number; total
       <canvas ref={canvasRef} className="sym-cue-life" aria-hidden="true" />
       <div className="sym-cue-say">
         <span className="line-top">{label}</span>
-        <p><Typed key={say} text={say} calm={calm} /></p>
+        <p>{say}</p>
       </div>
     </div>
   )

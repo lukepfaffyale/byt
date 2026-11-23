@@ -18,7 +18,7 @@
         },
         {
           "id": "c",
-          "label": "It is new and few people have it",
+          "label": "It is new and rare",
           "trait": "novelty"
         },
         {
@@ -40,7 +40,7 @@
         },
         {
           "id": "b",
-          "label": "The better made one, even at twice the price",
+          "label": "Better made, twice the price",
           "trait": "quality"
         },
         {
@@ -57,7 +57,7 @@
       "options": [
         {
           "id": "a",
-          "label": "Here is your plan for the week",
+          "label": "Your plan for the week",
           "trait": "plan"
         },
         {
@@ -101,7 +101,7 @@
       "options": [
         {
           "id": "a",
-          "label": "A clear path and steady pay",
+          "label": "Clear path, steady pay",
           "trait": "plan"
         },
         {

@@ -1,13 +1,13 @@
 {
   "gate": {"id": "spending-1", "title": "Spending", "kind": "preference", "deck": "spending"},
   "cards": [
-    {"id": "spend-01", "prompt": "Someone gives you 200 dollars as a surprise. What do you do?", "options": [{"id": "a", "label": "I save it", "trait": "save"}, {"id": "b", "label": "I spend it this week", "trait": "splurge"}]},
-    {"id": "spend-02", "prompt": "Which headphones do you buy?", "options": [{"id": "a", "label": "The 60 dollar pair that is good enough", "trait": "save"}, {"id": "b", "label": "The 250 dollar pair that is great", "trait": "quality"}]},
-    {"id": "spend-03", "prompt": "What do you do before you buy something?", "options": [{"id": "a", "label": "I read every review", "trait": "plan"}, {"id": "b", "label": "I trust my feeling", "trait": "spontaneous"}]},
-    {"id": "spend-04", "prompt": "What would you rather pay for?", "options": [{"id": "a", "label": "A thing I can keep", "trait": "things"}, {"id": "b", "label": "A night I will remember", "trait": "experiences"}]},
-    {"id": "spend-05", "prompt": "A brand you love raises its prices by 20 percent. What do you do?", "options": [{"id": "a", "label": "I stay with it", "trait": "loyal"}, {"id": "b", "label": "I look at other brands", "trait": "save"}]},
-    {"id": "spend-06", "prompt": "How do you shop?", "options": [{"id": "a", "label": "I wait for a sale", "trait": "plan"}, {"id": "b", "label": "I buy when I want it", "trait": "spontaneous"}]},
-    {"id": "spend-07", "prompt": "How do you like to eat out?", "options": [{"id": "a", "label": "One great meal each month", "trait": "quality"}, {"id": "b", "label": "Four good meals each month", "trait": "variety"}]},
-    {"id": "spend-08", "prompt": "You pay each month for something you almost never use. What do you do?", "options": [{"id": "a", "label": "I cancel it today", "trait": "save"}, {"id": "b", "label": "I will cancel it later", "trait": "spontaneous"}]}
+    {"id": "spend-01", "prompt": "A surprise $200. You:", "options": [{"id": "a", "label": "Save it", "trait": "save"}, {"id": "b", "label": "Spend this week", "trait": "splurge"}]},
+    {"id": "spend-02", "prompt": "Headphones. You buy:", "options": [{"id": "a", "label": "$60, good enough", "trait": "save"}, {"id": "b", "label": "$250, great", "trait": "quality"}]},
+    {"id": "spend-03", "prompt": "Before you buy:", "options": [{"id": "a", "label": "Read every review", "trait": "plan"}, {"id": "b", "label": "Trust my feeling", "trait": "spontaneous"}]},
+    {"id": "spend-04", "prompt": "You would rather buy:", "options": [{"id": "a", "label": "Something to keep", "trait": "things"}, {"id": "b", "label": "A special night", "trait": "experiences"}]},
+    {"id": "spend-05", "prompt": "Your brand costs 20% more.", "options": [{"id": "a", "label": "Stay with it", "trait": "loyal"}, {"id": "b", "label": "Try other brands", "trait": "save"}]},
+    {"id": "spend-06", "prompt": "How do you shop?", "options": [{"id": "a", "label": "Wait for sales", "trait": "plan"}, {"id": "b", "label": "Buy it now", "trait": "spontaneous"}]},
+    {"id": "spend-07", "prompt": "Eating out each month:", "options": [{"id": "a", "label": "One great meal", "trait": "quality"}, {"id": "b", "label": "Four good meals", "trait": "variety"}]},
+    {"id": "spend-08", "prompt": "A monthly bill, never used:", "options": [{"id": "a", "label": "Cancel today", "trait": "save"}, {"id": "b", "label": "Cancel later", "trait": "spontaneous"}]}
   ]
 }

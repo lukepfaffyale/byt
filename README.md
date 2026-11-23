@@ -52,28 +52,32 @@ with no key, all tests passed, and a `.env` one folder above the repo was found.
 
 ## A 10-minute tour
 
-Every page has one lit button at the top right. If you only ever tap that button, you see the whole game. This route
-shows the three parts in order. Nothing needs typing after the nickname.
+It works on a phone and on a computer. Every page has one lit button from my Sym. If you only ever tap that button,
+you see the whole game. This route shows the three parts in order. Nothing needs typing after the nickname.
 
 1. **Get in (1 minute).** Open the link, type a nickname, tick the two boxes, start. The welcome screen shows
    everyone in the game as lights. Tap **Player**.
-2. **Teach your Sym (2 minutes).** Tap **Start: Calibrator**. It is 8 quick picks. At the end your Sym shows the
-   first blocks of its code and how many other Syms match it.
-3. **Be the one who asks (2 minutes).** Tap **Agency** (top right). A name is filled in: tap **Open my agency**,
+2. **Teach your Sym (1 minute).** The Calibrator is 8 quick picks: two tiles, tap one. At the end your Sym shows the
+   first blocks of its code.
+3. **Let it guess you (3 minutes).** Keep tapping **Next**: a one-move puzzle, a one-tap rating, 8 picks on
+   spending, then the first **Sym battle**. In the battle your Sym seals its guess before each card. Tap a tile and a
+   SYM tag lands on the tile it guessed: "Called it." or "You surprised me." The finish shows your Sym against the
+   crowd's guess, and plain code decides the certificate.
+4. **Be the one who asks (2 minutes).** Tap **Agency** (top right). A name is filled in: tap **Open my agency**,
    then **Pick a question for me**, then **Ask**. Watch the crew go out and come back with each answer as a percent.
    You get totals only, never one person. The wallet line at the top shows what it cost and who was paid.
-4. **Be the one who builds (2 minutes).** Tap **Creator**. Tap **Open my studio**. The Needs tab shows what agencies
-   pay for and what Syms lack. Tap **Ask**, pick a question and send the crew, or claim a skill step and build it.
-5. **See the world (2 minutes).** Tap **Everyone**. The Happening tab is live: BOT Syms play, ask and build round
-   the clock, and your own moves show with a YOU mark. The Economy tab shows where every credit goes.
-6. **See your side of it (1 minute).** Back on **Player**: **My Work** has jobs your Sym can do while you are away,
-   **My Money** shows every credit that moved and why, and **My Sym**, Data tab, lets you download or delete it all.
+5. **Be the one who builds (1 minute).** Tap **Creator**, then **Open my studio**. The Needs tab shows what agencies
+   pay for and what Syms lack. Tap **Ask a group**, pick a question and send the crew.
+6. **See the world and your side of it (2 minutes).** Tap **Everyone**: the Now tab is live (BOT Syms play, ask and
+   build round the clock, and your own moves show with a YOU mark), and Economy shows where every credit goes. Back
+   on **Player**, **My Work** has jobs your Sym can do while you are away, **My Money** shows every credit that
+   moved and why, and **My Sym**, Data tab, lets you download or delete it all.
 
 The longer view (why this matters when work changes, and where it goes next) is in `slides.html` and in section 1
 and the last section of `report.html`.
 
-If your computer is set to reduce motion, the game starts still. The footer has **Motion: Off**: tap it once to see
-the game move.
+If your device is set to reduce motion, the game starts still, and each result waits for a tap on **Next card**.
+The footer has **Motion: Off**: tap it once to see the game move.
 
 ## If something does not start
 

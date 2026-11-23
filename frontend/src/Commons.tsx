@@ -42,12 +42,12 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
   const lead: { say: string; go: string; act: () => void } =
     intent && !(intent === 'agency' ? data.has_agency : data.has_creator)
       ? intent === 'agency'
-        ? { say: 'You came as an agency. Agencies ask Syms questions and pay the people behind them. Open your desk, and ask your first one.', go: 'Open my agency', act: () => onSeat('agency') }
-        : { say: 'You came as a creator. Creators build the skill steps that Syms grow on. Open your studio, and build your first one.', go: 'Open my studio', act: () => onSeat('creator') }
+        ? { say: 'Agencies ask Syms and pay their people. Ask one question.', go: 'Open my agency', act: () => onSeat('agency') }
+        : { say: 'Creators build the steps Syms grow on. Build one.', go: 'Open my studio', act: () => onSeat('creator') }
       : data.taps_mine === 0
-        ? { say: 'I am your Sym. I know nothing about you yet. Tap once, and I start to form.', go: next ? `Start: ${next.title}` : 'Start', act: play }
+        ? { say: 'I am your Sym. I know nothing yet. Tap.', go: next ? `Start: ${next.title}` : 'Start', act: play }
         : next && next.done > 0
-          ? { say: 'We stopped part way. A few more taps and this gate is done.', go: `Continue: ${next.title}`, act: play }
+          ? { say: 'We stopped part way. A few more taps.', go: `Continue: ${next.title}`, act: play }
           : first
             ? { say: first.why, go: first.title, act: () => onGo(first.id) }
             : { say: next ? 'Each gate you play helps me know you better.' : 'You finished every gate. Look at what we set moving.', go: next ? `Start: ${next.title}` : 'My Journey', act: play }
@@ -76,7 +76,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
         <button className="primary" onClick={lead.act}>{lead.go}</button>
       </div>
       <Tabs label="Read the game" value={tab} onChange={setTab}
-        tabs={[{ id: 'now', label: 'Happening', n: fresh }, { id: 'known', label: 'Known', n: data.known }, { id: 'mine', label: 'My effect', n: `${share}%` }, { id: 'flow', label: 'Economy' }, { id: 'why', label: 'Roles' }]} />
+        tabs={[{ id: 'now', label: 'Now', n: fresh }, { id: 'known', label: 'Known', n: data.known }, { id: 'mine', label: 'Mine', n: `${share}%` }, { id: 'flow', label: 'Economy' }, { id: 'why', label: 'Roles' }]} />
       {tab !== 'mine' && tab !== 'flow' && <div className="commons-view"><EcoField people={data.people} standIns={data.stand_ins} today={data.people_today} agencies={data.agencies} creators={data.creators}
         known={data.known} knownMine={data.known_mine} fresh={fresh} calm={calm}
         label={`Everyone in the game, moving in space around a core of light. ${said} Together they know ${data.known} things, and ${data.known_mine} of those came from you.`} />
@@ -117,7 +117,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
                 <button className="role" onClick={r.act}>
                   <span className="role-n">{r.n}</span>
                   <span className="role-name">{r.name}</span>
-                  <span className="role-what">{r.what} {r.life}</span>
+                  <span className="role-what">{r.what} <span className="role-life">{r.life}</span></span>
                   <span className="role-go">{r.go}</span>
                 </button>
               </li>

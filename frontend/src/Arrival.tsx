@@ -305,11 +305,11 @@ export function Arrival(props: {
   const play = () => (next ? onPlay(next.id) : onJourney())
   const lead: Role = intent && !(intent === 'agency' ? data.has_agency : data.has_creator) ? intent : 'player'
   const roles: { id: Role; name: string; n: number; what: string; go: string; act: () => void }[] = [
-    { id: 'player', name: 'Player', n: data.people, what: 'Tap, and your Sym learns you. You bring the color: nothing is known here until a person shows it.',
+    { id: 'player', name: 'Player', n: data.people, what: 'Tap. Your Sym learns you.',
       go: !next ? 'My Journey' : data.taps_mine === 0 ? `Start: ${next.title}` : next.done > 0 ? `Continue: ${next.title}` : `Play: ${next.title}`, act: play },
-    { id: 'agency', name: 'Agency', n: data.agencies, what: 'Ask Syms questions and post jobs. You bring the pay: every answer bought pays the owner of a Sym.',
+    { id: 'agency', name: 'Agency', n: data.agencies, what: 'Ask Syms. Each answer pays its owner.',
       go: data.has_agency ? 'My agency' : 'Open an agency', act: () => onSeat('agency') },
-    { id: 'creator', name: 'Creator', n: data.creators, what: 'Build the skill steps Syms grow on. You bring the growth, and each step pays its maker.',
+    { id: 'creator', name: 'Creator', n: data.creators, what: 'Build steps. Each pass pays you.',
       go: data.has_creator ? 'My studio' : 'Open a studio', act: () => onSeat('creator') },
   ]
   const look = (id: Role | null) => () => {

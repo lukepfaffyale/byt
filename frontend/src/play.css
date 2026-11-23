@@ -20,7 +20,7 @@
   .play-row .pattern-wrap, :root .pages-flow .play-row .pattern-wrap { max-width: none; }
   .play-row :is(.ttt, .c4) { margin: 0; }
 }
-@media (min-width: 1000px) and (min-height: 600px) {
+@media (min-height: 560px) {
   /* a short window: the boards are a little smaller, so the card and the way out share the page */
   .play-row { column-gap: 20px; }
   /* the question of a board card is one or two short lines, so the board and its answer keep the page */
@@ -93,7 +93,7 @@
 .play .twin-line { margin: 4px 0 10px; }
 
 /* the end of a gate or a battle is one page: the one-tap question sits on one row */
-@media (min-width: 1000px) and (min-height: 600px) {
+@media (min-height: 560px) {
   :root .pages-flow .gate-done .worth .chips-label { flex: 0 1 auto; }
   :root .pages-flow .gate-done { padding-top: 0; }
   :root .pages-flow .gate-done .fine { margin: 4px 0; }
@@ -108,3 +108,122 @@
 /* the list of jobs: tabs, list arrows and the note share one row, so the list is one page */
 .work-head .more { position: static; margin: 0; flex: none; }
 .work-head .seg { flex: 1 1 12rem; }
+
+/* ==========================================================================================================
+   A card is a game beat, not a form: short words, big tiles, and a result that needs no reading.
+   ========================================================================================================== */
+/* the rule of a board gate is said once; after that it is one small line */
+.prompt.again, :root .pages-flow .play h1.prompt.again { font-size: 0.8rem; font-weight: 300; letter-spacing: 0.04em; text-transform: none; color: var(--muted); margin: 2px 0 8px; }
+/* the pick, where my Sym guessed, and what the answer was worth, on the tiles themselves */
+.option { position: relative; }
+.option.picked { border-color: var(--gold); box-shadow: 0 0 34px rgba(255, 222, 150, 0.28), inset 0 0 0 1px var(--gold); opacity: 1; }
+.option:disabled:not(.picked):not(.sym-here) { opacity: 0.55; }
+.option .sym-tag { position: absolute; top: 6px; right: 8px; padding: 3px 9px; border: 1px solid var(--teal); border-radius: 999px; color: var(--teal); background: rgba(2, 5, 10, 0.85); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+.option.picked.sym-here .sym-tag { border-color: var(--gold); color: var(--gold); }
+.option.sym-here:not(.picked) { border-color: var(--teal); opacity: 1; }
+.option.right { border-color: var(--good); box-shadow: 0 0 34px rgba(166, 230, 195, 0.3), inset 0 0 0 1px var(--good); }
+.option.wrong { border-style: dashed; border-color: var(--text); box-shadow: none; }
+.option .pts { position: absolute; top: 6px; right: 10px; font-size: 0.8rem; font-weight: 500; color: var(--gold); letter-spacing: 0.04em; }
+.play.moving .option.picked.sym-here { animation: called 0.5s ease-out 1; }
+.play.moving .options, .play.moving h1.prompt:not(.again) { animation: card-in 0.16s ease-out both; }
+.play.moving .sym-tag, .play.moving .pts { animation: card-in 0.2s ease-out both; }
+@keyframes called { 0% { transform: scale(1); } 40% { transform: scale(1.07); } 100% { transform: scale(1); } }
+@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .play.moving .option.picked.sym-here, .play.moving h1.prompt, .play.moving .options, .play.moving .sym-tag, .play.moving .pts { animation: none; } }
+/* the result of a board card: one mark and what it was worth */
+.beat { margin: 0; font-size: 1.3rem; font-weight: 300; text-align: left; }
+.beat strong { color: var(--gold); font-weight: 500; margin-left: 6px; }
+.beat.right { color: var(--good); }
+.play-side .chips.sure { grid-template-columns: repeat(3, 1fr); max-width: none; }
+.play-side .chips.sure .chips-label { grid-column: 1 / -1; }
+/* my Sym in a gate: a thin panel, a few words */
+.sym-live .sym-cue-say p { min-height: 1.4em; }
+/* the end of a gate: one big number first */
+.done-hero { display: flex; justify-content: center; align-items: baseline; gap: 28px; margin: 4px 0 8px; }
+.done-num { display: grid; justify-items: center; font-size: 0.6875rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+.done-num strong { font-size: 3.4rem; font-weight: 200; line-height: 1; letter-spacing: 0; color: var(--text); font-feature-settings: 'tnum' 1; }
+.done-num.lead strong { color: var(--gold); text-shadow: 0 0 30px rgba(255, 222, 150, 0.4); }
+.done-num small { font-size: 1.2rem; color: var(--muted); }
+.gate-done .sym-cue-say p { min-height: 2.7em; }
+.studying h1 { font-size: 1.6rem; }
+
+/* short answers are tiles side by side, on any screen: a choice, not a form */
+.options.n2.short { grid-template-columns: 1fr 1fr; }
+.options.n3.short { grid-template-columns: repeat(3, 1fr); }
+.options.n4.short { grid-template-columns: 1fr 1fr; }
+:root .pages-flow .options.short .option, .options.short .option { min-height: 104px; justify-content: center; text-align: center; font-size: 1.15rem; padding: 12px 10px; }
+.options.short .option .key { position: absolute; top: 8px; left: 10px; }
+
+/* a phone: the question in the middle of the screen, the tiles under the thumb */
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow > section.play { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  :root .pages-flow .sym-live { position: relative; top: auto; min-height: 60px; padding: 8px 12px 22px 76px; margin: 0 0 4px; }
+  :root .pages-flow .play h1.prompt { text-align: center; margin: auto 0; padding: 8px 0; font-size: 1.7rem; line-height: 1.2; }
+  :root .pages-flow .play:has(.play-row) h1.prompt { margin: 6px 0; padding: 0; font-size: 1.15rem; }
+  :root .pages-flow .play h1.prompt.again { margin: 2px 0 6px; padding: 0; text-align: center; font-size: 0.8rem; }
+  :root .pages-flow .play .play-row { flex: 1 1 auto; align-content: start; }
+  :root .pages-flow .play .options { gap: 10px; }
+  :root .pages-flow .play .options.n2.short { grid-template-columns: 1fr 1fr; }
+  :root .pages-flow .play .options.n2.short .option { min-height: 132px; justify-content: center; text-align: center; font-size: 1.25rem; padding: 12px 10px; }
+  :root .pages-flow .play .options.n3.short { grid-template-columns: repeat(3, 1fr); }
+  :root .pages-flow .play .options.n3.short .option { min-height: 104px; justify-content: center; text-align: center; font-size: 1.05rem; padding: 10px 6px; }
+  :root .pages-flow .play .option { min-height: 56px; }
+  :root .pages-flow .play .option .key { display: none; }
+  :root .pages-flow section.play > .link { justify-self: center; min-height: 40px; opacity: 0.7; }
+  :root .pages-flow .play .duel { justify-content: center; margin: 0 0 4px; }
+  :root .pages-flow .play-row { justify-items: center; gap: 10px; }
+  :root .pages-flow .play-row { grid-template-columns: minmax(0, 1fr); }
+  :root .pages-flow .play-row > :is(.ttt, .c4, .pattern-wrap, .reflex) { margin: 0 auto; justify-self: center; }
+  :root .pages-flow .play-row.game-tictactoe .ttt { width: min(230px, 30dvh); }
+  :root .pages-flow .play-row.game-connect4 .c4 { width: min(300px, 34dvh); }
+  :root .pages-flow .play-row .pattern-wrap { max-width: min(15rem, 34dvh); margin: 0 auto; }
+  :root .pages-flow .play-side { width: 100%; justify-items: center; }
+  :root .pages-flow .play-side .chips.sure { width: 100%; }
+  :root .pages-flow .play-side .chips.sure .chip { min-height: 48px; font-size: 1rem; }
+  :root .pages-flow .play-side .chips.sure { gap: 6px; }
+  :root .pages-flow .play-side .chips.sure .chips-label { margin: 0; }
+  :root .pages-flow .play-row { gap: 6px; margin: 0; }
+  :root .pages-flow .play-side { gap: 4px; }
+  :root .pages-flow .beat { text-align: center; }
+  /* the end of a gate fits the screen */
+  :root .pages-flow .gate-done .cert { margin: 4px 0; padding: 8px 12px; }
+  :root .pages-flow .done-foot { justify-content: center; }
+}
+
+/* a finger is not a pointer that hovers: the tile under the last tap must not look chosen on the next card */
+@media (hover: none) {
+  .option:hover:not(:disabled):not(.picked), :root body.future .option:hover:not(:disabled):not(.picked) { background: var(--glass); border-color: rgba(134, 211, 230, 0.3); box-shadow: none; transform: none; }
+  :root[data-look='mono'] .option:hover:not(:disabled):not(.picked) { background: var(--glass); color: var(--text); }
+}
+/* the plain look has no glow, so the pick and my Sym's guess are told by a filled tile and the tag */
+:root[data-look='mono'] .option.picked { background: #ffffff; color: #000000; }
+:root[data-look='mono'] .option.picked .sym-tag { background: #000000; }
+.option:disabled.picked, .option:disabled.sym-here { opacity: 1; }
+/* my Sym's label in a gate stays on one line on a phone */
+@media (max-width: 999px) { .sym-live .line-top { letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+
+/* motion off: the one button that goes on sits under the tiles or the board */
+.next-card { margin-top: 10px; width: 100%; }
+/* the room for the how-sure chips is held, so the board does not jump when they appear */
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow .play-side { min-height: 78px; }
+  :root .pages-flow .play .options.n4.short .option { min-height: 84px; }
+}
+:root[data-look='mono'] .option.picked .pts { color: #000000; font-weight: 600; }
+:root[data-look='mono'] .option.picked .sym-tag { color: #ffffff; border-color: #ffffff; }
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow .play .options.n3.short .option { font-size: 1.3rem; }
+}
+
+/* a board shows the move that was made (a bright mark) and, after the answer, the move that wins (a gold frame) */
+.cell.empty.picked { color: var(--text); border-style: solid; border-color: var(--text); background: var(--glass-strong); }
+.cell.empty.answer { color: var(--gold); border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold); opacity: 1; }
+.cell.empty:disabled.picked, .cell.empty:disabled.answer { opacity: 1; }
+.drop.picked { background: var(--text); color: #000000; border-color: var(--text); }
+.drop.answer { box-shadow: inset 0 0 0 2px var(--gold); opacity: 1; }
+
+/* a phone: nothing that can be tapped is small, and a list may run on to the next page row by row */
+@media (max-width: 999px) and (min-height: 560px) {
+  :root .pages-flow .play-row.game-connect4 .c4 { width: min(100%, 20rem); max-width: none; }
+  :root .pages-flow .play-row .c4 .drop { min-height: 40px; }
+}

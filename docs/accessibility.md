@@ -83,3 +83,12 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
 - A narrow window (a phone) keeps the ordinary page that flows downward; nothing changes there.
 - Zoom: at 200 percent on a small laptop the window falls under the size above and the ordinary page returns.
 - Not yet checked: a screen reader pass over the paged screens, and the pop-outs with a keyboard only.
+
+## 2026-11-22: a phone, and results that move on
+
+- **No scrolling at phone size.** The paging rule (Back, "Page n of m", Next) now applies to phones. Checked at 428 by 740 and 375 by 640 in a phone-sized frame, on every seat. Tap targets in the phone layout are at least 40 px tall; the seat switcher went from 26 px to 40 px.
+- **Timing (WCAG 2.2.1).** With motion on, a card's result shows for about one second and the next card arrives by itself. This is tied to the game's Motion switch: with Motion off, or when the device asks for reduced motion and the switch was never touched, there is no timer and the result waits for the Next card button. A tap anywhere on the card ends the wait early.
+- **Not color alone.** The Sym's guess is marked by a tag with the word "Sym" on the tile, a right answer by a check mark and its points, a wrong one by a dashed border. In the plain look, which has no glow, the picked tile is filled.
+- **Screen readers.** The Sym's line in a gate is a polite live region and no longer types itself out letter by letter. The spoken announcements after each answer are unchanged. The page title of a finished gate is kept for screen readers and hidden from sight.
+- **Touch.** A tile no longer keeps its hover look after a tap, so the next card does not seem to have an answer chosen.
+- **Still open:** a pass with a screen reader on a real phone, and keyboard-only play of the new result beat, have not been done.

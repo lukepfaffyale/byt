@@ -1,15 +1,15 @@
 {
   "gate": {"id": "battle-taste", "title": "Sym battle: style and spending", "kind": "battle", "deck": "Style and spending"},
   "cards": [
-    {"id": "bt-01", "prompt": "You see a jacket in a color you have never worn. Do you buy it?", "options": [{"id": "a", "label": "Yes, I want to try it", "trait": "bold"}, {"id": "b", "label": "No, I stay with what I know", "trait": "classic"}]},
-    {"id": "bt-02", "prompt": "Which sneakers do you choose?", "options": [{"id": "a", "label": "The pair everyone has", "trait": "classic"}, {"id": "b", "label": "The pair no one has", "trait": "bold"}]},
-    {"id": "bt-03", "prompt": "How do you dress for a long flight?", "options": [{"id": "a", "label": "Only for comfort", "trait": "comfort"}, {"id": "b", "label": "To look neat", "trait": "look"}]},
-    {"id": "bt-04", "prompt": "Which watch do you choose?", "options": [{"id": "a", "label": "One good watch for many years", "trait": "quality"}, {"id": "b", "label": "A few cheap watches to match my clothes", "trait": "variety"}]},
-    {"id": "bt-05", "prompt": "How would your friends describe your style?", "options": [{"id": "a", "label": "Always steady", "trait": "classic"}, {"id": "b", "label": "Often surprising", "trait": "bold"}]},
-    {"id": "bt-06", "prompt": "You get extra money from work. What do you do first?", "options": [{"id": "a", "label": "I put it in savings", "trait": "save"}, {"id": "b", "label": "I buy something I have wanted", "trait": "splurge"}]},
-    {"id": "bt-07", "prompt": "How do you make a big purchase?", "options": [{"id": "a", "label": "I plan it for weeks", "trait": "plan"}, {"id": "b", "label": "I decide in the store", "trait": "spontaneous"}]},
-    {"id": "bt-08", "prompt": "When do you get a new phone?", "options": [{"id": "a", "label": "When the old one stops working", "trait": "save"}, {"id": "b", "label": "When a new model comes out", "trait": "splurge"}]},
-    {"id": "bt-09", "prompt": "What do you do with birthday money?", "options": [{"id": "a", "label": "I buy something to keep", "trait": "things"}, {"id": "b", "label": "I do something fun", "trait": "experiences"}]},
-    {"id": "bt-10", "prompt": "Your usual store raises its prices. What do you do?", "options": [{"id": "a", "label": "I stay", "trait": "loyal"}, {"id": "b", "label": "I look at other stores", "trait": "save"}]}
+    {"id": "bt-01", "prompt": "A jacket, new color. Buy?", "options": [{"id": "a", "label": "Yes, try it", "trait": "bold"}, {"id": "b", "label": "No, my usual", "trait": "classic"}]},
+    {"id": "bt-02", "prompt": "Which sneakers?", "options": [{"id": "a", "label": "The popular pair", "trait": "classic"}, {"id": "b", "label": "The rare pair", "trait": "bold"}]},
+    {"id": "bt-03", "prompt": "Long flight. You dress:", "options": [{"id": "a", "label": "For comfort", "trait": "comfort"}, {"id": "b", "label": "To look neat", "trait": "look"}]},
+    {"id": "bt-04", "prompt": "Watches. You pick:", "options": [{"id": "a", "label": "One for years", "trait": "quality"}, {"id": "b", "label": "Several cheap ones", "trait": "variety"}]},
+    {"id": "bt-05", "prompt": "Friends call your style:", "options": [{"id": "a", "label": "Always steady", "trait": "classic"}, {"id": "b", "label": "Often surprising", "trait": "bold"}]},
+    {"id": "bt-06", "prompt": "Extra pay. First you:", "options": [{"id": "a", "label": "Save it", "trait": "save"}, {"id": "b", "label": "Buy something wanted", "trait": "splurge"}]},
+    {"id": "bt-07", "prompt": "A big buy. You:", "options": [{"id": "a", "label": "Plan for weeks", "trait": "plan"}, {"id": "b", "label": "Decide in store", "trait": "spontaneous"}]},
+    {"id": "bt-08", "prompt": "New phone when:", "options": [{"id": "a", "label": "Old one breaks", "trait": "save"}, {"id": "b", "label": "New model arrives", "trait": "splurge"}]},
+    {"id": "bt-09", "prompt": "Birthday money goes to:", "options": [{"id": "a", "label": "Something to keep", "trait": "things"}, {"id": "b", "label": "Something fun", "trait": "experiences"}]},
+    {"id": "bt-10", "prompt": "Your store raises prices.", "options": [{"id": "a", "label": "Stay", "trait": "loyal"}, {"id": "b", "label": "Try other stores", "trait": "save"}]}
   ]
 }

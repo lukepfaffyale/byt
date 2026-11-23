@@ -1279,7 +1279,7 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 
 /* ---------- no scrolling on a wide window: a screen is pages that a tap turns ---------- */
 .pages-nav { display: none; }
-@media (min-width: 1000px) and (min-height: 600px) {
+@media (min-height: 560px) {
   html, body { height: 100%; overflow: hidden; }
   :root #root { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; grid-template-rows: auto minmax(0, 1fr) auto; }
   :root .stage { position: relative; top: auto; align-self: stretch; height: auto; min-height: 0; }
@@ -1397,7 +1397,7 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 .code-stats strong { color: var(--gold); font-weight: 400; }
 /* the tabs of My Sym sit with the Sym above the pages, so they are in view on every page */
 #cue-slot .seg { margin: 0 0 8px; }
-@media (min-width: 1000px) and (min-height: 600px) {
+@media (min-height: 560px) {
   /* the board and the question under it share one page */
   :root .pages-flow .pattern-wrap { max-width: 15rem; }
   :root .pages-flow .pattern { gap: 5px; }
@@ -1409,7 +1409,7 @@ body.future.calm *, body.future.calm *::after, body.future.calm *::before { anim
 #cue-slot + .pages .mine > .seg, .pages-flow .mine > .seg { margin-bottom: 8px; }
 .picked-line { padding: 4px 0 4px 12px; margin-bottom: 8px; align-items: center; }
 .picked-line .link { min-height: 32px; padding-top: 0; padding-bottom: 0; }
-@media (min-width: 1000px) and (min-height: 600px) {
+@media (min-height: 560px) {
   :root .pages-flow .lines .split-bars .bar { margin: 0; padding: 0; }
   :root .pages-flow .lines .split-bars .bar.leading { margin: 0; }
 }

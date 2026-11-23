@@ -48,7 +48,7 @@
         },
         {
           "id": "c",
-          "label": "The lowest cost choice, and save the rest",
+          "label": "The cheapest, and save the rest",
           "trait": "save"
         }
       ]
@@ -69,7 +69,7 @@
         },
         {
           "id": "b",
-          "label": "Let me start and learn as I go",
+          "label": "Let me learn as I go",
           "trait": "spontaneous"
         },
         {
