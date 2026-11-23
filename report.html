@@ -167,7 +167,7 @@
 </svg>
 <figcaption>Figure 2. How the agents are organized. Blue boxes are models. The gold box is plain code, the only thing that gives a certificate, moves a credit or shows a total.</figcaption>
 </figure>
-<p><strong>The agents work as a loop, not a line.</strong> When the Twin guesses a pick wrong in a battle, code hands the misses to the Profiler, which rewrites the beliefs that failed, and the player sees the before and after lines. When a person corrects a job answer, that correction is the next thing the Profiler reads. The Sym's voice grows the same way: plain code picks how the Guide speaks from the person's own taps (plain while it is new, then in the thinking style its person leans to most), so a model never picks its own voice. Each AI answer shows its real cost on the job and talk screens.</p>
+<p><strong>The agents work as a loop, not a line.</strong> When the Twin guesses a pick wrong in a battle, code hands the misses to the Profiler, which rewrites the beliefs that failed, and the player sees the before and after lines. When a person corrects a job answer, that correction is the next thing the Profiler reads. The Sym's voice grows the same way: plain code picks how the Guide speaks from the person's own taps (plain while it is new, then in the thinking style its person leans to most), so a model never picks its own voice. Each AI answer shows its real cost on the job and talk screens. A Sym is only worth something if the taps are true, so in a battle a tap too fast to have read the card is held, and the Sym asks for one more tap (at most twice). It changes no score and no pay. Next: a one-tap rematch on missed cards, and a sync meter across battles.</p>
 
 <h3>Model, and why</h3>
 <p>All four agents use <code>gpt-6-luna</code> on the Responses API, with a Portkey key or an OpenAI key, under the same limits and checks. It is cheap enough to run every time a player finishes a gate (prices are in section 5). Each run is capped at 4 model requests and 3 tool calls. A daily token budget stops spending, and a practice Sym that uses no AI takes over when there is no key or no budget.</p>
@@ -222,13 +222,13 @@
   
 </table>
 <p>An agency's question uses no tokens. Learning a person is the costly step. Answering as that person is free to run.</p>
-<p><strong>Hosting.</strong> Today: a Render <code>0.5c-512mb</code> back end (0.5 CPU, 512 MB, no sleep), a free Render static site and a free Supabase database (US East): about 7 dollars a month.</p>
+<p><strong>Hosting.</strong> Today: a Render <code>0.5c-512mb</code> back end (0.5 CPU, 512 MB, no sleep), a free Render static site and a Supabase Pro database (US East): about 32 dollars a month. The database was on the free plan until 23 November 2026, when it sent an overage notice with a handful of accounts and the BOT Syms playing, so the free plan is not enough even at this size.</p>
 
 
 <table>
   <tr><th>Scale</th><th>Back end (Render)</th><th>Database (Supabase)</th><th class="n">Traffic</th><th class="n">Agents</th><th class="n">All in, a month</th><th class="n">Per player</th></tr>
 
-  <tr><td>100 players</td><td><code>0.5c-512mb</code>, $7</td><td>Free</td><td class="n">in plan</td><td class="n">$2.18</td><td class="n">about $9</td><td class="n">9 cents</td></tr>
+  <tr><td>100 players</td><td><code>0.5c-512mb</code>, $7</td><td>Pro, $25</td><td class="n">in plan</td><td class="n">$2.18</td><td class="n">about $34</td><td class="n">34 cents</td></tr>
   <tr><td>10,000 players</td><td><code>1c-2g</code>, $25</td><td>Pro, $25</td><td class="n">about $14</td><td class="n">$218</td><td class="n">about $282</td><td class="n">2.8 cents</td></tr>
 </table>
 <p class="meta">Read on the providers' pages, 22 November 2026: Render $7, $25, and 15 cents a GB of traffic past 5 GB; Supabase Pro $25 with 8 GB and 250 GB of traffic. Our estimates: 10 MB of traffic a player a month, and the plan sizes (no load test). Fixed: about $50 a month. Variable: about 2.3 cents a player. Not in this table: what moving real money costs (card fees, payouts, identity checks), fraud, support, legal work and a salary. Section 7 prices the first three.</p>

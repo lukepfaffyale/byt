@@ -45,6 +45,27 @@ const PART: Record<string, string> = {
   'strategy-easy': 'Part 2 of 3. Win in one move.',
   'quick-hands': 'Part 3 of 3. Tap the ring fast.',
 }
+/** A battle tap faster than this is too fast to have read the card: my Sym holds it and asks for one more tap. */
+const FAST_MS = 700
+/** and it asks at most this many times in one battle, so it is never a nag */
+const FAST_ASKS = 2
+/** Cards of the first battle that ask the same thing in new words: [option a, option b] is what each side stands for.
+ * This mirrors the traits in backend/data/cards/05_battle_taste.json. If a trait changes there, change it here. */
+const SAME: Record<string, [string, string]> = {
+  'bt-01': ['bold', 'classic'], 'bt-02': ['classic', 'bold'], 'bt-05': ['classic', 'bold'],
+  'bt-06': ['save', 'splurge'], 'bt-08': ['save', 'splurge'],
+}
+const SAME_PAIRS: [string, string][] = [['bt-01', 'bt-02'], ['bt-01', 'bt-05'], ['bt-02', 'bt-05'], ['bt-06', 'bt-08']]
+
+/** How often the person matched themself on those pairs, from this visit's own picks. A count, never a grade:
+ * it changes no score, no certificate and no pay. Empty unless every one of the cards was picked in this visit. */
+function selfLine(picked: Record<string, string>): string {
+  const side = (id: string) => (picked[id] === 'a' ? SAME[id][0] : picked[id] === 'b' ? SAME[id][1] : '')
+  if (Object.keys(SAME).some((id) => !side(id))) return ''
+  const same = SAME_PAIRS.filter(([one, two]) => side(one) === side(two)).length
+  return same >= 3 ? `Same idea, new words: you matched yourself ${same} of ${SAME_PAIRS.length}.` : 'Some picks pulled two ways. I learn that too.'
+}
+
 /** The best tap on the reaction rings, kept on this device only: the best ever and the best of this week (a week is
  * one season). Nothing here is sent to the server, and it is never shown as a score against other people. */
 const RING_KEY = 'byt-ring-best'
@@ -115,6 +136,9 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
   const [tally, setTally] = useState({ twin: 0, crowd: 0, done: 0 })
   const [learned, setLearned] = useState<Learned | null>(null)
   const [chosen, setChosen] = useState<string | null>(null)
+  // a battle tap that came too fast to be read: it is held here, unsent, until one more tap says it is the true pick
+  const [doubt, setDoubt] = useState<string | null>(null)
+  const doubts = useRef(0)
   const [mark, setMark] = useState<{ need: number | null; right: number } | null>(null)
   // how sure against how right, for the cards of this gate only. The record over every gate is on My Sym.
   const [, setRecord] = useState<SureRows>([])
@@ -286,6 +310,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
     window.clearTimeout(moveOn.current)
     setResult(null)
     setChosen(null)
+    setDoubt(null)
     setIndex((i) => i + 1)
   }, [])
 
@@ -293,6 +318,16 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
     async (choice: string, sure?: number, took?: number) => {
       if (!card || busy || result) return
       const ms = took ?? Math.max(0, Math.round(performance.now() - shownAt.current))
+      if (isBattle && !card.board && doubt === null && ms < FAST_MS && doubts.current < FAST_ASKS) {
+        // nothing is sent yet. The tile stays lit and both tiles stay live: the same one keeps the pick, the other
+        // changes it. The time that is saved runs from the card showing to that last tap.
+        doubts.current += 1
+        setDoubt(choice)
+        setChosen(choice)
+        announce('That was fast. Tap your true pick.')
+        return
+      }
+      setDoubt(null)
       paces.current.push(ms)
       picked.current[card.id] = choice
       if (card.board?.game === 'reflex' && choice === 'hit') {
@@ -359,7 +394,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
         setBusy(false)
       }
     },
-    [card, busy, result, isBattle, announce, onProgress, advance],
+    [card, busy, result, isBattle, doubt, announce, onProgress, advance],
   )
 
   // Keyboard shortcuts for plain option cards: arrows for two options, number keys for any.
@@ -409,6 +444,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
             <span className="done-num"><strong>{battle.baseline_matches}<small> / {battle.n}</small></strong> the crowd</span>
           </p>
         )}
+        {battle && selfLine(picked.current) && <p className="done-fact">{selfLine(picked.current)}</p>}
         {!battle && !error && <p aria-live="polite">Counting the results.</p>}
         {battle && (
           <>
@@ -548,7 +584,8 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
         ? betSay(result.twin_bet, result.is_correct)
         : result.is_correct ? (streak >= 3 ? `${streak} in a row.` : 'Yes.') : 'Next one.'
       : isBattle
-        ? (sure[card.id] === undefined ? 'Sealed.' : `Sealed. ${sure[card.id]}% sure.`)
+        ? doubt !== null ? 'That was fast. Tap your true pick.'
+          : (sure[card.id] === undefined ? 'Sealed.' : `Sealed. ${sure[card.id]}% sure.`)
         : card.board?.game === 'pattern' && card.bet_sure !== null
           ? 'My bet is in.'
           : index === 0 ? (PART[gateId] ?? 'Tap. I learn.')
@@ -613,7 +650,7 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
               const syms = result !== null && isBattle && (result.twin_choice === o.label || (options.length === 2 && !options.some((x) => x.label === result.twin_choice) && mine === result.twin_match))
               const how = `${mine ? ' picked' : ''}${syms ? ' sym-here' : ''}${result && mine && !isBattle ? (result.is_correct ? ' right' : ' wrong') : ''}`
               return (
-                <button key={o.id} className={`option${how}`} disabled={busy || result !== null || chosen !== null} onClick={() => void pick(o.id)}>
+                <button key={o.id} className={`option${how}`} disabled={busy || result !== null || (chosen !== null && doubt === null)} onClick={() => void pick(o.id)}>
                   <span className="key" aria-hidden="true">{i + 1}</span>
                   {o.label}
                   {syms && <span className="sym-tag">Sym</span>}

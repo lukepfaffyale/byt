@@ -910,7 +910,16 @@ header nav:not(.seats) .link[aria-current='page']::after { content: ''; position
 @media (max-width: 640px) { .commons-top { flex-direction: column; align-items: stretch; } .commons-top .primary { max-width: none; } }
 
 /* ---------- my effect: what one person set moving between their own seats and everyone ---------- */
-.ripple-flow { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 2 9; opacity: 0.85; animation: ripple 1.6s linear infinite; }
+.ripple-flow { fill: none; stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 2 7; opacity: 0.9; animation: ripple 1.4s linear infinite; }
+/* the way out is ice blue and the way back is gold; the arrowheads and the words say the same thing without color */
+.ripple-flow.out { stroke: var(--ice); }
+.ripple-tip.out { fill: var(--ice); }
+.ripple-tip.in { fill: var(--gold); }
+.ripple-tip.none { fill: var(--muted); opacity: 0.5; }
+.commons text.ripple-n.out { fill: var(--ice); }
+.ripple-ghost path { fill: none; }
+.ripple-out { color: var(--ice); }
+.ripple-in { color: var(--gold); }
 .ripple-flow.still { animation: none; stroke-dasharray: none; opacity: 0.5; }
 .ripple-link.dim { opacity: 0.14; }
 .commons text.ripple-n { fill: var(--gold); font-size: 8px; letter-spacing: 0.04em; }
@@ -923,7 +932,7 @@ header nav:not(.seats) .link[aria-current='page']::after { content: ''; position
 .ripple-seat.on circle { stroke: var(--gold); stroke-width: 2; }
 .ripple-seat.player.on circle, .ripple-seat.everyone.on circle { stroke: var(--text); stroke-width: 1.5; }
 .commons .world-keys { justify-content: center; }
-@keyframes ripple { to { stroke-dashoffset: -11; } }
+@keyframes ripple { to { stroke-dashoffset: -9; } }
 @media (prefers-reduced-motion: reduce) { .ripple-flow { animation: none; } }
 .commons .ledger-what { white-space: normal; line-height: 1.3; font-size: 0.9rem; }
 .commons .seg { margin: 8px 0 4px; }

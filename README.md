@@ -151,6 +151,6 @@ Every outside paper that was read while this was built is listed in `docs/SOURCE
 |---|---|---|
 | Front end | Render static site `byt_frontend` | Built with `npm ci && npm run build`. Its one setting, `VITE_API_URL`, is the back end's address. |
 | Back end | Render web service `byt_backend`, region Virginia, on the `0.5c-512mb` compute plan (0.5 CPU, 512 MB, 7 dollars a month) | `uvicorn main:app`. Settings entered in the dashboard only: `PORTKEY_API_KEY` (or `OPENAI_API_KEY`), `DATABASE_URL`, `CORS_ORIGINS` (the front end's address). |
-| Database | Supabase (Postgres), US East | Reached only by the back end, through the session pooler. Row-level security is on for every table, with no policy for any outside role, so nothing can be read through Supabase's own data API. |
+| Database | Supabase (Postgres), US East, Pro plan (25 dollars a month, since 2026-11-23) | Reached only by the back end, through the session pooler. Row-level security is on for every table, with no policy for any outside role, so nothing can be read through Supabase's own data API. |
 
 With no `DATABASE_URL` the back end uses the local file `backend/data/local.db`, which is what a fresh clone does.

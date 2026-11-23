@@ -18,7 +18,7 @@ const PATHS: { src: Seat; dst: Seat; say: string; at?: number }[] = [
   { src: 'agency', dst: 'everyone', say: 'asks, pays' },
   { src: 'everyone', dst: 'creator', say: 'pass steps' },
   { src: 'creator', dst: 'everyone', say: 'new steps' },
-  { src: 'agency', dst: 'creator', say: 'shows needs', at: 0.22 },
+  { src: 'agency', dst: 'creator', say: 'shows needs', at: 0.2 },
 ]
 
 export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'creator') => void; agencies?: number; botAgencies?: number }) {
@@ -53,35 +53,46 @@ export function RippleMap(props: { calm: boolean; onSeat: (seat: 'agency' | 'cre
   const asks = Math.round(data.counts?.asks ?? 0)
   return (
     <>
-      <p className="line-top ripple-say">People give the blocks. Agents make the links.</p>
+      <p className="line-top ripple-say">Arrows show the way. <span className="ripple-out">Out: what I give.</span> <span className="ripple-in">Back: what comes to me.</span></p>
       <svg className="commons-map ripple" viewBox="0 0 360 224" role="img"
-        aria-label={`The circle: your taps go to everyone, agencies ask and pay, creators build new steps, and it comes back to you. ${said || 'Nothing has moved yet.'}`}>
+        aria-label={`My circle: what I give goes out to everyone, and what comes back is paid to me and my seats. ${said || 'Nothing has moved yet.'}`}>
+        <defs>
+          <marker id="ripple-tip-out" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 Z" className="ripple-tip out" /></marker>
+          <marker id="ripple-tip-in" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 Z" className="ripple-tip in" /></marker>
+          <marker id="ripple-tip-none" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 Z" className="ripple-tip none" /></marker>
+        </defs>
         {PATHS.map((p) => {
-          const [x1, y1] = AT[p.src]
-          const [x2, y2] = AT[p.dst]
-          const len = Math.hypot(x2 - x1, y2 - y1) || 1
-          const ox = (-(y2 - y1) / len) * 4
-          const oy = ((x2 - x1) / len) * 4
+          // each way is its own curve: the way out bows to one side and the way back to the other, so they never sit
+          // on top of each other, and each ends in an arrowhead just short of the seat it goes to
+          const [ax, ay] = AT[p.src]
+          const [bx, by] = AT[p.dst]
+          const len = Math.hypot(bx - ax, by - ay) || 1
+          const ux = (bx - ax) / len
+          const uy = (by - ay) / len
+          const bow = p.src === 'agency' && p.dst === 'creator' ? 0 : 20
+          const ra = (p.src === 'everyone' ? 15 : 10) + 3
+          const rb = (p.dst === 'everyone' ? 15 : 10) + 5
+          const x1 = ax + ux * ra, y1 = ay + uy * ra
+          const x2 = bx - ux * rb, y2 = by - uy * rb
+          const cx = (x1 + x2) / 2 - uy * bow, cy = (y1 + y2) / 2 + ux * bow
+          const flow = pairs.get(`${p.src}>${p.dst}`)
+          const n = flow?.n ?? 0
+          const back = p.src === 'everyone' // from everyone to me or to one of my seats
+          const lit = n > 0 && (p.src === pick || p.dst === pick)
+          // the words sit on the outside of the curve, a third of the way along the two long ways so they clear the middle
+          const t = p.at ?? (p.src === 'player' ? 0.34 : p.dst === 'player' ? 0.66 : 0.5)
+          const px = (1 - t) * (1 - t) * x1 + 2 * (1 - t) * t * cx + t * t * x2
+          const py = (1 - t) * (1 - t) * y1 + 2 * (1 - t) * t * cy + t * t * y2
+          const out = bow ? 8 : 0
+          const kind = n > 0 ? (back ? 'in' : 'out') : 'none'
           return (
-            <g key={`${p.src}>${p.dst}`} className="ripple-ghost" aria-hidden="true">
-              <line x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy} />
-              <text x={x1 + (x2 - x1) * (p.at ?? 0.5) + ox * 3.4 + (p.at ? 22 : 0)} y={y1 + (y2 - y1) * (p.at ?? 0.5) + oy * 3.4 + 2} textAnchor="middle">{p.say}</text>
-            </g>
-          )
-        })}
-        {flows.map((f) => {
-          const [x1, y1] = AT[f.src]
-          const [x2, y2] = AT[f.dst]
-          const len = Math.hypot(x2 - x1, y2 - y1) || 1
-          // two lines between the same seats sit side by side, one for each way
-          const ox = (-(y2 - y1) / len) * 4
-          const oy = ((x2 - x1) / len) * 4
-          const lit = f.src === pick || f.dst === pick
-          return (
-            <g key={`${f.src}>${f.dst}`} className={lit ? 'ripple-link' : 'ripple-link dim'}>
-              <line className={calm ? 'ripple-flow still' : 'ripple-flow'} x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy}
-                strokeWidth={0.8 + 2.4 * Math.sqrt(f.n / top)} />
-              {lit && <text className="ripple-n" x={(x1 + x2) / 2 + ox * 2.4} y={(y1 + y2) / 2 + oy * 2.4 + 2} textAnchor="middle">{f.n}</text>}
+            <g key={`${p.src}>${p.dst}`} className={n > 0 ? (lit ? 'ripple-link' : 'ripple-link dim') : 'ripple-ghost'}>
+              <path d={`M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}`} markerEnd={`url(#ripple-tip-${kind})`}
+                className={n > 0 ? `ripple-flow ${kind}${calm ? ' still' : ''}` : undefined}
+                strokeWidth={n > 0 ? 0.9 + 2.2 * Math.sqrt(n / top) : undefined} />
+              <text className={n > 0 ? `ripple-n ${kind}` : undefined} x={px - uy * out - (p.at ? 26 : 0)} y={py + ux * out + 2.5} textAnchor="middle">
+                {n > 0 ? `${p.say} · ${n}` : p.say}
+              </text>
             </g>
           )
         })}

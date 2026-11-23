@@ -843,6 +843,7 @@ The Code tab also says how a person's picks differ from every other Sym's: how m
   1. A connection check printed a database driver's error message, which quoted part of the database password. The password was reset at once and the check now prints only "connected" or a plain reason.
   2. A test run aimed at a throwaway area of the hosted database wrote into the real tables instead, because the pooler ignored the setting that selects the area. It was caught the same hour, before any real person had played; the database was wiped and rebuilt (tables, row-level security, BOT Syms). Tests are no longer run against the hosted database.
 - **Compute plan.** The back end was on the free plan (it slept after 15 minutes) until the owner moved it to `0.5c-512mb` (7 dollars a month) before the link went to players. No keep-alive trick is used.
+- **Database plan.** The Supabase project was on the free plan until 2026-11-23, when it sent an overage notice. The owner moved it to the Pro plan (25 dollars a month) the same day. Hosting is now about 32 dollars a month.
 
 ## 2026-11-22: BOT Syms keep the hours of their place
 
