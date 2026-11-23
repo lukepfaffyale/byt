@@ -6,12 +6,11 @@ BYT is the game. Symbolon is the working name for its maker. A symbolon was a to
 
 A machine can do the work. It cannot feel. BYT is a game in which people, by choice, teach a Sym the part only they have.
 
-Our mission: to help people earn passive income while building the platform and the connections that AGI will
-need from people. Today we show that potential with play money.
+Our mission: to help people earn by taking part, even while they rest, and to build the platform that keeps people in the work as AI learns it. Today we show that potential with play money.
 
 A tap-only game. You clear short gates (picks, one-move strategy boards, quick reactions) and your taps build a
 Sym that belongs to you. The Sym then guesses picks it has never seen. If it beats the crowd's guess, plain code
-gives it a certificate. Then it can answer agencies and do jobs while you rest.
+gives it a certificate. Then it can answer agencies and do jobs while you rest, for play credits today.
 
 This is a class project (MGT 409, final project).
 
@@ -49,11 +48,11 @@ You need Python 3.12 or newer and Node 20 or newer.
 4. Open http://localhost:5173, pick a nickname and play.
 
 The local database is a small SQLite file created on first start, with 193 made-up BOT Syms (one for each United Nations country) so that
-"the crowd guess" exists and the economy has life in it. They are plain code, use no AI tokens, and every screen marks them as bots. Tests: `venv\Scripts\python -m pytest` from `backend` (94 tests).
+"the crowd guess" exists and the economy has life in it. They are plain code, use no AI tokens, and every screen marks them as bots. Tests: `venv\Scripts\python -m pytest` from `backend` (97 tests).
 
 Checked on 2026-11-23 from a fresh clone in an empty folder, on Windows with Python 3.14 and Node 24: the back end
 installed in about 75 seconds and answered 5 seconds after starting, the front end installed and built in under 10
-seconds, sign-up worked with no key (the game then plays on the practice Sym), and all 94 tests passed. Not checked
+seconds, sign-up worked with no key (the game then plays on the practice Sym), and all 97 tests passed. Not checked
 from the clone: a run with a model key, and macOS or Linux.
 
 ## A 10-minute tour
@@ -61,7 +60,7 @@ from the clone: a run with a model key, and macOS or Linux.
 It works on a phone and on a computer. Every page has one lit button from my Sym. If you only ever tap that button,
 you see the whole game. This route shows the three parts in order. Nothing needs typing after the nickname.
 
-1. **Get in (1 minute).** Open the link, type a nickname, tick the two boxes, start. The welcome screen shows
+1. **Get in (1 minute).** Open the link (or http://localhost:5173 if you run it locally), type a nickname, tick the two boxes, start. The welcome screen shows
    everyone in the game as lights. Tap **Player**.
 2. **Calibrate your Sym (1 minute).** Three short parts. Part 1 is 8 quick picks: two tiles, tap one. Your Sym shows
    the first blocks of its code and asks one thing: **Let my Sym earn**. Tap it, and agencies can ask your Sym.
@@ -116,11 +115,14 @@ backend/
   content.py         gates and cards, the board rules, the ontology loader
   prompt_guard.py    the guard on the one typed line and on text a model wrote
   life.py            the 193 BOT Syms: plain code, no AI tokens
+  rps.py             plain code: the two duels against your own Sym
+  audit.py           writes the audit trail
+  experiments/       cost_experiment.py, the four-method test
   data/ontology.json the one map: taps, skills, seats, incomes, agents, rule numbers
   data/cards/        the card decks, one file for each gate
   data/jobs.json     jobs from made-up requesters
   data/questions.json the six fixed questions an agency may ask
-  tests/             94 tests; test_governance.py keeps the records and the code in step
+  tests/             97 tests; test_governance.py keeps the records and the code in step
 frontend/            React, TypeScript, Vite
 docs/
   governance.md      data, privacy, security, intellectual property, AI and agents

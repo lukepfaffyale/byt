@@ -92,6 +92,8 @@ scoping is enforced in `db.py`: every repository function takes the player id re
 | DELETE /twin/facts/{fact_id} | | FactsOut | facts |
 | GET /rps | | RpsOut (the score against the Sym, the last rounds, the habits the Sym found, and the league of Syms, each other Sym as a number) | throws |
 | POST /rps | RpsIn (throw: r, p or s) | RpsOut, with the round just played and why the Sym threw what it did | throws |
+| GET /duel/hide | | RpsOut (Hide the light: the score against the Sym, the last rounds and the hiding habits it found; no league) | throws |
+| POST /duel/hide | HideIn (cup: a, b or c) | RpsOut, with the round just played and why the Sym looked where it did | throws |
 | POST /me/auto | AutoIn (per_day, from a fixed list) | Jobs | autowork |
 | GET /me/plan | | Plan (up to four best uses of the next few minutes, each with a reason and what it can pay; a step a creator built is titled "Extra step", since it is not one of the journey's gates) | responses, work, postings, made_steps, consents |
 | GET /commons | player | Commons (the first screen after signing in: how many real people, how many played today, how many stand-ins, the seats, what is known together and the reader's part of it (`known_mine` is `taps_mine` + `checks_mine` + `told_mine` + `lessons_mine`), and the newest happenings as nameless lines with a loose time: now, today, week, earlier). Names no player, seat or answer | players, active_days, responses, work, facts, lessons, certs, tendencies, orgs, campaigns, briefs, made_steps, postings, as counts and newest rows |

@@ -228,8 +228,8 @@ one on. Nothing about the Sym is copied into the meets row.
 |---|---|---|---|---|---|
 | throws.id | uuid | server | no | Key | With the player |
 | throws.player_id | uuid | server | linked to a player | Scope and deletion | With the player |
-| throws.mine | text (r, p or s) | player tap | no by itself; a long run of them is a habit of one person | What the player threw. The Sym learns its owner's habits from these | With the player |
-| throws.Sym | text (r, p or s) | code | no | What the Sym threw, worked out from the earlier rows before this one was written | With the player |
+| throws.mine | text (r, p or s; or a, b or c for a cup in Hide the light) | player tap | no by itself; a long run of them is a habit of one person | What the player threw. The Sym learns its owner's habits from these | With the player |
+| throws.Sym | text (r, p or s; or a, b or c) | code | no | What the Sym threw, worked out from the earlier rows before this one was written | With the player |
 | throws.created_at | timestamp, UTC | server | no | Order | With the player |
 
 ## lessons (what a Sym changed after a battle)

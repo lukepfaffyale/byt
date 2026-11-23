@@ -80,7 +80,7 @@ There is one free-text channel from a user to a model in this build: the one lin
 ### 0.7 What decides a certificate (code, `backend/verifier.py`)
 
 - The baseline is the crowd's guess: for each card, the option most other players chose, never counting the player
-  being tested. Twelve made-up sample players are seeded so the baseline exists on a fresh copy.
+  being tested. Made-up players are seeded so the baseline exists on a fresh copy (twelve when this was written; 193 BOT Syms, one for each country, since 2026-11-18).
 - A Sym certificate needs: the AI Sym (not the practice Sym), at least 8 cards, more matches than the baseline,
   and at least 60 percent right.
 - A skill certificate is issued when a strategy gate is finished with at least two thirds right.
@@ -102,8 +102,8 @@ There is one free-text channel from a user to a model in this build: the one lin
 |---|---|---|
 | Input | Pydantic models with `extra="forbid"`, bounded lengths, nickname and agency name patterns, fixed lists for questions, groups and prices; rate limits | `models.py`, `main.py` |
 | Identity | Random token in the `Authorization` header, stored as a SHA-256 hash; never in a URL, a log or a prompt | `main.py`, `db.py` |
-| Prompt | Shared rules (instructions only from the prompt, facts from tools, no personal data, honesty, loop discipline, plain words, no em dashes) plus one file for each agent | `prompts/prompt.md`, `profiler.md`, `twin.md`, `worker.md` |
-| Model | One allow-listed name, Portkey only, key from `.env` | `agent.py` |
+| Prompt | Shared rules (instructions only from the prompt, facts from tools, no personal data, honesty, loop discipline, plain words, no em dashes) plus one file for each agent | `prompts/prompt.md`, `profiler.md`, `twin.md`, `worker.md`, `guide.md` |
+| Model | One allow-listed name, through Portkey, or OpenAI directly when only an OpenAI key is set; key from `.env` | `agent.py` |
 | Loop | `UsageLimits`, daily budget, `retries=2`, fallback to the practice Sym | `agent.py` |
 | Output | Guesses and job answers checked against real options; beliefs and reasons guarded, stripped and capped | `agent.py` |
 | Writes | Agents have no write tool. Code writes beliefs, battles, certificates, work and credits, each scoped to the player | `agent.py`, `db.py` |
@@ -119,6 +119,7 @@ There is one free-text channel from a user to a model in this build: the one lin
 - What one agent wrote is data to the next, guarded as in 0.5.
 - The Guide's voice is picked by plain code (`voice_for` in `main.py`) from the player's own taps: plain while the Sym is new (under 14 taps), then the thinking style the person leans to most. It reaches the Guide as one line of tone in the tool result. It cannot change a fact, a number or a rule.
 - The job and talk screens show what each AI answer cost (`cost_usd` on the response, from the run's own usage).
+- Limits a caller cannot step round (2026-11-23): each route has a limit for one caller and one for all callers together (20 times the single limit), because a forwarded address can be typed; new accounts are capped at 500 in a rolling day (`SIGNUPS_A_DAY`); the daily token budget is 400,000 (`DAILY_TOKEN_BUDGET`), and when it is spent the practice Sym answers with no model. The background refresh of BOT Sym facts reads 3 Syms each 15 seconds, down from 24.
 - All four serve the player. Nothing an agent produces crosses to an agency or a creator except as totals built by
   code.
 - Planned, not built: a Sym working several jobs at once through copies of itself. Each copy would be one

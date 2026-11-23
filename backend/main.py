@@ -85,6 +85,7 @@ from models import (  # noqa: E402
     SureRow,
     SureTap,
     RpsIn,
+    HideIn,
     RpsOut,
     RpsRival,
     RpsRound,
@@ -188,7 +189,10 @@ async def _life() -> None:
         await asyncio.sleep(LIFE_SECONDS)
         try:
             await asyncio.to_thread(life.step)
-            await asyncio.to_thread(warm_bots, 24)  # a few at a time: every free Sym is refreshed long before it goes stale
+            # 3 at a time is enough: about 195 free Syms, one loop every 15 seconds, so each is refreshed about every 16
+            # minutes, inside the 20 minutes its facts are kept. (It was 24, which re-read every free Sym's picks every 2
+            # minutes and is the likely cause of the database's traffic overage on 2026-11-23.)
+            await asyncio.to_thread(warm_bots, 3)
         except Exception:  # a bot's move must never take the server down
             logging.getLogger("byt.life").exception("a BOT move failed")
 
@@ -206,6 +210,9 @@ app.add_middleware(
 # ---------- small in-memory rate limit (addresses are never stored) ----------
 
 _hits: dict[str, deque[float]] = defaultdict(deque)
+ALL_TIMES = 20  # all callers together may use a route this many times the limit of one caller
+SIGNUPS_A_DAY = int(os.environ.get("SIGNUPS_A_DAY") or 500)  # new accounts in a rolling day, all callers together
+HITS_KEPT = 5000  # callers remembered before the old ones are dropped
 
 
 def rate_limit(request: Request | None, name: str, limit: int, window: float = 60.0) -> None:
@@ -216,12 +223,23 @@ def rate_limit(request: Request | None, name: str, limit: int, window: float = 6
     forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
     key = f"{name}:{forwarded or (request.client.host if request.client else 'unknown')}"
     now = time.monotonic()
-    q = _hits[key]
-    while q and now - q[0] > window:
-        q.popleft()
-    if len(q) >= limit:
-        raise HTTPException(429, "That was too fast. Please wait one minute, then try again.")
-    q.append(now)
+    # A caller can type any forwarded address, so the limit for each caller is not enough by itself. Every route
+    # also has one limit for all callers together, which no header can step round: ALL_TIMES the single limit.
+    # New accounts have a day limit too, because each one is rows the game keeps and reads.
+    checks = [(key, limit, window), (f"{name}:*", limit * ALL_TIMES, window)]
+    if name == "signup":
+        checks.append(("signup:day", SIGNUPS_A_DAY, 86400.0))
+    for k, most, span in checks:
+        q = _hits[k]
+        while q and now - q[0] > span:
+            q.popleft()
+        if len(q) >= most:
+            raise HTTPException(429, "That was too fast. Please wait one minute, then try again.")
+    for k, _most, _span in checks:
+        _hits[k].append(now)
+    if len(_hits) > HITS_KEPT:  # old callers are dropped, so the table cannot grow without end
+        for k in [k for k, q in _hits.items() if not q or now - q[-1] > 86400.0]:
+            del _hits[k]
 
 
 # ---------- identity: a random token in the Authorization header ----------
@@ -1547,6 +1565,31 @@ def my_judgment(player: Player = Depends(current_player)) -> Judgment:
         says += f" Only answers with a how sure tap are counted: {len(taps)} of {len(marked)}."
     return Judgment(rows=rows, says=says, unsaid=unsaid,
                     taps=[SureTap(at=db.iso(r.created_at), level=r.sure, right=bool(r.is_correct)) for r in taps[-40:]])
+
+
+def hide_out(player: Player, just: RpsRound | None = None) -> RpsOut:
+    """Hide the light: the score, the last rounds and the hiding habits the Sym has found. No league in this duel."""
+    rows = db.throws_for(player.id, rps.CUPS)
+    mine = [t.mine for t in rows]
+    results = [rps.found(t.mine, t.twin) for t in rows]
+    return RpsOut(rounds=len(rows), you=results.count("you"), twin=results.count("twin"), draws=0, round=just,
+                  last=[RpsRound(mine=t.mine, twin=t.twin, outcome=rps.found(t.mine, t.twin)) for t in rows[-12:]][::-1],
+                  tells=[RpsTell(after=a, then=b, n=n, of=of) for a, b, n, of in rps.tells(mine, rps.CUPS)[:3]])
+
+
+@app.get("/duel/hide", response_model=RpsOut)
+def hide_state(player: Player = Depends(current_player)) -> RpsOut:
+    """Hide the light against the caller's own Sym: the score and the habits the Sym has found."""
+    return hide_out(player)
+
+
+@app.post("/duel/hide", response_model=RpsOut)
+def hide_play(body: HideIn, request: Request, player: Player = Depends(current_player)) -> RpsOut:
+    """One round. The Sym's guess is worked out from the earlier rounds alone, then both are stored together."""
+    rate_limit(request, "rps", 120)
+    guess, why = rps.find_guess([t.mine for t in db.throws_for(player.id, rps.CUPS)])
+    db.add_throw(player.id, body.cup, guess)
+    return hide_out(player, RpsRound(mine=body.cup, twin=guess, outcome=rps.found(body.cup, guess), why=why))
 
 
 @app.get("/rps", response_model=RpsOut)

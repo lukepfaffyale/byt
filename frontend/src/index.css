@@ -826,6 +826,7 @@ header nav:not(.seats) .link[aria-current='page']::after { content: ''; position
 .rps-round.you strong { color: var(--earned, var(--gold)); }
 .rps-side { display: grid; gap: 2px; justify-items: center; }
 .rps-side .rps-mark { width: 36px; height: 36px; }
+.rps-mark .hide-light { fill: var(--gold); stroke: none; }
 .rps-strip { display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0 0; }
 .rps-dot { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--hair); font-size: 0.6rem; color: var(--muted); }
 .rps-dot.you { border-color: var(--earned, var(--gold)); color: var(--earned, var(--gold)); }

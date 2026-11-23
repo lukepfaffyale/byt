@@ -56,7 +56,7 @@ which. The local file ships with made-up players only and is created on first st
 - Download: `GET /me/export` hands the player what they put in (taps as card id and option id, timings, what they
   told the Sym, their opt-in, their job reviews). It leaves out card wording, questions, skills, beliefs, Sym
   answers and reasons, and every certificate issued here. See "Intellectual property" below.
-- Delete: `DELETE /me` and a button on the Data tab. All fourteen tables are covered. Usage rows keep their token
+- Delete: `DELETE /me` and a button on the Data tab. Every table that holds a player's rows is covered. Usage rows keep their token
   counts with the player link removed. An agency the player opened is deleted with them; what its questions already
   paid other players stays with those players.
 - Notice before the first write (start screen, above the nickname field): "This game stores a nickname, the days you
@@ -70,7 +70,7 @@ which. The local file ships with made-up players only and is created on first st
   the rest of the crowd on a fresh copy is the made-up sample Syms, and the screen says how many.
 - An agency cannot type a question. It taps one of six fixed questions, a group and a price, so no free text from
   one user reaches another user or a model.
-- What a skill creator will see (seat not built): totals over 5 or more players, never one player.
+- What a skill creator sees (the Creator seat): totals over 5 or more players, never one player.
 - Credits are play money. No money moves, and the app says so.
 - Derived, never stored: the suggested letters and thinking styles, the sphere and its history, the money view. They
   are rebuilt from the stored rows each time, so deleting the rows deletes them.
@@ -131,13 +131,13 @@ Ticked when verified, with how. Unticked items wait for the hosted deployment.
 - [x] The database URL lives only on the Render web service; the front end holds no database key. (The front end's one setting is the back end's address.)
 - [x] No passwords exist; the player token is random, stored hashed, sent in a header, never in a URL. (Read `backend/db.py`, `frontend/src/api.ts`.)
 - [x] Model endpoints rate-limited, behind the safe agent harness, with a daily token budget that stops the model. (Read `backend/main.py`, `backend/agent.py`; tests cover the fallback.)
-- [x] No free text from a user reaches a model: nicknames and agency names are validated and never sent; questions are fixed lists. Model-written text passes the prompt guard. (Tests post typed questions and get 422.)
+- [x] One free-text channel reaches a model: the one line a player says to their own Sym (the Guide). It is capped at 200 characters and passes the prompt guard before the run, and the answer passes it after. Nicknames and agency names are validated and never sent; questions are fixed lists. (Tests: a line that tries to give orders never reaches the model; typed questions get 422.)
 - [x] The right answer of a skill card never leaves the server and never reaches a model. (The card shape sent to the browser has no such field; tests check it.)
 - [x] Every query is scoped to the player resolved from the token. (Read `backend/db.py`: every function filters on the player id; a test checks a second player sees none of the first player's money.)
 - [x] Dependencies pinned; no raw SQL, no eval, no shell with user input. (Read `requirements.txt` and the back end.)
 - [x] No PII in the audit trail, URLs or errors; the trail carries a random run id, never a player id or nickname. (Read `output/audit_trail.json`.)
 - [x] No text is rendered as raw HTML. (Searched the front end for raw HTML rendering: none.)
-- [ ] Pre-push scan for secrets, PII strings, marker strings and em dashes (the repo does not exist yet)
+- [x] Pre-push scan for secrets, PII strings, marker strings and em dashes (run before each push on 2026-11-22 and 2026-11-23 with `tools/secrets/secret_rule_scan.py` and a Python scan; names and counts only)
 
 ## Third-party code looked at
 
@@ -873,7 +873,7 @@ The agents were built to call the model through the Portkey gateway with the cou
 Nine reviews were run as AI test passes by the engineer (game design, finance, strategy, data science, analysis, writing, psychology, marketing, and a second finance and strategy pass on value). They are not outside players and the report says so. What changed because of them:
 
 - **Evidence stated as it is.** The headline "74 percent against 39" came mostly from scripted test accounts that pick by a fixed list. The report and the slides now show scripted and hand-played accounts apart: on accounts played by hand, the Sym tied the crowd's guess. The four-method test is in the repository (`backend/experiments/cost_experiment.py`, output in `output/cost_experiment.json`).
-- **Money stated as it is.** Answers from BOT Syms are paid to a game wallet, not to people; asking a group again costs more; the cost for each player counts the Profiler. "Passive income" stays as the owner's phrase, shown as potential with play money, with a ladder of how a Sym earns more as it is used and every dollar figure marked as an estimate.
+- **Money stated as it is.** Answers from BOT Syms are paid to a game wallet, not to people; asking a group again costs more; the cost for each player counts the Profiler. Until 2026-11-23 the write-ups said "passive income"; the owner dropped the phrase that day, because income here comes from taking part. Earning is shown as potential with play money, with a ladder of how a Sym earns more as it is used and every dollar figure marked as an estimate.
 - **Consent is asked where it becomes true.** After 8 picks a Sym can be asked, so the first gate ends by asking "May I earn?" with four plain facts beside the button. It is one tap, off by default, and can be turned off on My Work.
 - **A mirror, not a test.** A type letter now needs 6 picks with 5 on one side. The "Brain" tab is "Areas" and shows counts. Lines that judged the person were reworded. Fifteen cards were reworded or retagged (see docs/data/CHANGELOG.md).
 - **Calibration in about a minute.** A new third gate of three reaction rings joins the first two gates as a three-part calibration. Reaction time is shown as the person's own time "on this device", against no one, and earns no credits. There is no timer on taste picks.

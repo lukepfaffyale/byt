@@ -18,7 +18,7 @@ import { Tabs } from './Deck'
 import { CommonsView } from './Commons'
 import { Mine } from './Mine'
 import { MoneyView, type MoneyCue } from './MoneyView'
-import { Rps } from './Rps'
+import { Arena } from './Arena'
 import { Start } from './Start'
 import { TwinForm } from './TwinForm'
 import { Work } from './Work'
@@ -856,7 +856,7 @@ export default function App() {
 
       {screen.name === 'money' && <MoneyView onChange={() => { refresh(); syncPurses() }} onMove={go} onCue={setMoneyCue} />}
 
-      {screen.name === 'arena' && <Rps announce={setLive} />}
+      {screen.name === 'arena' && <Arena announce={setLive} />}
 
       {screen.name === 'mine' && (
         <Mine
@@ -896,8 +896,8 @@ export default function App() {
             BYT began as a class project. You play short gates. Your taps build a Sym, and the Sym belongs to you.
             Your Sym tries to guess your picks, and a Sym that guesses well enough earns a certificate from plain
             code. Then it can answer agencies and do jobs while you rest. Creators build the steps that help it
-            grow. Our mission: to help people earn passive income while building the platform and the connections
-            that AGI will need from people. Today we show that potential with play money.
+            grow. Our mission: to help people earn by taking part, even while they rest, and to build the platform
+            that keeps people in the work as AI learns it. Today we show that potential with play money.
           </p>
           <p>
             We made every drawing and every brand in this game for this project. Nothing here is official, licensed

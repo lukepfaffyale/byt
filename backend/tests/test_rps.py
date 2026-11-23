@@ -1,5 +1,13 @@
 """Rock, paper, scissors against the Sym, the league of Syms, and the dot pattern gates. All plain code."""
 import rps
+
+
+def test_hide_the_light_guess_is_plain_and_checkable():
+    assert rps.find_guess([]) == ("b", "I have not seen you hide it yet, so I guessed.")
+    guess, why = rps.find_guess(["a", "a", "a"])  # after left then left came left: the Sym looks left
+    assert guess == "a" and "left cup" in why
+    assert rps.found("a", "a") == "twin" and rps.found("a", "c") == "you"
+    assert rps.tells(["a", "c", "a", "c", "a", "c", "a"], rps.CUPS)[0][:2] in (("a", "c"), ("c", "a"))
 from content import CARDS, GATE_BY_ID, GATES, pattern_cells
 
 from tests.conftest import signup
@@ -162,3 +170,13 @@ def test_reaction_drills_load_as_a_pack_and_a_missed_gate_can_be_tried_again_aft
         last = client.post("/responses", headers=auth, json={"card_id": c["id"], "choice": sorted(CARDS[c["id"]].winning)[0], "response_ms": 800}).json()
     assert last["cert"]["kind"] == "skill"
     assert client.post("/gates/strategy-easy/retry", headers=auth).status_code == 409  # an earned certificate is never retried
+
+
+def test_hide_the_light_rounds_are_stored_apart_from_rock_paper_scissors(client, auth):
+    assert client.get("/duel/hide", headers=auth).json()["rounds"] == 0
+    assert client.post("/duel/hide", headers=auth, json={"cup": "x"}).status_code == 422
+    for _ in range(4):
+        out = client.post("/duel/hide", headers=auth, json={"cup": "a"}).json()
+    # the person always hides it on the left: by now the Sym looks there and finds it
+    assert out["rounds"] == 4 and out["round"]["twin"] == "a" and out["round"]["outcome"] == "twin" and out["draws"] == 0
+    assert client.get("/rps", headers=auth).json()["rounds"] == 0  # the first duel does not see these rows

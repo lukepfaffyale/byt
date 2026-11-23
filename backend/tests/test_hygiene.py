@@ -41,3 +41,16 @@ def test_strip_em_dashes_rewrites_cleanly():
     assert strip_em_dashes(f"Great pick {EM} it is $68.") == "Great pick, it is $68."
     assert strip_em_dashes("Plain text with a hyphen-word stays.") == "Plain text with a hyphen-word stays."
     assert EM not in strip_em_dashes(f"a {EM} b {EM} c")
+
+
+def test_a_typed_forwarded_address_does_not_step_round_the_limit(client, monkeypatch):
+    """A caller can type any forwarded address, so each route also has one limit for all callers together."""
+    import main
+
+    monkeypatch.setattr(main, "ALL_TIMES", 1)
+    body = {"consent": True, "adult": True}
+    for i in range(10):  # ten sign-ups, each claiming to come from a new address
+        r = client.post("/players", json={**body, "nickname": f"Limit{i}"}, headers={"x-forwarded-for": f"10.0.0.{i}"})
+        assert r.status_code == 201
+    late = client.post("/players", json={**body, "nickname": "Limit99"}, headers={"x-forwarded-for": "10.0.0.99"})
+    assert late.status_code == 429

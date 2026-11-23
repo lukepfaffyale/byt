@@ -50,10 +50,40 @@ def outcome(mine: str, twin: str) -> str:
     return "you" if BEATS[mine] == twin else "twin"
 
 
-def tells(history: list[str]) -> list[tuple[str, str, int, int]]:
+# ---------- a second duel on the same rows: hide the light ----------
+# The person hides a light under one of three cups. The Sym sealed its guess first. It uses the same plain rule as
+# above (what followed the last two picks, then the last one, then the pick used most), and it wins by matching.
+CUPS = ("a", "b", "c")
+CUP = {"a": "the left cup", "b": "the middle cup", "c": "the right cup"}
+
+
+def find_guess(history: list[str]) -> tuple[str, str]:
+    """Where the Sym looks, and why, in words the person can check against their own play."""
+    for depth in (2, 1):
+        if len(history) <= depth:
+            continue
+        last = history[-depth:]
+        after = Counter(history[i + depth] for i in range(len(history) - depth) if history[i:i + depth] == last)
+        seen = sum(after.values())
+        if seen >= MIN_SEEN:
+            top, n = after.most_common(1)[0]
+            said = " then ".join(CUP[t] for t in last)
+            return top, f"After {said}, you hid it in {CUP[top]} {n} of {seen} times. So I looked there."
+    if history:
+        top, n = Counter(history).most_common(1)[0]
+        return top, f"You hide it in {CUP[top]} most: {n} of {len(history)} times. So I looked there."
+    return "b", "I have not seen you hide it yet, so I guessed."
+
+
+def found(mine: str, twin: str) -> str:
+    """Who took the round: the Sym when it looked where the light was, the person when it did not."""
+    return "twin" if mine == twin else "you"
+
+
+def tells(history: list[str], symbols: tuple[str, ...] = THROWS) -> list[tuple[str, str, int, int]]:
     """The habits the Sym leans on most: (after this throw, you throw this, how often, out of how many)."""
     out = []
-    for prev in THROWS:
+    for prev in symbols:
         after = Counter(history[i + 1] for i in range(len(history) - 1) if history[i] == prev)
         seen = sum(after.values())
         if seen >= 3:

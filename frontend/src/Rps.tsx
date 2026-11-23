@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { api, type RpsOut } from './api'
 import { Tabs } from './Deck'
 import { More } from './More'
@@ -25,7 +25,7 @@ function Mark({ t }: { t: string }) {
  * and both are shown, with the habit it used. After enough rounds my twin plays every other twin, each one
  * throwing the way its owner throws.
  */
-export function Rps({ announce }: { announce: (text: string) => void }) {
+export function Rps({ announce, games }: { announce: (text: string) => void; games?: ReactNode }) {
   const [state, setState] = useState<RpsOut | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -71,6 +71,7 @@ export function Rps({ announce }: { announce: (text: string) => void }) {
   return (
     <section aria-labelledby="rps-h" className="mine rps">
       <h1 id="rps-h" className="sr-only">Rock, paper, scissors against my Sym</h1>
+      {games}
       <div className="twin-line">
         <span className="line-top">My Sym</span>
         <p>

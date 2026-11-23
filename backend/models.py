@@ -906,6 +906,10 @@ class RpsIn(Strict):
     throw: Literal["r", "p", "s"]
 
 
+class HideIn(Strict):
+    cup: Literal["a", "b", "c"]  # where the person hid the light: left, middle or right
+
+
 class RpsRound(Strict):
     mine: str
     twin: str

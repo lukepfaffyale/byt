@@ -65,7 +65,10 @@ _agents: dict[str, Agent[TwinDeps, Any]] = {}
 
 
 def daily_token_budget() -> int:
-    return int(os.environ.get("DAILY_TOKEN_BUDGET") or 2_000_000)
+    # 400,000 tokens in a rolling day is about 4 to 20 cents at the course prices: room for several full visits, and a
+    # small bill for whoever owns the key if a stranger leans on the public link. (It was 2,000,000 until 2026-11-23.)
+    # When it is spent the practice Sym answers, with no model. Set DAILY_TOKEN_BUDGET to change it.
+    return int(os.environ.get("DAILY_TOKEN_BUDGET") or 400_000)
 
 
 def get_model_name() -> str:

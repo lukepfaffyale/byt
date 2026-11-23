@@ -181,3 +181,25 @@ for one part of the long-term vision: a stored self that others may still speak 
 inspiration only. No name, character, term, image, design or text from it is used, and BYT's own idea differs in what
 matters most: a Sym is a record of choices a person gave by playing, kept and shared only with that person's yes.
 The work belongs to its owners, and nothing here is official, licensed or for sale.
+
+## Mood for two-player duels (added 2026-11-23)
+
+The student shared a short list from a web search of well-known two-player games, video and tabletop, as the mood
+to aim at for duels between a person and their Sym: some where two players work together, some head to head, some
+built on collecting sets or placing tiles. It is inspiration only. No game on that list is named in the game, the
+report or the deck, and no name, rule set, character, art or level from any of them is used. BYT's two duels (rock,
+paper, scissors, which is a folk game, and Hide the light, which is a plain guess-the-cup game) were written here.
+The listed games belong to their owners, and nothing here is official, licensed or for sale.
+
+## Closest prior work named in the report (added 2026-11-23)
+
+Read as web search summaries on 2026-11-23, not as full pages, and the report says so.
+
+- Vana: a network where people pool their own data and are paid when it is used. Coverage read: eWeek, "Get Paid to
+  Share Your Data to Build AI, Thanks to This MIT Project", https://eweek.com/news/vana-platform-ai-model-system
+- Delphi: a product that builds a talking copy of a person (it says "digital mind") from their writing and recordings.
+  Coverage read: VentureBeat, "You can now make an AI clone of yourself, or anyone else, living or dead, with Delphi",
+  https://venturebeat.com/ai/you-can-now-make-an-ai-clone-of-yourself-or-anyone-else-living-or-dead-with-delphi
+- Park, J. S., and others (2024). "Generative Agent Simulations of 1,000 People." arXiv:2411.10109,
+  https://arxiv.org/abs/2411.10109 . Agents built from two-hour interviews with 1,052 people matched their General
+  Social Survey answers 85 percent as well as the people matched themselves two weeks later.

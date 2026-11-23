@@ -475,9 +475,10 @@ def remove_fact(player_id: str, fact_id: str) -> None:
             s.commit()
 
 
-def throws_for(player_id: str) -> list[Throw]:
+def throws_for(player_id: str, symbols: tuple[str, ...] = ("r", "p", "s")) -> list[Throw]:
+    """One person's rounds of one duel, oldest first. Each duel has its own letters, so the rows never mix."""
     with Session(get_engine()) as s:
-        return list(s.exec(select(Throw).where(Throw.player_id == player_id).order_by(Throw.created_at)))
+        return list(s.exec(select(Throw).where(Throw.player_id == player_id, Throw.mine.in_(symbols)).order_by(Throw.created_at)))
 
 
 def add_throw(player_id: str, mine: str, twin: str) -> None:
@@ -490,7 +491,7 @@ def throw_histories(least: int) -> dict[str, list[str]]:
     """Every player with enough throws for the league, as the list of what they threw, oldest first."""
     with Session(get_engine()) as s:
         out: dict[str, list[str]] = {}
-        for t in s.exec(select(Throw).order_by(Throw.created_at)).all():
+        for t in s.exec(select(Throw).where(Throw.mine.in_(("r", "p", "s"))).order_by(Throw.created_at)).all():
             out.setdefault(t.player_id, []).append(t.mine)
         return {pid: thrown for pid, thrown in out.items() if len(thrown) >= least}
 

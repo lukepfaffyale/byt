@@ -46,10 +46,12 @@ Written 2026-11-14, before any screen. A tap-only game on a phone still has to w
 
 ## Checklist (ticked when verified, with how)
 
+Status on 2026-11-23. Checked: the page has `lang="en"` and a descriptive title (read in `frontend/index.html`); 13 menu screens of the three seats were measured by script at 16 phone sizes from 344 to 448 wide, with no sideways scroll from 620 high; the Motion switch turns the moving scenes off. Not done yet, and the report says so: a keyboard-only pass, a screen reader pass with NVDA, measured contrast for every pair, and 320px. The boxes below stay unticked until each is checked.
+
 ### Structure
 - [ ] One `h1` per screen, headings in order; `header`, `main`, `nav`, `footer` landmarks
 - [ ] Buttons are `<button>`, links are `<a>`
-- [ ] Descriptive `<title>`, `lang="en"`
+- [x] Descriptive `<title>`, `lang="en"` (read in `frontend/index.html`, 2026-11-23)
 
 ### Keyboard
 - [ ] Every gate playable start to finish by keyboard
