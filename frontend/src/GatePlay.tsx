@@ -175,7 +175,10 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
       if (cancelled) return
       setPool({ on: j.data_income, answers: j.data_answers, credits: j.data_credits })
       setJob(j.jobs.find((x) => x.state === 'open')?.pay ?? null)
-    }).catch(() => undefined)
+    }).catch(() => {
+      // the count could not be read: the gate still ends with its Next button, and the question waits for next time
+      if (!cancelled) { setEarnAsked(true); setPool({ on: false, answers: 0, credits: 0 }) }
+    })
     api.commons().then((c) => { if (!cancelled) setWorld({ agencies: c.agencies, bots: c.bot_agencies, syms: c.people + c.bots, botSyms: c.bots }) }).catch(() => undefined)
     if (gateId === CLOSE) api.code().then((c) => { if (!cancelled) setBlocks(c.total) }).catch(() => undefined)
     return () => { cancelled = true }
@@ -464,12 +467,14 @@ export function GatePlay({ gateId, gateKind, announce, onProgress, onExit, onWor
             {[pace, quick, light].filter(Boolean).map((line) => <span key={line}>{line}</span>)}
           </p>
         )}
-        <SymCue calm={still()} formed={1} go={earnAsk ? 'Let my Sym earn' : toJob ? 'See the job' : onwardGo} act={earnAsk ? letEarn : toJob ? toWork : onward}
+        {/* until the game knows whether earning is on, there is no button: the one question must not be skipped by a fast tap */}
+        <SymCue calm={still()} formed={1} go={pool === null ? undefined : earnAsk ? 'Let my Sym earn' : toJob ? 'See the job' : onwardGo} act={earnAsk ? letEarn : toJob ? toWork : onward}
           alt={earnAsk ? 'Not now' : toJob && nextUp && onNext ? onwardGo : undefined} altAct={earnAsk ? notNow : toJob && nextUp && onNext ? onward : undefined}
           say={justOn && !close ? `I am in. ${world ? `${world.agencies} agencies` : 'Agencies'} can ask me now.`
             : earnAsk && close ? 'I am ready. May I earn while you rest?'
             : earnAsk ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}. Agencies can ask me now. May I earn?`
             : close ? `Now I can work while you rest.${job !== null ? ` A job pays ${job}.` : ''}`
+              : pool === null ? `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'}, ${gate.total} ${gate.total === 1 ? 'block' : 'blocks'}.`
               : `${pool?.on && askedNow > 0 ? `While you played, I was asked ${askedNow} ${askedNow === 1 ? 'time' : 'times'}. +${credits(gainedNow)} credits.`
                 : pool?.on ? `${gate.total} more ${gate.total === 1 ? 'block' : 'blocks'}. I can be asked now.`
                   : `${gate.total} ${gate.total === 1 ? 'tap' : 'taps'} kept. ${gate.total} more ${gate.total === 1 ? 'block' : 'blocks'}.`}${bonus + sponsored > 0 ? ` We earned ${credits(bonus + sponsored)} credits.` : ''}`} />

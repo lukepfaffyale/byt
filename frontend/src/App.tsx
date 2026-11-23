@@ -804,7 +804,14 @@ export default function App() {
             setScreen({ name: 'commons', first: 'mine' })
             refresh()
           }}
-          nextUp={next && next.id !== screen.gateId ? { id: next.id, title: next.title } : undefined}
+          nextUp={(() => {
+            // the gate that follows this one. It is worked out from the order of the gates, not from what the
+            // server has said so far, so the Next button is right the moment a gate ends, even on a slow line.
+            const here = gates.findIndex((g) => g.id === screen.gateId)
+            const after = here >= 0 ? gates.slice(here + 1).find((g) => g.done < g.total) : undefined
+            const to = after ?? (next && next.id !== screen.gateId ? next : undefined)
+            return to ? { id: to.id, title: to.title } : undefined
+          })()}
           onNext={(gateId) => {
             setScreen({ name: 'gate', gateId })
             refresh()

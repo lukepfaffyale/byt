@@ -326,12 +326,18 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (memoryToken) headers['Authorization'] = `Bearer ${memoryToken}`
-  let res: Response
-  try {
-    res = await fetch(BASE + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
-  } catch {
-    throw new ApiError(0, 'The game cannot reach its server. Please check that the server is running.')
+  let res: Response | null = null
+  // A read is safe to ask again. When the server is briefly away (it restarts for a moment when a new version goes
+  // live), a read waits and tries twice more before the game says it cannot reach the server. A write is sent once.
+  const tries = method === 'GET' ? 3 : 1
+  for (let n = 0; n < tries && res === null; n++) {
+    try {
+      res = await fetch(BASE + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
+    } catch {
+      if (n + 1 < tries) await new Promise((r) => setTimeout(r, 900 * (n + 1)))
+    }
   }
+  if (res === null) throw new ApiError(0, 'The game cannot reach its server. Please check that the server is running.')
   if (!res.ok) {
     let message = 'There was a problem. Please try again.'
     try {
