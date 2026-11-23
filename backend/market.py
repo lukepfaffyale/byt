@@ -182,6 +182,9 @@ def load_questions(path: Path = QUESTIONS_PATH) -> list[Question]:
 
 QUESTIONS = load_questions()
 QUESTION_BY_ID = {q.id: q for q in QUESTIONS}
+# two or three plain words for what each fixed question is about, for the lines on the Everyone screen
+QUESTION_TOPIC = {"q-launch": "new products", "q-price": "prices", "q-message": "messages", "q-loyalty": "coming back",
+                  "q-role": "new jobs", "q-learn": "learning"}
 
 
 @dataclass(frozen=True)

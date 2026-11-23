@@ -9,8 +9,8 @@ The register of agents and every rule number below also live in `backend/data/on
 
 | Piece | In BYT |
 |---|---|
-| **Tools** | Three typed, read-only tools in `backend/tools.py`, one for each agent. `get_picks` (Profiler): the player's visible picks, reviewed job answers and a count for each trait. `get_brief` (Sym): the beliefs and the cards to guess. `get_job` (Worker): the beliefs and one question with its options. Each returns `{ok: false, error}` when there is nothing to return. The player id stays in `deps`; no tool result carries a nickname, a token or an id. No tool writes. |
-| **Memory** | The database is the durable state: the Profiler's beliefs are stored as `tendencies`, and the Sym and the Worker read them. `TwinDeps` carries the player id, the battle card ids and the job id for one run. There is no chat, so there is no message history. |
+| **Tools** | Four typed, read-only tools in `backend/tools.py`, one for each agent. `get_picks` (Profiler): the player's visible picks, reviewed job answers and a count for each trait. `get_brief` (Sym): the beliefs and the cards to guess. `get_job` (Worker): the beliefs and one question with its options. `get_situation` (Guide): the parts of the player's own state that code chose for this one line. Each returns `{ok: false, error}` when there is nothing to return. The player id stays in `deps`; no tool result carries a nickname, a token or an id. No tool writes. |
+| **Memory** | The database is the durable state: the Profiler's beliefs are stored as `tendencies`, and the Sym and the Worker read them. `TwinDeps` carries the player id, the battle card ids and the job id for one run. There is no message history: the Guide answers one line at a time, and the only thing kept from a talk is a fact the player said yes to keeping. |
 | **Stopping rules** | A finish instruction in the prompts ("call the one tool once, give the answer, stop") and `UsageLimits(request_limit=4, tool_calls_limit=3)` in code. A normal run is 2 requests and 1 tool call. A daily token budget (`DAILY_TOKEN_BUDGET`, default 2,000,000 tokens in 24 hours) is checked before every run. |
 | **Guardrails** | Model allow-list of one name. Identity never reaches a model. Held-out battle picks and other players never reach a model. The short facts a player told the Sym and chose to keep do reach the Profiler and the Twin, after the prompt guard and with no name (corrected 2026-11-22: an earlier line said they did not). The Sym and the Worker see options without trait tags. Every guess and every job answer is validated against the real options; anything else becomes "I do not know". Text a model wrote passes the prompt guard, the em dash strip and a length cap before another agent or a person reads it. No model can issue a certificate, set a payment or shape what an agency sees. |
 | **Audit trail** | `backend/output/audit.jsonl`: one record for each graph node, local, gitignored. `output/audit_trail.json`: committed, append-only, one compact record for each turn, tool call, tool result, retry and stop. The committed trail holds names, sizes, token counts and stop reasons only: no player text, no nickname, no id. Token usage for each run goes to the `usage` table, and the player sees their own on My Money. |
@@ -22,6 +22,7 @@ The register of agents and every rule number below also live in `backend/data/on
 | Profiler | Player | Writes short beliefs from the player's picks | `get_picks` | Identity, held-out picks, self report, other players | Up to 8 beliefs with pick counts | Prompt guard, length cap, stored by code, shown to the player |
 | Twin (the Sym's guessing part) | Player | Guesses picks on cards the player has not seen | `get_brief` | Identity, raw picks, right answers, other players | One guess for each card, or none | Each guess must be a real option; scored by code against the real picks |
 | Worker | Player | Answers one job question as the player, with a one-line reason | `get_job` | Identity, the requester's name, other players | One option or none, and one sentence | Option must exist; reason guarded; then the player approves or corrects |
+| Guide | Player | Answers one line the player says and offers one move | `get_situation` | Identity, the player's earlier lines (only facts kept on a yes), other players | One or two sentences, one move, and at most one fact to offer | Line guarded before the run and the answer after; the move must be on a list code gave; a fact is kept only on the player's yes |
 
 Planned, not built: a Coach (player: what to play next and why); the agency's own Sym (the Analyst: a plain reading
 of the totals and whom to ask next); the creator's own Sym (the Scout: where skills are thin and what to make). Each
@@ -65,7 +66,7 @@ A test fails if a model library is imported into `verifier.py`, `work.py`, `mark
 | Beliefs (My Sym, Beliefs tab) | Prompt guard, em dash strip, 200 characters, plain-words rule in the prompt |
 | A job reason (My Work) | The same, and the player approves or corrects the answer before it counts |
 
-There is no free-text channel from any user to a model in this build.
+There is one free-text channel from a user to a model in this build: the one line a player says to their Sym (the Guide). It is length-capped and passes the prompt guard before the run, and the answer passes it after.
 
 ### 0.6 Human in the loop
 
@@ -116,7 +117,9 @@ There is no free-text channel from any user to a model in this build.
   The Sym and the Worker each read what the Profiler wrote. They do not call each other; the harness runs them and
   the database carries the hand-off. Depth is 1 and there are no cycles.
 - What one agent wrote is data to the next, guarded as in 0.5.
-- All three serve the player. Nothing an agent produces crosses to an agency or a creator except as totals built by
+- The Guide's voice is picked by plain code (`voice_for` in `main.py`) from the player's own taps: plain while the Sym is new (under 14 taps), then the thinking style the person leans to most. It reaches the Guide as one line of tone in the tool result. It cannot change a fact, a number or a rule.
+- The job and talk screens show what each AI answer cost (`cost_usd` on the response, from the run's own usage).
+- All four serve the player. Nothing an agent produces crosses to an agency or a creator except as totals built by
   code.
 - Planned, not built: a Sym working several jobs at once through copies of itself. Each copy would be one
   harnessed run with its own run id and the same limits; copies would not make copies; all copies would share one

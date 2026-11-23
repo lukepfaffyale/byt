@@ -1327,6 +1327,12 @@ def world() -> dict:
 def commons(player_id: str, most: int = 8) -> dict:
     """Who is here and what is known together, for the first screen a player sees. Counts, plus the newest
     happenings as (time, who, words, whether the reader did it). No name, answer or id leaves this function."""
+    from market import QUESTION_TOPIC  # plain words for each fixed question; market does not import this module
+
+    def about(question_id: str) -> str:
+        topic = QUESTION_TOPIC.get(question_id)
+        return f"about {topic}" if topic else "a question"
+
     with Session(get_engine()) as s:
         def count(table, *where) -> int:
             return int(s.exec(select(func.count()).select_from(table).where(*where)).one())
@@ -1365,26 +1371,54 @@ def commons(player_id: str, most: int = 8) -> dict:
         for c in newest(Campaign, Campaign.created_at):
             n = c.twins  # every Sym asked; the BOT Syms are part of this count
             who = "A BOT agency" if orgs.get(c.org_id, ("", ""))[1] in bots else "An agency"
-            seen.append((c.created_at, "agency", f"{who} asked {n} Syms a question.", orgs.get(c.org_id, ("", ""))[1] == player_id))
+            seen.append((c.created_at, "agency", f"{who} asked {n} Syms {about(c.question_id)}. Cost: {c.spent} credits.", orgs.get(c.org_id, ("", ""))[1] == player_id))
         for b in newest(Brief, Brief.created_at, Brief.kind.in_(("survey", "test"))):
             n = b.twins
             who = "A BOT creator" if orgs.get(b.org_id, ("", ""))[1] in bots else "A creator"
-            seen.append((b.created_at, "creator", f"{who} asked {n} Syms a question.", orgs.get(b.org_id, ("", ""))[1] == player_id))
+            seen.append((b.created_at, "creator", f"{who} asked {n} Syms {about(b.topic)}.", orgs.get(b.org_id, ("", ""))[1] == player_id))
         for m in newest(MadeStep, MadeStep.created_at):
-            seen.append((m.created_at, "creator", "A creator built a new skill step.", orgs.get(m.org_id, ("", ""))[1] == player_id))
+            who = "A BOT creator" if orgs.get(m.org_id, ("", ""))[1] in bots else "A creator"
+            seen.append((m.created_at, "creator", f"{who} built a new skill step.", orgs.get(m.org_id, ("", ""))[1] == player_id))
         for j in newest(Posting, Posting.created_at):
-            seen.append((j.created_at, "agency", "An agency posted a job for Syms.", orgs.get(j.org_id, ("", ""))[1] == player_id))
+            who = "A BOT agency" if orgs.get(j.org_id, ("", ""))[1] in bots else "An agency"
+            seen.append((j.created_at, "agency", f"{who} posted a job {about(j.question_id)}. It pays {j.pay} credits.", orgs.get(j.org_id, ("", ""))[1] == player_id))
         # the newest play by a BOT Sym, once for each bot, said as what it is
         played: set[str] = set()
+        number = {pid: int(h[len(SAMPLE_PREFIX):]) for h, pid in
+                  s.exec(select(Player.token_hash, Player.id).where(Player.token_hash.startswith(SAMPLE_PREFIX))).all()}
         for r in newest(Response, Response.created_at, Response.player_id.in_(bots)):
             if r.player_id not in played and len(played) < 2:
                 played.add(r.player_id)
-                seen.append((r.created_at, "sym", "A BOT Sym played a few cards.", False))
+                # the time of day where this BOT Sym is named for, when it played (never the place: a line names no one)
+                hour = (r.created_at.hour + CLOCK.get(COUNTRIES[number[r.player_id] - 1], 0)) % 24
+                part = "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
+                seen.append((r.created_at, "sym", f"A BOT Sym played a few cards. It was {part} there.", False))
         seen.sort(key=lambda row: row[0], reverse=True)
+        # the same line many times is one line with a count, so the short list shows more kinds of things
+        folded: list[tuple[datetime, str, str, bool]] = []
+        times: dict[tuple[str, bool], int] = {}
+        for row in seen:
+            key = (row[2], row[3])
+            times[key] = times.get(key, 0) + 1
+            if times[key] == 1:
+                folded.append(row)
+        seen = [(at, who, words if times[(words, mine)] == 1 else f"{words} ({times[(words, mine)]} times)", mine) for at, who, words, mine in folded]
+        # one kind of happening must not fill the whole list: the newest line of each kind is kept first, and the
+        # places left go to the newest of the rest. The list is still shown newest first.
+        def kind_of(words: str) -> str:
+            return "".join(ch for ch in words.split(" about ")[0].split(". ")[0] if not ch.isdigit())
+
+        first: dict[str, tuple[datetime, str, str, bool]] = {}
+        for row in seen:
+            first.setdefault(kind_of(row[2]), row)
+        lead = sorted(first.values(), key=lambda row: row[0], reverse=True)[:most]
+        rest = [row for row in seen if row not in lead][: most - len(lead)]
+        seen = sorted(lead + rest, key=lambda row: row[0], reverse=True)
         known = tally["taps"] + tally["checks"] + tally["told"] + tally["lessons"]
         mine = tally["taps_mine"] + tally["checks_mine"] + tally["told_mine"] + tally["lessons_mine"]
         return {
             "people": people, "stand_ins": len(stand), "bots": len(bots),
+            "bots_awake": sum(1 for i in number.values() if bot_awake(i)),
             "bot_agencies": sum(1 for kind, owner in orgs.values() if kind == "agency" and owner in bots),
             "bot_creators": sum(1 for kind, owner in orgs.values() if kind == "creator" and owner in bots),
             "people_today": count(ActiveDay, ActiveDay.day == today, real(ActiveDay.player_id)),

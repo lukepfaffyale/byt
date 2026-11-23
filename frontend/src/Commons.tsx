@@ -35,7 +35,7 @@ export function CommonsView(props: { next?: { id: string; title: string; done: n
   if (!data) return <p className="muted" aria-live="polite">Finding everyone.</p>
 
   const fresh = data.happenings.filter((h) => h.when === 'now' || h.when === 'today').length
-  const said = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here. ${data.bots} BOT Syms, one for each country, play here too. They are made up, not people, and they keep the game moving while it is small. ${data.people_today} played today.`
+  const said = `${data.people} ${data.people === 1 ? 'person is' : 'people are'} here. ${data.bots} BOT Syms, one for each country, play here too. They are made up, not people, and they keep the game moving while it is small.${data.bots_awake ? ` ${data.bots_awake} are awake now.` : ''} ${data.people_today} played today.`
   // what the Sym asks for next: one line and one tap. Counting only, no model.
   const play = () => (next ? onPlay(next.id) : onJourney())
   const first = plan.find((o) => !next || o.id !== `gate:${next.id}`)

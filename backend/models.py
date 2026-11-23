@@ -782,6 +782,7 @@ class JobOut(Strict):
     state: Literal["locked", "open", "review", "done"]
     options: list[OptionOut] = []  # sent once the twin has answered, so the human can correct it
     twin_kind: str | None = None
+    cost_usd: float = 0.0  # what this AI run cost in real dollars; sent once, right after the run, and 0 otherwise
     answer: str | None = None  # option id
     reason: str = ""
     verdict: str | None = None
@@ -1186,6 +1187,8 @@ class AskOut(Strict):
     """The Sym's answer to one line from its human. The line itself is not stored."""
     say: str
     twin_kind: Literal["model", "offline"]
+    cost_usd: float = 0.0  # what this AI answer cost in real dollars (0 for the practice Sym)
+    voice: str = ""  # the name of the voice this Sym spoke in, picked by code from its person's taps
     move: MoveOut | None = None
     learn: CardOut | None = None  # one card the twin asks its human now; the tap is saved like any other pick
     offer: "FactOut | None" = None  # a short fact the twin asks to keep. Nothing is stored unless the human taps yes
@@ -1429,6 +1432,7 @@ class Commons(Strict):
     people_today: int  # of those, how many played today
     stand_ins: int  # BOT Syms and Syms left behind
     bots: int = 0  # BOT Syms: made up, one for each country, run by plain code
+    bots_awake: int = 0  # of those, how many are in their day (7:00 to 23:00 where each is named for)
     bot_agencies: int = 0  # of the agencies, how many are run by a BOT
     bot_creators: int = 0  # of the creators, how many are run by a BOT
     agencies: int

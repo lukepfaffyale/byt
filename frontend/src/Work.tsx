@@ -153,7 +153,7 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
               <span className="line-top">Your Sym answered for you</span>
               <strong>{answer.label}</strong>
               {job.reason && <span className="muted">"{job.reason}"</span>}
-              <span className="fine">{job.twin_kind === 'model' ? 'The AI Sym' : 'The practice Sym (it does not use AI)'}</span>
+              <span className="fine">{job.twin_kind === 'model' ? `The AI Sym${job.cost_usd ? ` · this answer cost $${job.cost_usd.toFixed(4)} in real AI use` : ''}` : 'The practice Sym (it does not use AI)'}</span>
             </div>
             <button className="primary big" disabled={busy} onClick={() => review(job, 'approved', null)}>Yes, that is right</button>
             <button className="link" disabled={busy} onClick={() => setStage({ name: 'review', job, correcting: true })}>
@@ -285,6 +285,12 @@ export function Work({ announce, onChange, onReward }: { announce: (text: string
       )}
       {tab === 'away' && (
         <>
+      {data.answers > 0 && (
+        <p className="job-group">
+          A note from your Sym: so far I answered {data.answers} {data.answers === 1 ? 'question' : 'questions'} for you
+          and earned {data.credits} credits{auto.earned > 0 ? `, plus ${auto.earned} from jobs I took by myself` : ''}.
+        </p>
+      )}
       <ul className="lines">
         <li>
           <span className="line-top">Earn while you are away · {data.credits} credits from {data.answers} {data.answers === 1 ? 'question' : 'questions'}</span>

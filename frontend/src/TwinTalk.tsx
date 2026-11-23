@@ -163,7 +163,7 @@ export function TwinTalk(props: { where?: string; onMove: (id: string) => void; 
             )}
             {!fresh && (
               <div className="talk-reply" aria-live="polite">
-                <span className="line-top">My Sym{reply?.twin_kind === 'offline' ? ' · practice Sym, no AI' : ''}</span>
+                <span className="line-top">My Sym{reply?.twin_kind === 'offline' ? ' · practice Sym, no AI' : `${reply?.voice ? ` · ${reply.voice}` : ''}${reply?.cost_usd ? ` · cost $${reply.cost_usd.toFixed(4)}` : ''}`}</span>
                 {busy && !reply && <p className="talk-say muted">I am thinking.</p>}
                 {error && <p className="talk-say" role="alert">{error}</p>}
                 {reply && <p className="talk-say">{reply.say}</p>}

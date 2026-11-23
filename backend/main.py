@@ -1267,10 +1267,14 @@ async def run_job(job_id: str, request: Request, player: Player = Depends(curren
             raise HTTPException(403, "Your own Sym cannot take a job you posted.")
         if posted.closed or db.seats_taken(job.id) >= posted.seats:
             raise HTTPException(409, "This job is full.")
+    cost = 0.0
     if row is None:
         twin_kind, answer, reason = await agents.do_job(player.id, job)
+        cost = agents.last_cost(player.id, "worker") if twin_kind == "model" else 0.0
         row = db.start_work(player.id, job.id, twin_kind, answer, reason)
-    return job_out(job, row, cleared)
+    out = job_out(job, row, cleared)
+    out.cost_usd = round(cost, 6)
+    return out
 
 
 @app.post("/jobs/{job_id}/review", response_model=JobResult)
@@ -1625,6 +1629,33 @@ def money_facts(player: Player) -> dict:
             "note": "Credits are play money. A token fee is what the Sym's AI runs cost."}
 
 
+VOICE_NEW = 14  # taps: below this a Sym is new and speaks plainly (the calibration is 14 taps)
+VOICE_FULL = 40  # taps: from here a Sym speaks fully in its person's style
+VOICE_MIN_CHANCES = 3  # a style counts only after this many cards offered it
+VOICE_HOW = {
+    "analyse": "Be exact. Give the number first, then the reason.",
+    "organise": "Be orderly. Name the next step first, then what comes after it.",
+    "explore": "Be curious. Point to one new thing to try.",
+    "connect": "Be warm. Speak about people and how a choice feels.",
+}
+
+
+def voice_for(picks: list[tuple[str, str]]) -> dict[str, str]:
+    """How this Sym speaks, picked by plain code from its person's own taps. A new Sym is plain and says when it
+    is unsure. As the taps add up it takes on the thinking style its person leans to most. A tie has no style.
+    Returns a short name for the screen and one line of direction for the Guide. No model decides this."""
+    taps = len(picks)
+    if taps < VOICE_NEW:
+        return {"name": "New voice", "how": "You are new. Be short and plain, and say when you are not sure yet."}
+    reads = [s for s in mirror_rules.read_styles(picks) if s.chances >= VOICE_MIN_CHANCES]
+    best = max((s.share for s in reads), default=0.0)
+    top = [s for s in reads if s.share == best] if best > 0 else []
+    if len(top) != 1:
+        return {"name": "Even voice", "how": "Your human leans no one way yet. Be plain and balanced."}
+    lead = "Lean a little this way. " if taps < VOICE_FULL else ""
+    return {"name": f"{top[0].name} voice", "how": lead + VOICE_HOW.get(top[0].key, "Be plain.")}
+
+
 def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None, CardOut | None]:
     """Where a player stands, as the Guide may read it, with no identity in it. Also the moves the Sym may offer
     (id to label), a plain answer for when no model is available, the move that goes with it, and one card the
@@ -1653,6 +1684,7 @@ def situation_for(player: Player) -> tuple[dict, dict[str, str], str, str | None
     moves["money"] = "See my money"
     weakest = min(areas, key=lambda v: v.level) if areas else None
     situation = {
+        "voice": voice_for([(r.card_id, r.choice) for r in db.responses_for(player.id)]),
         "beliefs": [t.statement for t in db.tendencies_for(player.id)][:8],
         "progress": {"gates_done": gates_done(states), "gates_total": len(states), "next_gate": nxt.title if nxt else None},
         "areas": [{"name": a.name, "percent_filled": round(a.level * 100), "skill_steps_done": a.steps_done} for a in areas],
@@ -1705,8 +1737,10 @@ async def ask_twin(body: AskIn, request: Request, player: Player = Depends(curre
         agents.append_flags(flags)
     situation, moves, plain, plain_move, learn = situation_for(player)
     kind, say, move, note = ("offline", "", None, None)
+    cost = 0.0
     if said.strip() and not flags:
         kind, say, move, note = await agents.talk(player.id, said.strip()[:200], narrow(situation, said), set(moves))
+        cost = agents.last_cost(player.id, "guide") if kind == "model" else 0.0
     if kind == "offline":
         say, move = plain, plain_move
     offer = None
@@ -1715,7 +1749,7 @@ async def ask_twin(body: AskIn, request: Request, player: Player = Depends(curre
         # the fact waits in memory only. It is written to the database if, and only if, the human taps to keep it
         PENDING[player.id] = (time.monotonic(), note)
         offer = FactOut(scope=note[0], topic=note[1], statement=note[2])
-    return AskOut(say=say, twin_kind=kind, move=MoveOut(id=move, label=moves[move]) if move in moves else None, learn=learn, offer=offer)
+    return AskOut(say=say, twin_kind=kind, cost_usd=round(cost, 6), voice=situation["voice"]["name"] if kind == "model" else "", move=MoveOut(id=move, label=moves[move]) if move in moves else None, learn=learn, offer=offer)
 
 
 # Narrow first, then send little: plain words in the line decide which parts of the situation the Guide is sent.
@@ -1728,7 +1762,7 @@ ROUTES: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
     (("sure", "judg", "confiden", "risk", "decid"), ("how_sure_and_how_right", "beliefs")),
     (("next", "should", "what now", "play", "gate"), ("progress", "weakest_area")),
 )
-ALWAYS_SENT = ("moves", "best_use_of_time_now", "topics")
+ALWAYS_SENT = ("moves", "best_use_of_time_now", "topics", "voice")
 WHEN_UNSURE = ("beliefs", "told_by_person", "progress")  # a line that names none of the above is most often about the person
 
 

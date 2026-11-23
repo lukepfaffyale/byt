@@ -162,6 +162,16 @@ class RunOutcome:
     ms: int = 0
 
 
+# What the newest run for one person cost, by agent name. It is read once, right after the run, to show the person
+# "this answer cost ..." on the screen. It lives in memory only: the durable numbers are the usage rows.
+_LAST_COST: dict[tuple[str, str], float] = {}
+
+
+def last_cost(player_id: str, agent_name: str) -> float:
+    """Dollars the newest run of this agent for this person cost (0 when there was none). Reading it clears it."""
+    return _LAST_COST.pop((player_id, agent_name), 0.0)
+
+
 def _node_summary(node: Any) -> dict[str, Any]:
     """Compact, text-only view of a graph node for the local forensic log."""
     out: dict[str, Any] = {"node": type(node).__name__}
@@ -361,6 +371,7 @@ async def do_job(player_id: str, job: Job) -> tuple[str, str | None, str]:
         await profile_player(player_id)
     if db.tendencies_for(player_id):
         outcome = await run_harnessed("worker", "Do this job as your human would.", TwinDeps(player_id=player_id, job_id=job.id))
+        _LAST_COST[(player_id, "worker")] = outcome.cost_usd
         draft = outcome.output
         if isinstance(draft, WorkDraft) and draft.choice in {o.id for o in job.card.options}:
             # The reason is model text shown to a person: cleaned, guarded and cut to length.
@@ -415,6 +426,7 @@ async def talk(player_id: str, said: str, situation: dict[str, Any], moves: set[
     """
     outcome = await run_harnessed("guide", "Answer your human, and offer one move.",
                                   TwinDeps(player_id=player_id, situation={**situation, "human_said": said}))
+    _LAST_COST[(player_id, "guide")] = outcome.cost_usd
     draft = outcome.output
     if isinstance(draft, GuideDraft):
         say, flags = strip_injections(strip_em_dashes(draft.say).strip(), source="guide_output", channel="model_output")

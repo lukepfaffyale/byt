@@ -109,6 +109,7 @@ export type Job = {
   state: 'locked' | 'open' | 'review' | 'done'
   options: Option[]
   twin_kind: string | null
+  cost_usd?: number
   answer: string | null
   reason: string
   verdict: string | null
@@ -168,7 +169,7 @@ export type Campaign = {
   split: { label: string; count: number; share: number }[]
   created_at: string
 }
-export type AskOut = { say: string; twin_kind: 'model' | 'offline'; move: { id: string; label: string } | null; learn: Card | null; offer: Fact | null }
+export type AskOut = { say: string; twin_kind: 'model' | 'offline'; cost_usd?: number; voice?: string; move: { id: string; label: string } | null; learn: Card | null; offer: Fact | null }
 export type PlanOption = { id: string; title: string; why: string; credits: number; minutes: number }
 export type World = {
   twins_members: number; twins_free: number; twins_forming: number; agencies: number; creators: number; built_steps: number
@@ -177,7 +178,7 @@ export type World = {
   flows: { src: string; dst: string; credits: number; moves: number }[]; balances: Record<string, number>; last_move: string | null
 }
 export type Commons = {
-  nickname: string; people: number; people_today: number; stand_ins: number; bots: number; bot_agencies: number; bot_creators: number; agencies: number; creators: number
+  nickname: string; people: number; people_today: number; stand_ins: number; bots: number; bots_awake?: number; bot_agencies: number; bot_creators: number; agencies: number; creators: number
   taps: number; checks: number; told: number; lessons: number; proofs: number; beliefs: number; known: number; known_mine: number; taps_mine: number; checks_mine: number; told_mine: number; lessons_mine: number; has_agency: boolean; has_creator: boolean
   happenings: { who: string; text: string; when: string; mine: boolean }[]
 }
