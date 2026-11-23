@@ -81,9 +81,22 @@ def build_model() -> Model:
     name = get_model_name()
     if name not in _models:
         key = (os.environ.get("PORTKEY_API_KEY") or "").strip()
-        if not key or key == "your-key-here":
+        direct = (os.environ.get("OPENAI_API_KEY") or "").strip()
+        if key == "your-key-here":
+            key = ""
+        if direct == "your-key-here":
+            direct = ""
+        # an OpenAI key saved under the Portkey name is used as what it is: Portkey would refuse it
+        if key.startswith("sk-"):
+            direct, key = direct or key, ""
+        if key:
+            # the course route: every call goes through the Portkey gateway
+            client = AsyncOpenAI(api_key=key, base_url=PORTKEY_BASE_URL, default_headers={"x-portkey-api-key": key}, max_retries=3)
+        elif direct:
+            # no Portkey key: the same model, asked from OpenAI directly
+            client = AsyncOpenAI(api_key=direct, max_retries=3)
+        else:
             raise RuntimeError("PORTKEY_API_KEY is not set. Put it in .env (see .env.example).")
-        client = AsyncOpenAI(api_key=key, base_url=PORTKEY_BASE_URL, default_headers={"x-portkey-api-key": key}, max_retries=3)
         provider = OpenAIProvider(openai_client=client)
         _models[name] = (
             OpenAIResponsesModel(name, provider=provider) if name.startswith("gpt-6") else OpenAIChatModel(name, provider=provider)

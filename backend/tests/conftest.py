@@ -10,6 +10,7 @@ _TMP = Path(tempfile.mkdtemp())
 os.environ["DATABASE_URL"] = os.environ.get("BYT_TEST_DATABASE_URL") or "sqlite:///" + (_TMP / "test.db").as_posix()
 os.environ["BYT_AWAKE"] = "all"  # every BOT Sym is awake in tests, whatever hour they run at
 os.environ["BYT_LIFE"] = "off"  # the BOT Syms do not move by themselves during tests; a test moves them
+os.environ["OPENAI_API_KEY"] = ""  # the same for a direct OpenAI key
 os.environ["PORTKEY_API_KEY"] = ""  # set before main loads .env, so the real key is never picked up
 
 import pytest  # noqa: E402

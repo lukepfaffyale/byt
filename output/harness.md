@@ -87,7 +87,7 @@ There is no free-text channel from any user to a model in this build.
 
 ### 0.8 Model and gateway
 
-- Portkey (`https://api.portkey.ai/v1`, header `x-portkey-api-key`), key from `PORTKEY_API_KEY` in `.env`. The file
+- Portkey (`https://api.portkey.ai/v1`, header `x-portkey-api-key`), key from `PORTKEY_API_KEY` in `.env`. With no Portkey key, an OpenAI key (`OPENAI_API_KEY`) asks OpenAI directly for the same model, through the same harness. The file
   is looked for in `backend/`, then the repo folder, then one folder above the repo.
 - Model from `OPENAI_MODEL`, allow-list `gpt-6-luna` only (the course key rule). gpt-6 names use
   `OpenAIResponsesModel`. No temperature is passed.

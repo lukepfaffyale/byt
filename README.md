@@ -30,7 +30,8 @@ The game is live at **https://byt-frontend.onrender.com**. Type a nickname, tick
 You need Python 3.12 or newer and Node 20 or newer.
 
 1. Put a `.env` file in this folder, or one folder above it, with your key:
-   `PORTKEY_API_KEY=your-key-here` (see `.env.example`). Without a key the game still runs, with a practice Sym
+   `PORTKEY_API_KEY=your-key-here` (see `.env.example`). With no Portkey key, `OPENAI_API_KEY=your-key-here` works too:
+   the game then asks OpenAI directly for the same model. Without a key the game still runs, with a practice Sym
    that uses no AI model.
 2. Back end, from the `backend` folder:
    - `python -m venv venv`
